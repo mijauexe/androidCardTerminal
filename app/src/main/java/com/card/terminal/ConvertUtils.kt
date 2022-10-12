@@ -26,6 +26,33 @@ object ConvertUtils {
         return decimalNumber
     }
 
+    fun hexStringToBinaryString(hexStr: String): String {
+        val output = StringBuilder("")
+        var i = 0
+        while (i < hexStr.length) {
+            when (hexStr[i]) {
+                '0' -> output.append("0000")
+                '1' -> output.append("0001")
+                '2' -> output.append("0010")
+                '3' -> output.append("0011")
+                '4' -> output.append("0100")
+                '5' -> output.append("0101")
+                '6' -> output.append("0110")
+                '7' -> output.append("0111")
+                '8' -> output.append("1000")
+                '9' -> output.append("1001")
+                'A', 'a' -> output.append("1010")
+                'B', 'b' -> output.append("1011")
+                'C', 'c' -> output.append("1100")
+                'D', 'd' -> output.append("1101")
+                'E', 'e' -> output.append("1110")
+                'F', 'f' -> output.append("1111")
+            }
+            i++
+        }
+        return output.toString()
+    }
+
     fun hexStringToAscii(hexStr: String): String {
         val output = StringBuilder("")
         var i = 0
@@ -45,5 +72,24 @@ object ConvertUtils {
             b[i] = v.toByte()
         }
         return b
+    }
+
+    fun hexStringToHexArray(s: String): List<String> {
+        val b = mutableListOf<String>()
+        for (i in 0..s.length - 1) {
+            if (i % 2 != 0) {
+                b.add(s[i - 1].toString() + s[i].toString())
+            }
+        }
+        return b
+    }
+
+
+    fun hexArrayToHexString(list: List<String>): String {
+        var str = ""
+        for (i in 0..list.size) {
+            str += list[i]
+        }
+        return str
     }
 }
