@@ -1,4 +1,4 @@
-package com.card.terminal
+package com.card.terminal.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

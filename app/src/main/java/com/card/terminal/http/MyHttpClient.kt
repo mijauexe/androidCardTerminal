@@ -1,22 +1,22 @@
-package com.card.terminal
+package com.card.terminal.http
 
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.server.routing.*
-import kotlinx.coroutines.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.routing.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -33,7 +33,7 @@ object MyHttpClient {
                 json()
             }
         }
-        this.execute(mutableCode)
+        execute(mutableCode)
     }
 
     fun execute(mutableCode: MutableLiveData<Map<String, String>>) {

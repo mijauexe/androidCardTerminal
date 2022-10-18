@@ -7,22 +7,22 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.room.Room
+import com.card.terminal.cardUtils.OmniCard
 import com.card.terminal.databinding.ActivityMainBinding
+import com.card.terminal.db.AppDatabase
+import com.card.terminal.http.MyHttpClient
 import com.google.android.material.snackbar.Snackbar
-import io.ktor.client.*
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
@@ -54,6 +54,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+
+
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "AppDatabase"
+        ).build()
+
+        /*
+        thread {
+            db.clearAllTables()
+        }
+         */
+
         if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -69,9 +83,32 @@ class MainActivity : AppCompatActivity() {
                     textic.text = it.toString()
 
 
+                    if(it["CardNumber"] != null) {
+
+                        //provjeri jel taj cardNumber allowed
+
+
+                    }
+
+                    /*
+                    thread {
+                        val readInfoDao = db.ReadInfoDao()
+                        readInfoDao.insertAll(ReadInfo(0, it["CardNumber"], LocalDateTime.now()))
+                        val dataList = readInfoDao.getAll().toString()
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(this, dataList, Toast.LENGTH_LONG)
+                                .show()
+                        }
+
+                    }
+                     */
+
+                    /*
                     lifecycleScope.launch() {
                         MyHttpClient.greeting(it)
                     }
+                     */
+
 
                 }
 
