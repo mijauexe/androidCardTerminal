@@ -10,5 +10,7 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="textview">TextView</string>
-    <string name="gas">gas</string>
+    <string name="card_output">Card Output</string>
+    <string name="client_output">Client Output</string>
+
 </resources>

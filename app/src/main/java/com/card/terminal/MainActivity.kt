@@ -7,27 +7,32 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.card.terminal.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
-
+import io.ktor.client.*
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
+
+    private var mutableCardCode = MutableLiveData<Map<String, String>>()
+    private var mutableServerCode = MutableLiveData<Map<String, String>>()
+
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-
-    private var mutableCode = MutableLiveData<Pair<OmniCard.Status, String>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,11 +60,26 @@ class MainActivity : AppCompatActivity() {
                     PERMISSION_TO_BIND_BACKEND_SERVICE
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                OmniCard.bind(this, mutableCode, false)
-                mutableCode.observe(this) {
+                OmniCard.bindCardBackend(this, mutableCardCode, false)
+
+                MyHttpClient.bindHttpClient(mutableServerCode)
+
+                mutableCardCode.observe(this) {
                     val textic = findViewById<TextView>(R.id.textview_output)
-                    textic.text = it.second
+                    textic.text = it.toString()
+
+
+                    lifecycleScope.launch() {
+                        MyHttpClient.greeting(it)
+                    }
+
                 }
+
+                mutableServerCode.observe(this) {
+                    val textic = findViewById<TextView>(R.id.textview_output2)
+                    textic.text = it.toString()
+                }
+
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -70,8 +90,25 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
         }
-    }
 
+        //MyHttpClient.bindHttpClient(mutableCardCode)
+
+        /*
+        thread {
+            embeddedServer(Netty, port=5005) {
+                routing {
+                    get("/") {
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(this@MainActivity, "pingao te netko", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }.start(wait=true)
+        }
+         */
+
+
+    }
 
     override fun onPause() {
         super.onPause()

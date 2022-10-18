@@ -30,11 +30,11 @@ object OmniCard {
     private var isServiceConnected = false
     private var terminalFactory: TerminalFactory? = null
     private var cardService: ICardService? = null
-    private var mutableCode = MutableLiveData<Pair<Status, String>>()
+    private var mutableCode = MutableLiveData<Map<String, String>>()
     private var mContext: Application? = null
     private var isRegisterUsbEventsReceiver: Boolean = false
 
-    fun bind(context: Activity, code: MutableLiveData<Pair<Status, String>>, isInit: Boolean) {
+    fun bindCardBackend(context: Activity, code: MutableLiveData<Map<String, String>>, isInit: Boolean) {
         mutableCode = code
         if (!isServiceConnected) {
             cardService = CardService.getInstance(context, object : ServiceConnection {
@@ -52,7 +52,8 @@ object OmniCard {
                 }
             })
         } else {
-            mutableCode.postValue(Pair(Status.MESSAGE, READER_ATTACH))
+            //mutableCode.postValue(Pair(Status.MESSAGE, READER_ATTACH))
+            mutableCode.postValue(mapOf("MESSAGE" to READER_ATTACH))
             getCardStatus()
         }
     }
@@ -80,12 +81,14 @@ object OmniCard {
     private fun getCardStatus(isInit: Boolean = false) {
         val availableCardTerminals = getAvailableCardTerminals()
         if (cardService == null) {
-            mutableCode.postValue(Pair(Status.MESSAGE, SERVICE_ERROR))
+            //mutableCode.postValue(Pair(Status.MESSAGE, SERVICE_ERROR))
+            mutableCode.postValue(mapOf("MESSAGE" to SERVICE_ERROR))
             return
         }
         if (availableCardTerminals.isEmpty()) {
             if (!isInit) {
-                mutableCode.postValue(Pair(Status.MESSAGE, READER_NOT_FOUND))
+                //mutableCode.postValue(Pair(Status.MESSAGE, READER_NOT_FOUND))
+                mutableCode.postValue(mapOf("MESSAGE" to READER_NOT_FOUND))
             }
             return
         }
@@ -115,7 +118,11 @@ object OmniCard {
                 getCardStatus()
             },
             onReaderDetach = {
-                mutableCode.postValue(Pair(Status.MESSAGE, READER_DETACH))
+                //mutableCode.postValue(Pair(Status.MESSAGE, READER_DETACH))
+                mutableCode.postValue(mapOf("MESSAGE" to READER_ATTACH))
+                //mutableCode.postValue(Pair(Status.MESSAGE, READER_DETACH))
+                mutableCode.postValue(mapOf("MESSAGE" to READER_DETACH))
+
                 unbind()
             }
         )

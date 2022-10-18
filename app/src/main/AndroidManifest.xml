@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="com.hidglobal.ia.omnikey.service.permission.SMARTCARDIO"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <queries>
         <intent>
@@ -11,6 +12,7 @@
     <application
         tools:replace="android:theme"
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -18,7 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.androidCardTerminal"
-        tools:targetApi="31">
+        tools:targetApi="31"
+        >
         <activity
             android:name="com.card.terminal.MainActivity"
             android:exported="true"
