@@ -2,6 +2,8 @@ package com.card.terminal
 
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
 import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
@@ -23,6 +25,7 @@ import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.google.android.material.snackbar.Snackbar
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
@@ -55,18 +58,17 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-
-
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "AppDatabase"
         ).build()
 
-        /*
+
+
         thread {
             db.clearAllTables()
         }
-         */
+
 
         if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
             if (ContextCompat.checkSelfPermission(
@@ -76,38 +78,33 @@ class MainActivity : AppCompatActivity() {
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
 
-                MyHttpClient.bindHttpClient(mutableServerCode)
+                MyHttpClient.bindHttpClient(mutableServerCode, db)
 
                 mutableCardCode.observe(this) {
                     val textic = findViewById<TextView>(R.id.textview_output)
                     textic.text = it.toString()
 
+                    if (it["CardNumber"] != null) {
+                        thread {
 
-                    if(it["CardNumber"] != null) {
+                            val allowedAccessDao = db.AllowedAccessDao()
 
-                        //provjeri jel taj cardNumber allowed
+                            val dataList = allowedAccessDao.getAll()
+                            var text = "access denied!"
 
+                            for (r in dataList) {
+                                if(r.cardNumber.equals(it["CardNumber"])) {
+                                    text = "access granted!"
+                                }
+                            }
 
-                    }
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(this, text, Toast.LENGTH_LONG)
+                                    .show()
+                            }
 
-                    /*
-                    thread {
-                        val readInfoDao = db.ReadInfoDao()
-                        readInfoDao.insertAll(ReadInfo(0, it["CardNumber"], LocalDateTime.now()))
-                        val dataList = readInfoDao.getAll().toString()
-                        Handler(Looper.getMainLooper()).post {
-                            Toast.makeText(this, dataList, Toast.LENGTH_LONG)
-                                .show()
                         }
-
                     }
-                     */
-
-                    /*
-                    lifecycleScope.launch() {
-                        MyHttpClient.greeting(it)
-                    }
-                     */
 
 
                 }

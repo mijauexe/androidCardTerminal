@@ -3,11 +3,13 @@ package com.card.terminal.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDateTime
+import kotlinx.serialization.Serializable
 
 @Entity
+@Serializable
 data class ReadInfo (
     @PrimaryKey(autoGenerate = true) val uid: Int,
     @ColumnInfo(name = "card_number") val cardNumber: String?,
-    @ColumnInfo(name = "timestamp") val timestamp: LocalDateTime?
+    @ColumnInfo(name = "timestamp") val timestamp: String?
 )
+val readInfoStorage = mutableListOf<ReadInfo>()

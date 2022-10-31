@@ -1,21 +1,17 @@
 package com.card.terminal.http
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import androidx.lifecycle.MutableLiveData
+import com.card.terminal.db.AppDatabase
+import com.card.terminal.main
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.routing.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object MyHttpClient {
@@ -23,11 +19,12 @@ object MyHttpClient {
 
     private var mutableCode = MutableLiveData<Map<String, String>>()
     private var mContext: Application? = null
-
+    private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
 
-    fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
+    fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase ) {
         mutableCode = code
+        database = appDatabase
         client = HttpClient() {
             install(ContentNegotiation) {
                 json()
@@ -39,25 +36,7 @@ object MyHttpClient {
     fun execute(mutableCode: MutableLiveData<Map<String, String>>) {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
-            //greeting(mutableCode)
-
-
-            embeddedServer(Netty, port = 5005) {
-                routing {
-                    get("/") {
-                        Handler(Looper.getMainLooper()).post {
-                            //Toast.makeText(this.context, "pingao te netko", Toast.LENGTH_LONG).show()
-                            mutableCode.postValue(mapOf("MESSAGE" to "netko te pingao"))
-                        }
-                        delay(3000)
-                        Handler(Looper.getMainLooper()).post {
-                            //Toast.makeText(this.context, "pingao te netko", Toast.LENGTH_LONG).show()
-                            mutableCode.postValue(mapOf("MESSAGE" to ""))
-                        }
-                    }
-                }
-            }.start(wait = true)
-
+            database?.let { main(it) }
         }
     }
 

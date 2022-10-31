@@ -62,7 +62,6 @@ object GetCardStatusTask {
                         }
                         mutableCode.value?.apply {
                             if (!values.equals(HAVE_NO_CARD)) {
-                                //mutableCode.postValue(Pair(OmniCard.Status.MESSAGE, HAVE_NO_CARD))
                                 mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
                             }
                         }
