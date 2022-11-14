@@ -6,61 +6,122 @@
     android:layout_height="match_parent"
     tools:context=".fragments.FirstFragment">
 
-    <TextView
-        android:id="@+id/textview_output2"
+    <GridLayout
+        android:id="@+id/glMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/client_output"
-        app:layout_constraintBottom_toTopOf="@id/button_first"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toTopOf="@+id/glDown"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.887" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/textview_first"
+        <TextView
+            android:id="@+id/tv_company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/company_name"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/tv_date"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/tv_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/clock"
+            android:textSize="35sp" />
+
+        <TextView
+            android:id="@+id/textview_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/card_output"
+            android:textSize="20sp" />
+
+    </GridLayout>
+
+    <GridLayout
+        android:id="@+id/glDown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_first_fragment"
-        app:layout_constraintBottom_toTopOf="@id/button_first"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_toEndOf="@+id/glMain"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/glRight"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
 
+        <Button
+            android:id="@+id/ib_work"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="100sp"
+            android:layout_marginEnd="50sp"
+            android:backgroundTint="#1e88e5"
+            android:drawableStart="@drawable/business_center_fill0_wght400_grad0_opsz48" />
 
-    <Button
-        android:id="@+id/button_first"
+        <Button
+            android:id="@+id/ib_private"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="50sp"
+            android:backgroundTint="#ff8f00"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:drawableStart="@drawable/ic_baseline_home_24" />
+
+        <Button
+            android:id="@+id/ib_coffee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="100sp"
+            android:backgroundTint="#ffeb3b"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:drawableStart="@drawable/ic_baseline_coffee_24" />
+    </GridLayout>
+
+    <GridLayout
+        android:id="@+id/glRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/next"
+        android:layout_below="@+id/glMain"
+        android:layout_toStartOf="@+id/glMain"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.761"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textview_first" />
+        app:layout_constraintStart_toEndOf="@+id/glMain"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/button_get_request"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/next"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.247"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textview_first"
-        app:layout_constraintVertical_bias="0.501" />
+        <Button
+            android:id="@+id/ib_enter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:layout_marginBottom="50dp"
+            android:backgroundTint="#43a047"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:drawableStart="@drawable/ic_baseline_login_24" />
 
-    <TextView
-        android:id="@+id/textview_output"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/card_output"
-        app:layout_constraintBottom_toTopOf="@id/button_first"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.74" />
+        <Button
+            android:id="@+id/ib_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="50dp"
+            android:backgroundTint="#e64a19"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:drawableStart="@drawable/ic_baseline_logout_24" />
 
+    </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

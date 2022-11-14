@@ -1,12 +1,12 @@
-package com.card.terminal.cardUtils
+package com.card.terminal.utils.cardUtils
 
 import android.smartcardio.Card
 import android.smartcardio.CardException
 import android.smartcardio.CardTerminal
 import android.smartcardio.CommandAPDU
 import androidx.lifecycle.MutableLiveData
-import com.card.terminal.cardUtils.ConvertUtils.hexStringToBinaryString
-import com.card.terminal.cardUtils.OmniCard.HAVE_NO_CARD
+import com.card.terminal.utils.cardUtils.ConvertUtils.hexStringToBinaryString
+import com.card.terminal.utils.cardUtils.OmniCard.HAVE_NO_CARD
 import kotlinx.coroutines.*
 import timber.log.Timber
 

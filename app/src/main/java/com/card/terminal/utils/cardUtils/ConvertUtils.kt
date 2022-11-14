@@ -1,4 +1,4 @@
-package com.card.terminal.cardUtils
+package com.card.terminal.utils.cardUtils
 
 import kotlin.math.pow
 

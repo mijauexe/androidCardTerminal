@@ -1,4 +1,4 @@
-package com.card.terminal.routes
+package com.card.terminal.http.routes
 
 import com.card.terminal.database
 import com.card.terminal.db.entity.ReadInfo

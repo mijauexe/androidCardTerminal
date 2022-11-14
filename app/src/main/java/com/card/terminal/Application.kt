@@ -1,8 +1,8 @@
 package com.card.terminal
 
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.plugins.configureRouting
-import com.card.terminal.plugins.configureSerialization
+import com.card.terminal.http.plugins.configureRouting
+import com.card.terminal.http.plugins.configureSerialization
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 

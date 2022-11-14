@@ -1,5 +1,6 @@
 package com.card.terminal
 
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -18,57 +19,48 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.room.Room
-import com.card.terminal.cardUtils.OmniCard
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
-import com.google.android.material.snackbar.Snackbar
+import com.card.terminal.utils.ShowDateTime
+import com.card.terminal.utils.cardUtils.OmniCard
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
 
+
     private var mutableCardCode = MutableLiveData<Map<String, String>>()
     private var mutableServerCode = MutableLiveData<Map<String, String>>()
-
+    private var mutableDateTime = MutableLiveData<LocalDateTime>()
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private lateinit var db : AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        setSupportActionBar(binding.toolbar)
-
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
 
     override fun onResume() {
         super.onResume()
-
-        val db = Room.databaseBuilder(
+        mutableDateTime.postValue(LocalDateTime.now())
+        db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "AppDatabase"
         ).build()
 
-
-
         thread {
             db.clearAllTables()
         }
-
+        ShowDateTime.setDateAndTime(mutableDateTime)
 
         if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
             if (ContextCompat.checkSelfPermission(
@@ -77,42 +69,10 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
-
                 MyHttpClient.bindHttpClient(mutableServerCode, db)
 
-                mutableCardCode.observe(this) {
-                    val textic = findViewById<TextView>(R.id.textview_output)
-                    textic.text = it.toString()
-
-                    if (it["CardNumber"] != null) {
-                        thread {
-
-                            val allowedAccessDao = db.AllowedAccessDao()
-
-                            val dataList = allowedAccessDao.getAll()
-                            var text = "access denied!"
-
-                            for (r in dataList) {
-                                if(r.cardNumber.equals(it["CardNumber"])) {
-                                    text = "access granted!"
-                                }
-                            }
-
-                            Handler(Looper.getMainLooper()).post {
-                                Toast.makeText(this, text, Toast.LENGTH_LONG)
-                                    .show()
-                            }
-
-                        }
-                    }
 
 
-                }
-
-                mutableServerCode.observe(this) {
-                    val textic = findViewById<TextView>(R.id.textview_output2)
-                    textic.text = it.toString()
-                }
 
             } else {
                 ActivityCompat.requestPermissions(
@@ -124,24 +84,47 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
         }
+        setObservers()
+    }
 
-        //MyHttpClient.bindHttpClient(mutableCardCode)
+    private fun setObservers() {
+        mutableCardCode.observe(this) {
+            //val textic = findViewById<TextView>(R.id.textview_output)
+            //textic.text = it.toString()
 
-        /*
-        thread {
-            embeddedServer(Netty, port=5005) {
-                routing {
-                    get("/") {
-                        Handler(Looper.getMainLooper()).post {
-                            Toast.makeText(this@MainActivity, "pingao te netko", Toast.LENGTH_LONG).show()
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG)
+                    .show()
+            }
+
+            if (it["CardNumber"] != null) {
+                thread {
+                    val allowedAccessDao = db.AllowedAccessDao()
+
+                    val dataList = allowedAccessDao.getAll()
+                    var text = "access denied!"
+
+                    for (r in dataList) {
+                        if (r.cardNumber.equals(it["CardNumber"])) {
+                            text = "access granted!"
                         }
                     }
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(this, text, Toast.LENGTH_LONG)
+                            .show()
+                    }
                 }
-            }.start(wait=true)
+            }
         }
-         */
+        mutableDateTime.observe(this) {
+            if(it != null) {
+                val dateText = findViewById<TextView>(R.id.tv_date)
+                dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
 
-
+                val clockText = findViewById<TextView>(R.id.tv_clock)
+                clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME).format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+            }
+        }
     }
 
     override fun onPause() {

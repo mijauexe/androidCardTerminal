@@ -1,4 +1,4 @@
-package com.card.terminal.plugins
+package com.card.terminal.http.plugins
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
