@@ -7,7 +7,6 @@ import com.card.terminal.main
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
@@ -40,22 +39,27 @@ object MyHttpClient {
         }
     }
 
-    suspend fun greeting(cardResponseMap: Map<String, String>): String {
-        //val response = client?.get("http://192.168.0.188:5000")
-        //val response = client?.get("https://www.google.com")
+    fun isClientReady(): Boolean {
+        return client != null
+    }
 
-        val response = client?.post("http://192.168.0.188:5000") {
-            contentType(ContentType.Application.Json)
-            setBody(cardResponseMap)
+    fun postData(cardResponseMap: Map<String, String>) {
+        scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            val response = client?.post("http://192.168.0.188:5000") {
+                contentType(ContentType.Application.Json)
+                setBody(cardResponseMap)
+            }
+
+            if (response != null) {
+                println(response)
+                //mutableCode.postValue(Pair(ServerStatus.MESSAGE, response.toString()))
+                //mutableCode.postValue(mapOf("MESSAGE" to response.toString()))
+                //return response.bodyAsText()
+            }
+            //return ""
         }
 
-        if (response != null) {
-            println(response)
-            //mutableCode.postValue(Pair(ServerStatus.MESSAGE, response.toString()))
-            //mutableCode.postValue(mapOf("MESSAGE" to response.toString()))
-            return response.bodyAsText()
-        }
-        return ""
     }
 
 

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".fragments.FirstFragment">
 
+
     <GridLayout
         android:id="@+id/glMain"
         android:layout_width="wrap_content"
@@ -68,25 +69,25 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="100sp"
             android:layout_marginEnd="50sp"
-            android:backgroundTint="#1e88e5"
+            android:background="#1e88e5"
             android:drawableStart="@drawable/business_center_fill0_wght400_grad0_opsz48" />
 
         <Button
             android:id="@+id/ib_private"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="50sp"
-            android:backgroundTint="#ff8f00"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="#ff8f00"
             android:drawableStart="@drawable/ic_baseline_home_24" />
 
         <Button
             android:id="@+id/ib_coffee"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="100sp"
-            android:backgroundTint="#ffeb3b"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="#ffeb3b"
             android:drawableStart="@drawable/ic_baseline_coffee_24" />
     </GridLayout>
 
@@ -105,21 +106,21 @@
 
         <Button
             android:id="@+id/ib_enter"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="50dp"
             android:layout_marginBottom="50dp"
-            android:backgroundTint="#43a047"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="#43a047"
             android:drawableStart="@drawable/ic_baseline_login_24" />
 
         <Button
             android:id="@+id/ib_exit"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="50dp"
-            android:backgroundTint="#e64a19"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="#e64a19"
             android:drawableStart="@drawable/ic_baseline_logout_24" />
 
     </GridLayout>

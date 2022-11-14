@@ -6,7 +6,6 @@ import android.smartcardio.CardTerminal
 import android.smartcardio.CommandAPDU
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.utils.cardUtils.ConvertUtils.hexStringToBinaryString
-import com.card.terminal.utils.cardUtils.OmniCard.HAVE_NO_CARD
 import kotlinx.coroutines.*
 import timber.log.Timber
 
@@ -40,10 +39,10 @@ object GetCardStatusTask {
             while (scope.isActive) {
                 try {
                     if (!terminal.isCardPresent) {
-                        if (count == 0) {
-                            mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
-                        }
-                        count++
+//                        if (count == 0) {
+//                            mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
+//                        }
+//                        count++
                     } else if (READER_NAME in terminal.name) {
                         count = 0
                         val card = terminal.connect(WILDCARD_PROTOCOL)
@@ -60,11 +59,11 @@ object GetCardStatusTask {
                             isCardAbsent = terminal.waitForCardAbsent(SLEEP_MILLIS)
                             delay(SLEEP_MILLIS)
                         }
-                        mutableCode.value?.apply {
-                            if (!values.equals(HAVE_NO_CARD)) {
-                                mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
-                            }
-                        }
+//                        mutableCode.value?.apply {
+//                            if (!values.equals(HAVE_NO_CARD)) {
+//                                mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
+//                            }
+//                        }
                     }
                     delay(SLEEP_MILLIS)
                 } catch (e: Exception) {
@@ -110,7 +109,7 @@ object GetCardStatusTask {
                     resp = resp.dropLast(1)
                     resp = resp.drop(1)
                     cardNumber =
-                        Integer.parseInt((Integer.parseInt(resp, 2) and 0x00FFFF).toString(), 2)
+                        Integer.parseInt((Integer.parseInt(resp, 2) and 0x00FFFF).toString())
                             .toString()
                     facilityCode = Integer.parseInt(resp.substring(1, 8), 2).toString()
                 }
