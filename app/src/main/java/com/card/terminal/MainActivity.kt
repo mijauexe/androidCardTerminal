@@ -1,7 +1,6 @@
 package com.card.terminal
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -32,7 +31,6 @@ import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
-
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
@@ -83,8 +81,6 @@ class MainActivity : AppCompatActivity() {
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
                 MyHttpClient.bindHttpClient(mutableServerCode, db)
-
-
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -180,60 +176,60 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun cardText(text: String, access: String) {
+        Handler(Looper.getMainLooper()).post {
+            val cardNumber = findViewById<TextView>(R.id.textview_output)
+            cardNumber.text = text
+            Toast.makeText(this, access, Toast.LENGTH_LONG)
+                .show()
+        }
+        resetButtons()
+        Thread.sleep(5000)
+
+        Handler(Looper.getMainLooper()).post {
+            val cardNumber = findViewById<TextView>(R.id.textview_output)
+            cardNumber.text = ""
+        }
+    }
+
     private fun setObservers() {
         mutableCardCode.observe(this) {
+            var accessText = "access denied!"
 
-//            Handler(Looper.getMainLooper()).post {
-//                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG)
-//                    .show()
-//            }
-
-            if (it["CardNumber"] != null) {
-                if((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
+            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
+                if (it["ErrorCode"].equals("1")) {
+                    thread {
+                        cardText(it["CardResponse"].toString(), accessText)
+                    }
+                } else if (it["CardNumber"] != null) {
                     thread {
                         val allowedAccessDao = db.AllowedAccessDao()
 
-                        Handler(Looper.getMainLooper()).post {
-                            val textic = findViewById<TextView>(R.id.textview_output)
-                            textic.text = it["CardNumber"]
-                        }
-
                         val dataList = allowedAccessDao.getAll()
-                        var text = "access denied!"
 
                         for (r in dataList) {
                             if (r.cardNumber.equals(it["CardNumber"])) {
-                                text = "access granted!"
+                                accessText = "access granted!"
                             }
                         }
-                        Handler(Looper.getMainLooper()).post {
-                            Toast.makeText(this, text, Toast.LENGTH_LONG)
-                                .show()
-                        }
-                        if(MyHttpClient.isClientReady() and !text.equals("access denied!")) {
-                            if(exitBtnClicked) {
+
+                        cardText(it["CardNumber"].toString(), accessText)
+
+                        if (MyHttpClient.isClientReady() and !accessText.equals("access denied!")) {
+                            if (exitBtnClicked) {
                                 MyHttpClient.postData(mapOf("status" to "exit"))
                             } else MyHttpClient.postData(mapOf("status" to "enter"))
                         }
-                        resetButtons()
-
-                        Thread.sleep(5000)
-
-                        Handler(Looper.getMainLooper()).post {
-                            val textic = findViewById<TextView>(R.id.textview_output)
-                            textic.text = "" //2131755041
-                        }
                     }
-                } else {
-                    val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
-                    alertDialog.setTitle("Upozorenje")
-                    alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
-                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                        DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
-                    alertDialog.show()
                 }
-
-
+            } else {
+                val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
+                alertDialog.setTitle("Napomena")
+                alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
+                alertDialog.setButton(
+                    AlertDialog.BUTTON_NEUTRAL, "OK",
+                    { dialog, which -> dialog.dismiss() })
+                alertDialog.show()
             }
         }
         mutableDateTime.observe(this) {

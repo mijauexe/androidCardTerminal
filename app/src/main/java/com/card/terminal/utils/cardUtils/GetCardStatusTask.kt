@@ -13,6 +13,7 @@ object GetCardStatusTask {
     private const val WILDCARD_PROTOCOL = "*"
     private const val READER_NAME = "OMNIKEY"
     private const val GET_UID_COMMAND = "FFCA000000"
+
     //private const val COMMAND_APDU = "ff680d0000"
     private const val COMMAND_APDU = "ff70076b07a005a10380010400"
     private const val CORRECT_APDU_END_RESPONSE = "9000"
@@ -23,7 +24,6 @@ object GetCardStatusTask {
     private var uid = ""
     private var atr = ""
 
-    //private lateinit var mutableCardCode: MutableLiveData<Pair<OmniCard.Status, String>>
     private lateinit var mutableCardCode: MutableLiveData<Map<String, String>>
 
     fun execute(
@@ -35,23 +35,13 @@ object GetCardStatusTask {
         mutableCardCode = mutableCode
         scope.launch {
 
-            var count = 0
             while (scope.isActive) {
                 try {
-                    if (!terminal.isCardPresent) {
-//                        if (count == 0) {
-//                            mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
-//                        }
-//                        count++
-                    } else if (READER_NAME in terminal.name) {
-                        count = 0
+                    if (READER_NAME in terminal.name && terminal.isCardPresent) {
                         val card = terminal.connect(WILDCARD_PROTOCOL)
-
                         uid = getCardUid(card)
                         atr = getCardAtr(card)
-
                         parseResp(requestApdu(card), mutableCode)
-                        //MyHttpClient.greeting(mappy)
 
                         card.disconnect(true)
                         var isCardAbsent = false
@@ -59,11 +49,6 @@ object GetCardStatusTask {
                             isCardAbsent = terminal.waitForCardAbsent(SLEEP_MILLIS)
                             delay(SLEEP_MILLIS)
                         }
-//                        mutableCode.value?.apply {
-//                            if (!values.equals(HAVE_NO_CARD)) {
-//                                mutableCode.postValue(mapOf(MESSAGE to HAVE_NO_CARD))
-//                            }
-//                        }
                     }
                     delay(SLEEP_MILLIS)
                 } catch (e: Exception) {
@@ -86,8 +71,6 @@ object GetCardStatusTask {
     @Throws(Exception::class)
     private fun parseResp(response: String, mutableCode: MutableLiveData<Map<String, String>>) {
         if (response.endsWith(CORRECT_APDU_END_RESPONSE)) {
-            //var listica = hexStringToHexArray(resp)
-            //9Dxx 03 06 03      81 25 8c 47 d0        9000
             var resp = response
 
             resp = resp.dropLast(4)
@@ -100,9 +83,8 @@ object GetCardStatusTask {
 
             var cardNumber = ""
             var facilityCode = ""
-            var errorCode = "0"
 
-            var cardMap = mutableMapOf<String, String>()
+            val cardMap = mutableMapOf<String, String>()
             cardMap["CardFormat"] = resp.length.toString()
             when (resp.length) {
                 26 -> {
@@ -128,58 +110,18 @@ object GetCardStatusTask {
                     return
                 }
             }
-
+            cardMap["CardResponse"] = response
             cardMap["CardNumber"] = cardNumber
             cardMap["FacilityCode"] = facilityCode
             cardMap["UID"] = uid
-            cardMap["ErrorCode"] = errorCode
-           // cardMap["CardFormat"] = cardFormat
+            cardMap["ErrorCode"] = "0"
             cardMap["ATR"] = atr
             mutableCode.postValue(cardMap)
-
-            /*
-            mutableCode.postValue(
-                mapOf(
-                    "CardNumber" to cardNumber.toString(),
-                    "FacilityCode" to facilityCode.toString(),
-                    "UID" to uid,
-                    "ErrorCode" to errorCode,
-                    "CardFormat" to cardFormat,
-                    "ATR" to atr
-                )
-            )
-
-            */
-
-            /*
-                if (resp.length == 26) {
-                    resp = resp.dropLast(1)
-                    resp = resp.drop(1)
-                    val cardNumber =
-                        Integer.parseInt((Integer.parseInt(resp, 2) and 0x00FFFF).toString(), 2)
-                    val facilityCode = Integer.parseInt(resp.substring(1, 8), 2)
-                    //mutableCode.postValue(Pair(OmniCard.Status.READ, listOf(cardNumber, facilityCode).toString()))
-                    mutableCode.postValue(mapOf("CardNumber" to cardNumber.toString(), "FacilityCode" to facilityCode.toString()))
-
-                } else if (resp.length == 34) {
-                    val cardNumber = Integer.parseInt(resp.substring(17, resp.length - 1), 2)
-                    val facilityCode = Integer.parseInt(resp.substring(0, 17), 2)
-                    //mutableCode.postValue(Pair(OmniCard.Status.READ, listOf(cardNumber, facilityCode).toString()))
-                    mutableCode.postValue(mapOf("CardNumber" to cardNumber.toString(), "FacilityCode" to facilityCode.toString()))
-
-                } else if (resp.length == 37) {
-                    resp = resp.dropLast(1)
-                    resp = resp.drop(1)
-                    val facilityCode = Integer.parseInt(resp.substring(0, 16), 2)
-                    val cardNumber = Integer.parseInt(resp.substring(17), 2)
-                    //mutableCode.postValue(Pair(OmniCard.Status.READ, listOf(cardNumber, facilityCode).toString()))
-                    mutableCode.postValue(mapOf("CardNumber" to cardNumber.toString(), "FacilityCode" to facilityCode.toString()))
-                    //val mappp = mapOf(Pair("CardNumber", cardNumber.toString()), Pair("FacilityCode", facilityCode.toString())
-                }
-                 */
-
         } else {
-            //return mapOf()
+            val cardMap = mutableMapOf<String, String>()
+            cardMap["ErrorCode"] = "1"
+            cardMap["CardResponse"] = response
+            mutableCode.postValue(cardMap)
         }
     }
 
@@ -198,7 +140,7 @@ object GetCardStatusTask {
         return uid.orEmpty()
     }
 
-    fun Card.sendAPDU(request: String): ByteArray? {
+    private fun Card.sendAPDU(request: String): ByteArray? {
         return try {
             val cmd = CommandAPDU(ConvertUtils.hexStringToByteArray(request))
             val resp = basicChannel.transmit(cmd)

@@ -21,7 +21,7 @@ object MyHttpClient {
     private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
 
-    fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase ) {
+    fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase) {
         mutableCode = code
         database = appDatabase
         client = HttpClient() {
@@ -29,10 +29,10 @@ object MyHttpClient {
                 json()
             }
         }
-        execute(mutableCode)
+        execute()
     }
 
-    fun execute(mutableCode: MutableLiveData<Map<String, String>>) {
+    fun execute() {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
             database?.let { main(it) }
@@ -50,14 +50,9 @@ object MyHttpClient {
                 contentType(ContentType.Application.Json)
                 setBody(cardResponseMap)
             }
-
             if (response != null) {
                 println(response)
-                //mutableCode.postValue(Pair(ServerStatus.MESSAGE, response.toString()))
-                //mutableCode.postValue(mapOf("MESSAGE" to response.toString()))
-                //return response.bodyAsText()
             }
-            //return ""
         }
 
     }
