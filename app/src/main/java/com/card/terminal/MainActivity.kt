@@ -49,6 +49,8 @@ class MainActivity : AppCompatActivity() {
     private var enterBtnClicked = false
     private var exitBtnClicked = false
 
+    var cardScannerActive = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -64,8 +66,6 @@ class MainActivity : AppCompatActivity() {
             applicationContext,
             AppDatabase::class.java, "AppDatabase"
         ).build()
-
-        setButtons()
 
         thread {
             db.clearAllTables()
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         setObservers()
     }
 
-    private fun setButtons() {
+    fun setButtons() {
         val workButton = findViewById<Button>(R.id.ib_work)
         val privateButton = findViewById<Button>(R.id.ib_private)
         val coffeeButton = findViewById<Button>(R.id.ib_coffee)
@@ -183,7 +183,9 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, access, Toast.LENGTH_LONG)
                 .show()
         }
-        resetButtons()
+        if(cardScannerActive){
+            resetButtons()
+        }
         Thread.sleep(5000)
 
         Handler(Looper.getMainLooper()).post {
@@ -194,8 +196,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun setObservers() {
         mutableCardCode.observe(this) {
+            if(!cardScannerActive){
+                return@observe
+            }
             var accessText = "access denied!"
-
             if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
                 if (it["ErrorCode"].equals("1")) {
                     thread {

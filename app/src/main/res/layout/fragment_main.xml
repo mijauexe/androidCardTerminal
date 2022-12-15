@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.SecondFragment">
+    tools:context=".fragments.MainFragment">
 
     <GridLayout
         android:id="@+id/glMain"
@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:columnCount="1"
         android:useDefaultMargins="true"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -49,12 +50,34 @@
 
     </GridLayout>
 
-    <Button
-        android:id="@+id/button_second"
+    <GridLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/previous"
+        android:columnCount="2"
+        android:useDefaultMargins="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
+
+        <Button
+            android:id="@+id/pinButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+        <Button
+            android:id="@+id/cardButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Card"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+    </GridLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
