@@ -39,6 +39,8 @@ class SecondFragment : Fragment() {
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
         }
+
+
     }
 
     override fun onDestroyView() {
