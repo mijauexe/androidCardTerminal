@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build.VERSION_CODES.R
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -62,14 +63,15 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mutableDateTime.postValue(LocalDateTime.now())
+
         db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "AppDatabase"
         ).build()
 
-        thread {
-            db.clearAllTables()
-        }
+//        thread {
+//            db.clearAllTables()
+//        }
 
         ShowDateTime.setDateAndTime(mutableDateTime)
 
@@ -183,7 +185,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, access, Toast.LENGTH_LONG)
                 .show()
         }
-        if(cardScannerActive){
+        if (cardScannerActive) {
             resetButtons()
         }
         Thread.sleep(5000)
@@ -196,7 +198,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setObservers() {
         mutableCardCode.observe(this) {
-            if(!cardScannerActive){
+            if (!cardScannerActive) {
                 return@observe
             }
             var accessText = "access denied!"
@@ -298,5 +300,21 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    fun checkPin(text: CharSequence?): Boolean {
+        if (text == null) return false
+        //thread {
+        val pinCodeDao = db.PinCodeDao()
+
+        val dataList = pinCodeDao.getAll()
+
+        for (r in dataList) {
+            if (r.pinCode == text) {
+                return true
+            }
+        }
+        // }
+        return false
     }
 }

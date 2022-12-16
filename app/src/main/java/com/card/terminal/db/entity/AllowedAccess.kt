@@ -9,6 +9,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AllowedAccess(
     @PrimaryKey(autoGenerate = true) val uid: Int,
-    @ColumnInfo(name = "card_number") val cardNumber: String?,
-    @ColumnInfo(name = "allowed") val allowed: Boolean?
+    @ColumnInfo(name = "card_number") val cardNumber: String,
+    @ColumnInfo(name = "allowed") val allowed: Boolean
 )
