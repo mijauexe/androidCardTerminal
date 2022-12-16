@@ -36,9 +36,10 @@ class FirstFragment : Fragment() {
         var act = activity as MainActivity
         act.setButtons()
 
-        binding.backButton.setOnClickListener{
+        binding.buttonSecond.setOnClickListener{
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
         }
+
     }
 
     override fun onDestroyView() {
