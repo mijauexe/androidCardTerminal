@@ -10,7 +10,7 @@ import com.card.terminal.db.entity.AllowedAccess
 import com.card.terminal.db.entity.PinCode
 import com.card.terminal.db.entity.ReadInfo
 
-@Database(entities = [ReadInfo::class, AllowedAccess::class, PinCode::class], version = 2)
+@Database(entities = [ReadInfo::class, AllowedAccess::class, PinCode::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ReadInfoDao(): ReadInfoDao

@@ -89,8 +89,10 @@ class SecondFragment : Fragment() {
 
         binding.enterDialButton.setOnClickListener {
             val act = activity as MainActivity
+
             if (act.checkPin(binding.pinPreviewText.text)) {
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
+                Toast.makeText(act, "correct pin!", Toast.LENGTH_SHORT).show()
             } else {
                 binding.pinPreviewText.text = ""
                 Toast.makeText(act, "wrong pin!", Toast.LENGTH_SHORT).show()

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Build.VERSION_CODES.R
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -31,6 +30,7 @@ import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -304,17 +304,20 @@ class MainActivity : AppCompatActivity() {
 
     fun checkPin(text: CharSequence?): Boolean {
         if (text == null) return false
-        //thread {
-        val pinCodeDao = db.PinCodeDao()
+        val queuee = LinkedBlockingQueue<Boolean>()
+        thread {
+            val pinCodeDao = db.PinCodeDao()
 
-        val dataList = pinCodeDao.getAll()
+            val dataList = pinCodeDao.getAll()
 
-        for (r in dataList) {
-            if (r.pinCode == text) {
-                return true
+            for (r in dataList) {
+                if (r.pinCode == text) {
+                    queuee.add(true)
+                    return@thread
+                }
             }
+            queuee.add(false)
         }
-        // }
-        return false
+        return queuee.take()
     }
 }
