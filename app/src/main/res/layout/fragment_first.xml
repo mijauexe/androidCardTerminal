@@ -79,8 +79,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="100sp"
             android:layout_marginEnd="50sp"
-            android:background="#1e88e5"
-            android:drawableStart="@drawable/business_center_fill0_wght400_grad0_opsz48" />
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_work" />
 
         <Button
             android:id="@+id/ib_private"
@@ -88,8 +88,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="50sp"
-            android:background="#ff8f00"
-            android:drawableStart="@drawable/ic_baseline_home_24" />
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_home" />
 
         <Button
             android:id="@+id/ib_coffee"
@@ -97,8 +97,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="100sp"
-            android:background="#ffeb3b"
-            android:drawableStart="@drawable/ic_baseline_coffee_24" />
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_coffee" />
     </GridLayout>
 
     <GridLayout
@@ -121,8 +121,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="50dp"
             android:layout_marginBottom="50dp"
-            android:background="#43a047"
-            android:drawableStart="@drawable/ic_baseline_login_24" />
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_enter" />
 
         <Button
             android:id="@+id/ib_exit"
@@ -130,8 +130,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="50dp"
-            android:background="#e64a19"
-            android:drawableStart="@drawable/ic_baseline_logout_24" />
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_exit" />
 
     </GridLayout>
 

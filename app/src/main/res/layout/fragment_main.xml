@@ -15,19 +15,28 @@
         android:useDefaultMargins="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="50dp">
 
-        <TextView
-            android:id="@+id/tv_company_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/company_name"
-            android:textSize="50sp" />
+        <LinearLayout>
+            <ImageView
+                android:layout_width="400dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ina_logo"/>
+            <TextView
+                android:id="@+id/tv_company_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/company_name"
+                android:textColor="@color/pinScreen"
+                android:textSize="@dimen/title" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
+            android:textColor="@color/pinScreen"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/tv_date"
@@ -35,6 +44,7 @@
 
         <TextView
             android:id="@+id/tv_clock"
+            android:textColor="@color/pinScreen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -59,26 +69,31 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/glMain">
+        app:layout_constraintTop_toBottomOf="@+id/glMain"
+        >
 
         <Button
             android:id="@+id/pinButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pin"
+            android:background="@android:color/transparent"
+            android:layout_marginRight="100dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/pin_button_selector"/>
         <Button
             android:id="@+id/cardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Card"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="100dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/card_button_selector"/>
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

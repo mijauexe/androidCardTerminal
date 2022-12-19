@@ -10,6 +10,8 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSecondBinding
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 /**
@@ -30,6 +32,10 @@ class SecondFragment : Fragment() {
 
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
+        binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("HH:mm"))
         act.cardScannerActive = false
         return binding.root
 

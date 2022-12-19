@@ -108,14 +108,14 @@ class MainActivity : AppCompatActivity() {
         workButton.setOnClickListener {
             if (workBtnClicked) {
                 workBtnClicked = false
-                workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
+                workButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 workBtnClicked = true
-                workButton.setBackgroundResource(R.drawable.on_item_select_work)
+                workButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
-            coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+            privateButton.setBackgroundColor(Color.TRANSPARENT)
+            coffeeButton.setBackgroundColor(Color.TRANSPARENT)
 
             privateBtnClicked = false
             coffeeBtnClicked = false
@@ -124,14 +124,14 @@ class MainActivity : AppCompatActivity() {
         privateButton.setOnClickListener {
             if (privateBtnClicked) {
                 privateBtnClicked = false
-                privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
+                privateButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 privateBtnClicked = true
-                privateButton.setBackgroundResource(R.drawable.on_item_select_private)
+                privateButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-            coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+            workButton.setBackgroundColor(Color.TRANSPARENT)
+            coffeeButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
             coffeeBtnClicked = false
@@ -140,14 +140,14 @@ class MainActivity : AppCompatActivity() {
         coffeeButton.setOnClickListener {
             if (coffeeBtnClicked) {
                 coffeeBtnClicked = false
-                coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+                coffeeButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 coffeeBtnClicked = true
-                coffeeButton.setBackgroundResource(R.drawable.on_item_select_coffee)
+                coffeeButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-            privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
+            workButton.setBackgroundColor(Color.TRANSPARENT)
+            privateButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
             privateBtnClicked = false
@@ -156,26 +156,34 @@ class MainActivity : AppCompatActivity() {
         enterButton.setOnClickListener {
             if (enterBtnClicked) {
                 enterBtnClicked = false
-                enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+                enterButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 enterBtnClicked = true
-                enterButton.setBackgroundResource(R.drawable.on_item_select_enter)
+                enterButton.setBackgroundResource(R.drawable.button_background_green)
             }
-            exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
+            exitButton.setBackgroundColor(Color.TRANSPARENT)
             exitBtnClicked = false
         }
 
         exitButton.setOnClickListener {
             if (exitBtnClicked) {
                 exitBtnClicked = false
-                exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
+                exitButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 exitBtnClicked = true
-                exitButton.setBackgroundResource(R.drawable.on_item_select_exit)
+                exitButton.setBackgroundResource(R.drawable.button_background_red)
             }
-            enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+            enterButton.setBackgroundColor(Color.TRANSPARENT)
             enterBtnClicked = false
         }
+    }
+
+    private fun resetButtons() {
+        workBtnClicked = false
+        privateBtnClicked = false
+        coffeeBtnClicked = false
+        exitBtnClicked = false
+        enterBtnClicked = false
     }
 
     private fun cardText(text: String, access: String) {
@@ -246,29 +254,13 @@ class MainActivity : AppCompatActivity() {
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
                 clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                    .format(DateTimeFormatter.ofPattern("HH:mm"))
             }
         }
     }
 
-    private fun resetButtons() {
-        val workButton = findViewById<Button>(R.id.ib_work)
-        val privateButton = findViewById<Button>(R.id.ib_private)
-        val coffeeButton = findViewById<Button>(R.id.ib_coffee)
-        val enterButton = findViewById<Button>(R.id.ib_enter)
-        val exitButton = findViewById<Button>(R.id.ib_exit)
-
-        workBtnClicked = false
-        privateBtnClicked = false
-        coffeeBtnClicked = false
-        exitBtnClicked = false
-        enterBtnClicked = false
-
-        workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-        privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
-        coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
-        exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
-        enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+    public fun getDateTime(): LocalDateTime? {
+        return mutableDateTime.value
     }
 
     override fun onPause() {
