@@ -82,7 +82,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/glMain"
-            android:drawableStart="@drawable/ic_pin"/>
+            android:drawableStart="@drawable/pin_button_selector"/>
         <Button
             android:id="@+id/cardButton"
             android:layout_width="wrap_content"
@@ -93,7 +93,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/glMain"
-            android:drawableStart="@drawable/ic_card"/>
+            android:drawableStart="@drawable/card_button_selector"/>
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

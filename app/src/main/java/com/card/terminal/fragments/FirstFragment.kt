@@ -9,6 +9,8 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -27,6 +29,11 @@ class FirstFragment : Fragment() {
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         var act = activity as MainActivity
+        binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("HH:mm"))
+
         act.cardScannerActive = true
         return binding.root
     }
