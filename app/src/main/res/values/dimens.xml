@@ -5,4 +5,7 @@
     <dimen name="title">75dp</dimen>
     <dimen name="date">65dp</dimen>
     <dimen name="time">40dp</dimen>
+    <dimen name="button_main">100dp</dimen>
+    <dimen name="pin_text">40dp</dimen>
+    <dimen name="card_button">150dp</dimen>
 </resources>
