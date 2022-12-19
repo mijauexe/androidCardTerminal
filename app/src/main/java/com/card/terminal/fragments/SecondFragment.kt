@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -91,6 +94,8 @@ class SecondFragment : Fragment() {
 
         binding.delDialButton.setOnClickListener {
             binding.pinPreviewText.text = binding.pinPreviewText.text.toString().dropLast(1)
+            val shake = AnimationUtils.loadAnimation(activity?.applicationContext, R.anim.shake)
+            binding.pinPreviewText.startAnimation(shake)
         }
 
         binding.enterDialButton.setOnClickListener {
