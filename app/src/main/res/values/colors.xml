@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="pinScreen">#EEEEEEEE</color>
+    <color name="info_msg">#FF888888</color>
+    <color name="err_msg">#FFf3211a</color>
 </resources>

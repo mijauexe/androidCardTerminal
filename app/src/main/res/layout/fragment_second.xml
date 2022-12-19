@@ -72,21 +72,38 @@
         app:layout_constraintStart_toEndOf="@+id/glMain"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/pinPreviewText"
-            android:layout_width="@android:dimen/thumbnail_width"
+        <GridLayout
+            android:id="@+id/pinBox"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/enter_pin"
-            android:paddingBottom="30dp"
-            android:textAlignment="center"
-            android:textColor="@color/pinScreen"
-
-            android:textColorHint="#aaaaaa"
-            android:textSize="50sp"
-            app:backgroundTint="#2448ff"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/pinPreviewText"
+                android:layout_width="@android:dimen/thumbnail_width"
+                android:layout_height="wrap_content"
+                android:hint="@string/enter_pin"
+                android:textAlignment="center"
+                android:textColor="@color/pinScreen"
+
+                android:textColorHint="#aaaaaa"
+                android:textSize="50sp"
+                app:backgroundTint="#2448ff"/>
+            <TextView
+                android:id="@+id/tv_err_msg"
+                android:layout_width="@android:dimen/thumbnail_width"
+                android:layout_height="wrap_content"
+                android:text="@string/wrong_pin_message"
+                android:textAlignment="center"
+                android:textColor="@color/info_msg"
+                android:visibility="gone"
+
+                android:textColorHint="#aaaaaa"
+                android:textSize="20sp"
+                app:backgroundTint="#2448ff"/>
+        </GridLayout>
 
         <GridLayout
             android:id="@+id/gridLayout"
@@ -98,7 +115,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pinPreviewText">
+            app:layout_constraintTop_toBottomOf="@+id/pinBox">
 
             <FrameLayout
                 android:layout_width="@dimen/circle_box"

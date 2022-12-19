@@ -23,6 +23,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.room.Room
+import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
@@ -82,7 +83,8 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
-                MyHttpClient.bindHttpClient(mutableServerCode, db)
+            //TODO rijesi kasnije
+            //                MyHttpClient.bindHttpClient(mutableServerCode, db)
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -192,21 +194,27 @@ class MainActivity : AppCompatActivity() {
         enterBtnClicked = false
     }
 
-    private fun cardText(text: String, access: String) {
-        Handler(Looper.getMainLooper()).post {
-            val cardNumber = findViewById<TextView>(R.id.textview_output)
-            cardNumber.text = text
-            Toast.makeText(this, access, Toast.LENGTH_LONG)
-                .show()
-        }
-        if (cardScannerActive) {
-            resetButtons()
-        }
-        Thread.sleep(5000)
-
-        Handler(Looper.getMainLooper()).post {
-            val cardNumber = findViewById<TextView>(R.id.textview_output)
-            cardNumber.text = ""
+    private fun cardText(text: String, access: Boolean) {
+        if(access){
+            val dialog = this.let { CustomDialog(it, "Card number: $text") }
+            dialog.setOnShowListener {
+                Thread.sleep(5000)
+                it.dismiss()
+            }
+            dialog.show()
+        } else {
+            Handler(Looper.getMainLooper()).post {
+                val cardNumber = findViewById<TextView>(R.id.textview_output)
+                cardNumber.text = text
+            }
+            if (cardScannerActive) {
+                resetButtons()
+            }
+            Thread.sleep(5000)
+            Handler(Looper.getMainLooper()).post {
+                val cardNumber = findViewById<TextView>(R.id.textview_output)
+                cardNumber.text = ""
+            }
         }
     }
 
@@ -215,11 +223,11 @@ class MainActivity : AppCompatActivity() {
             if (!cardScannerActive) {
                 return@observe
             }
-            var accessText = "access denied!"
+            var accessGranted = false
             if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
                 if (it["ErrorCode"].equals("1")) {
                     thread {
-                        cardText(it["CardResponse"].toString(), accessText)
+                        cardText(it["CardResponse"].toString(), accessGranted)
                     }
                 } else if (it["CardNumber"] != null) {
                     thread {
@@ -229,17 +237,20 @@ class MainActivity : AppCompatActivity() {
 
                         for (r in dataList) {
                             if (r.cardNumber.equals(it["CardNumber"])) {
-                                accessText = "access granted!"
+                                accessGranted = true
                             }
                         }
 
-                        cardText(it["CardNumber"].toString(), accessText)
+                        cardText(it["CardNumber"].toString(), accessGranted)
 
-                        if (MyHttpClient.isClientReady() and !accessText.equals("access denied!")) {
-                            if (exitBtnClicked) {
-                                MyHttpClient.postData(mapOf("status" to "exit"))
-                            } else MyHttpClient.postData(mapOf("status" to "enter"))
-                        }
+                        //TODO rijesi to kad ce trebat
+                        //                        if (MyHttpClient.isClientReady() and accessGranted) {
+                        //                            if (exitBtnClicked) {
+                        //                                MyHttpClient.postData(mapOf("status" to "exit"))
+                        //                            } else {
+                        //                                MyHttpClient.postData(mapOf("status" to "enter"))
+                        //                            }
+                        //                        }
                     }
                 }
             } else {
