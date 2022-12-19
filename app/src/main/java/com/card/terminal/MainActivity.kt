@@ -179,6 +179,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetButtons() {
+        findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_enter).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_exit).setBackgroundColor(Color.TRANSPARENT)
+
         workBtnClicked = false
         privateBtnClicked = false
         coffeeBtnClicked = false

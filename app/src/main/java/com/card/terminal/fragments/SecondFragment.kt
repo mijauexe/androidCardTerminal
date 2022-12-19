@@ -1,10 +1,12 @@
 package com.card.terminal.fragments
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
@@ -32,13 +34,21 @@ class SecondFragment : Fragment() {
 
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-        binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
+        binding.tvDate.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        binding.tvClock.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("HH:mm"))
         act.cardScannerActive = false
         return binding.root
 
+    }
+
+    fun setPinText(tv: TextView, text: String) {
+        if (tv.text.length < 8) {
+            tv.text = tv.text.toString().plus(text)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -50,43 +60,43 @@ class SecondFragment : Fragment() {
         }
 
         binding.zeroDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("0")
+            setPinText(binding.pinPreviewText, "0")
         }
 
         binding.oneDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("1")
+            setPinText(binding.pinPreviewText, "1")
         }
 
         binding.twoDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("2")
+            setPinText(binding.pinPreviewText, "2")
         }
 
         binding.threeDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("3")
+            setPinText(binding.pinPreviewText, "3")
         }
 
         binding.fourDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("4")
+            setPinText(binding.pinPreviewText, "4")
         }
 
         binding.fiveDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("5")
+            setPinText(binding.pinPreviewText, "5")
         }
 
         binding.sixDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("6")
+            setPinText(binding.pinPreviewText, "6")
         }
 
         binding.sevenDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("7")
+            setPinText(binding.pinPreviewText, "7")
         }
 
         binding.eightDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("8")
+            setPinText(binding.pinPreviewText, "8")
         }
 
         binding.nineDialButton.setOnClickListener {
-            binding.pinPreviewText.text = binding.pinPreviewText.text.toString().plus("9")
+            setPinText(binding.pinPreviewText, "9")
         }
 
         binding.delDialButton.setOnClickListener {
@@ -98,12 +108,31 @@ class SecondFragment : Fragment() {
 
             if (act.checkPin(binding.pinPreviewText.text)) {
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
-                Toast.makeText(act, "correct pin!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(act, "correct pin!", Toast.LENGTH_SHORT).show()
+                showDialog("Napomena", "Slobodan prolaz.")
             } else {
                 binding.pinPreviewText.text = ""
-                Toast.makeText(act, "wrong pin!", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(act, "wrong pin!", Toast.LENGTH_SHORT).show()
+                showDialog("Napomena", "PIN netočan. Molimo pokušajte ponovno.")
             }
         }
+    }
+
+    fun showDialog(title: String, message: String) {
+        val builder  = AlertDialog.Builder(context)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.yes,
+                DialogInterface.OnClickListener { dialog, which ->
+                })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .create()
+
+        builder.setOnShowListener {
+            Thread.sleep(5000)
+            it.dismiss()
+        }
+        builder.show()
     }
 
     override fun onDestroyView() {
