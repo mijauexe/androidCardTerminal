@@ -1,8 +1,6 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -130,7 +128,7 @@ class SecondFragment : Fragment() {
 //            if (act.checkPin(binding.pinPreviewText.text)) {
             if(binding.pinPreviewText.text == "0000"){
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
-                showDialog("Napomena", "Slobodan prolaz.")
+                showDialog()
             } else {
                 resetPin = true;
                 binding.pinPreviewText.setTextColor(Color.parseColor("#ff2424"))
@@ -141,12 +139,12 @@ class SecondFragment : Fragment() {
         }
     }
 
-    fun showDialog(title: String, message: String) {
-        val dialog = activity?.let { CustomDialog(it, "") }
+    fun showDialog() {
+        val dialog = activity?.let { CustomDialog(it, "", true) }
 
         if (dialog != null) {
             dialog.setOnShowListener {
-                Thread.sleep(5000)
+                Thread.sleep(3000)
                 it.dismiss()
             }
             dialog.show()

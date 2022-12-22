@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
+
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
@@ -50,7 +51,6 @@ class MainActivity : AppCompatActivity() {
     private var coffeeBtnClicked = false
     private var enterBtnClicked = false
     private var exitBtnClicked = false
-
     var cardScannerActive = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +59,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+
     }
 
     override fun onResume() {
@@ -83,8 +85,7 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
-            //TODO rijesi kasnije
-            //                MyHttpClient.bindHttpClient(mutableServerCode, db)
+                MyHttpClient.bindHttpClient(mutableServerCode, db)
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -194,27 +195,19 @@ class MainActivity : AppCompatActivity() {
         enterBtnClicked = false
     }
 
+
     private fun cardText(text: String, access: Boolean) {
-        if(access){
-            val dialog = this.let { CustomDialog(it, "Card number: $text") }
+        Handler(Looper.getMainLooper()).post {
+            resetButtons()
+            val dialog = this.let { CustomDialog(it, "Card number: $text", access) }
             dialog.setOnShowListener {
-                Thread.sleep(5000)
+                Thread.sleep(3000)
                 it.dismiss()
             }
             dialog.show()
-        } else {
-            Handler(Looper.getMainLooper()).post {
-                val cardNumber = findViewById<TextView>(R.id.textview_output)
-                cardNumber.text = text
-            }
-            if (cardScannerActive) {
-                resetButtons()
-            }
-            Thread.sleep(5000)
-            Handler(Looper.getMainLooper()).post {
-                val cardNumber = findViewById<TextView>(R.id.textview_output)
-                cardNumber.text = ""
-            }
+//            if (access) {
+//                binding.root.findNavController().navigate(R.id.MainFragment) ovo kurca ne radi
+//            }
         }
     }
 
@@ -242,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         cardText(it["CardNumber"].toString(), accessGranted)
-
+                        //resetButtons() //!!!!!
                         //TODO rijesi to kad ce trebat
                         //                        if (MyHttpClient.isClientReady() and accessGranted) {
                         //                            if (exitBtnClicked) {

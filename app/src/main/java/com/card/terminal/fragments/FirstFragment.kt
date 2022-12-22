@@ -49,6 +49,10 @@ class FirstFragment : Fragment() {
 
     }
 
+    fun metoda() {
+        println("gas")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
