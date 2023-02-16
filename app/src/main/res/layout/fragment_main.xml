@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient"
-    tools:context=".fragments.FirstFragment">
-
+    tools:context=".fragments.MainFragment">
 
     <GridLayout
         android:id="@+id/glMain"
@@ -14,10 +13,10 @@
         android:layout_height="wrap_content"
         android:columnCount="1"
         android:useDefaultMargins="true"
-        app:layout_constraintBottom_toTopOf="@+id/glDown"
-        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="50dp">
 
         <LinearLayout>
             <ImageView
@@ -50,102 +49,82 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/clock"
-            android:textSize="45sp" />
+            android:textSize="35sp" />
 
         <TextView
             android:id="@+id/textview_output"
-            android:layout_marginTop="50dp"
-            android:textColor="@color/pinScreen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text=""
-            android:textSize="50sp" />
+            android:textSize="20sp" />
 
     </GridLayout>
 
     <GridLayout
-        android:id="@+id/glDown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@+id/glMain"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/glRight"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/glMain">
-
-        <Button
-            android:id="@+id/ib_work"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="100sp"
-            android:layout_marginEnd="50sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_work" />
-
-        <Button
-            android:id="@+id/ib_private"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="50sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_home" />
-
-        <Button
-            android:id="@+id/ib_coffee"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="100sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_coffee" />
-    </GridLayout>
-
-    <GridLayout
-        android:id="@+id/glRight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/glMain"
-        android:layout_toStartOf="@+id/glMain"
-        android:columnCount="1"
+        android:columnCount="4"
         android:useDefaultMargins="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/glMain"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/glMain"
+        >
 
         <Button
-            android:id="@+id/ib_enter"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:id="@+id/pinButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
-            android:layout_marginBottom="50dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_enter" />
+            android:layout_marginRight="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/pin_button_selector"/>
 
         <Button
-            android:id="@+id/ib_exit"
-            style="@style/Widget.AppCompat.Button.Colored"
+            android:id="@+id/cardButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_exit" />
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/card_button_selector"/>
+
+        <Button
+            android:id="@+id/fingerprintButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/fingerprint_button_selector"/>
+
+
+        <Button
+            android:id="@+id/helpButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:layout_marginLeft="50dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain"
+            android:drawableStart="@drawable/help_button_selector"/>
+
+
 
     </GridLayout>
-
-    <ImageButton
-        android:id="@+id/button_second"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/back_selector"
-        android:background="@android:color/transparent"
-        android:paddingTop="20dp"
-        android:paddingLeft="20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

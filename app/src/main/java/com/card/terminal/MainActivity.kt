@@ -23,6 +23,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.room.Room
+import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
@@ -30,7 +31,9 @@ import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
@@ -48,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private var coffeeBtnClicked = false
     private var enterBtnClicked = false
     private var exitBtnClicked = false
+    var cardScannerActive = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,21 +59,22 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+
     }
 
     override fun onResume() {
         super.onResume()
         mutableDateTime.postValue(LocalDateTime.now())
+
         db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "AppDatabase"
         ).build()
 
-        setButtons()
-
-        thread {
-            db.clearAllTables()
-        }
+//        thread {
+//            db.clearAllTables()
+//        }
 
         ShowDateTime.setDateAndTime(mutableDateTime)
 
@@ -94,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         setObservers()
     }
 
-    private fun setButtons() {
+    fun setButtons() {
         val workButton = findViewById<Button>(R.id.ib_work)
         val privateButton = findViewById<Button>(R.id.ib_private)
         val coffeeButton = findViewById<Button>(R.id.ib_coffee)
@@ -106,14 +111,14 @@ class MainActivity : AppCompatActivity() {
         workButton.setOnClickListener {
             if (workBtnClicked) {
                 workBtnClicked = false
-                workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
+                workButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 workBtnClicked = true
-                workButton.setBackgroundResource(R.drawable.on_item_select_work)
+                workButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
-            coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+            privateButton.setBackgroundColor(Color.TRANSPARENT)
+            coffeeButton.setBackgroundColor(Color.TRANSPARENT)
 
             privateBtnClicked = false
             coffeeBtnClicked = false
@@ -122,14 +127,14 @@ class MainActivity : AppCompatActivity() {
         privateButton.setOnClickListener {
             if (privateBtnClicked) {
                 privateBtnClicked = false
-                privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
+                privateButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 privateBtnClicked = true
-                privateButton.setBackgroundResource(R.drawable.on_item_select_private)
+                privateButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-            coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+            workButton.setBackgroundColor(Color.TRANSPARENT)
+            coffeeButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
             coffeeBtnClicked = false
@@ -138,14 +143,14 @@ class MainActivity : AppCompatActivity() {
         coffeeButton.setOnClickListener {
             if (coffeeBtnClicked) {
                 coffeeBtnClicked = false
-                coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
+                coffeeButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 coffeeBtnClicked = true
-                coffeeButton.setBackgroundResource(R.drawable.on_item_select_coffee)
+                coffeeButton.setBackgroundResource(R.drawable.card_button_background)
             }
 
-            workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-            privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
+            workButton.setBackgroundColor(Color.TRANSPARENT)
+            privateButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
             privateBtnClicked = false
@@ -154,52 +159,68 @@ class MainActivity : AppCompatActivity() {
         enterButton.setOnClickListener {
             if (enterBtnClicked) {
                 enterBtnClicked = false
-                enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+                enterButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 enterBtnClicked = true
-                enterButton.setBackgroundResource(R.drawable.on_item_select_enter)
+                enterButton.setBackgroundResource(R.drawable.button_background_green)
             }
-            exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
+            exitButton.setBackgroundColor(Color.TRANSPARENT)
             exitBtnClicked = false
         }
 
         exitButton.setOnClickListener {
             if (exitBtnClicked) {
                 exitBtnClicked = false
-                exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
+                exitButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
                 exitBtnClicked = true
-                exitButton.setBackgroundResource(R.drawable.on_item_select_exit)
+                exitButton.setBackgroundResource(R.drawable.button_background_red)
             }
-            enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+            enterButton.setBackgroundColor(Color.TRANSPARENT)
             enterBtnClicked = false
         }
     }
 
-    private fun cardText(text: String, access: String) {
-        Handler(Looper.getMainLooper()).post {
-            val cardNumber = findViewById<TextView>(R.id.textview_output)
-            cardNumber.text = text
-            Toast.makeText(this, access, Toast.LENGTH_LONG)
-                .show()
-        }
-        resetButtons()
-        Thread.sleep(5000)
+    private fun resetButtons() {
+        findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_enter).setBackgroundColor(Color.TRANSPARENT)
+        findViewById<Button>(R.id.ib_exit).setBackgroundColor(Color.TRANSPARENT)
 
+        workBtnClicked = false
+        privateBtnClicked = false
+        coffeeBtnClicked = false
+        exitBtnClicked = false
+        enterBtnClicked = false
+    }
+
+
+    private fun cardText(text: String, access: Boolean) {
         Handler(Looper.getMainLooper()).post {
-            val cardNumber = findViewById<TextView>(R.id.textview_output)
-            cardNumber.text = ""
+            resetButtons()
+            val dialog = this.let { CustomDialog(it, "Card number: $text", access) }
+            dialog.setOnShowListener {
+                Thread.sleep(3000)
+                it.dismiss()
+            }
+            dialog.show()
+//            if (access) {
+//                binding.root.findNavController().navigate(R.id.MainFragment) ovo kurca ne radi
+//            }
         }
     }
 
     private fun setObservers() {
         mutableCardCode.observe(this) {
-            var accessText = "access denied!"
-
+            if (!cardScannerActive) {
+                return@observe
+            }
+            var accessGranted = false
             if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
                 if (it["ErrorCode"].equals("1")) {
                     thread {
-                        cardText(it["CardResponse"].toString(), accessText)
+                        cardText(it["CardResponse"].toString(), accessGranted)
                     }
                 } else if (it["CardNumber"] != null) {
                     thread {
@@ -209,17 +230,20 @@ class MainActivity : AppCompatActivity() {
 
                         for (r in dataList) {
                             if (r.cardNumber.equals(it["CardNumber"])) {
-                                accessText = "access granted!"
+                                accessGranted = true
                             }
                         }
 
-                        cardText(it["CardNumber"].toString(), accessText)
-
-                        if (MyHttpClient.isClientReady() and !accessText.equals("access denied!")) {
-                            if (exitBtnClicked) {
-                                MyHttpClient.postData(mapOf("status" to "exit"))
-                            } else MyHttpClient.postData(mapOf("status" to "enter"))
-                        }
+                        cardText(it["CardNumber"].toString(), accessGranted)
+                        //resetButtons() //!!!!!
+                        //TODO rijesi to kad ce trebat
+                        //                        if (MyHttpClient.isClientReady() and accessGranted) {
+                        //                            if (exitBtnClicked) {
+                        //                                MyHttpClient.postData(mapOf("status" to "exit"))
+                        //                            } else {
+                        //                                MyHttpClient.postData(mapOf("status" to "enter"))
+                        //                            }
+                        //                        }
                     }
                 }
             } else {
@@ -240,29 +264,13 @@ class MainActivity : AppCompatActivity() {
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
                 clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                    .format(DateTimeFormatter.ofPattern("HH:mm"))
             }
         }
     }
 
-    private fun resetButtons() {
-        val workButton = findViewById<Button>(R.id.ib_work)
-        val privateButton = findViewById<Button>(R.id.ib_private)
-        val coffeeButton = findViewById<Button>(R.id.ib_coffee)
-        val enterButton = findViewById<Button>(R.id.ib_enter)
-        val exitButton = findViewById<Button>(R.id.ib_exit)
-
-        workBtnClicked = false
-        privateBtnClicked = false
-        coffeeBtnClicked = false
-        exitBtnClicked = false
-        enterBtnClicked = false
-
-        workButton.setBackgroundColor(Color.parseColor("#1e88e5"))
-        privateButton.setBackgroundColor(Color.parseColor("#ff8f00"))
-        coffeeButton.setBackgroundColor(Color.parseColor("#ffeb3b"))
-        exitButton.setBackgroundColor(Color.parseColor("#e64a19"))
-        enterButton.setBackgroundColor(Color.parseColor("#43a047"))
+    public fun getDateTime(): LocalDateTime? {
+        return mutableDateTime.value
     }
 
     override fun onPause() {
@@ -294,5 +302,24 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    fun checkPin(text: CharSequence?): Boolean {
+        if (text == null) return false
+        val queuee = LinkedBlockingQueue<Boolean>()
+        thread {
+            val pinCodeDao = db.PinCodeDao()
+
+            val dataList = pinCodeDao.getAll()
+
+            for (r in dataList) {
+                if (r.pinCode == text) {
+                    queuee.add(true)
+                    return@thread
+                }
+            }
+            queuee.add(false)
+        }
+        return queuee.take()
     }
 }

@@ -2,8 +2,9 @@
     <string name="app_name">androidCardTerminal</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
+    <string name="first_fragment_label">Card Fragment</string>
+    <string name="second_fragment_label">Pin Fragment</string>
+    <string name="main_fragment_label">Main Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
@@ -12,9 +13,13 @@
     <string name="textview">TextView</string>
     <string name="card_output">Card Output</string>
     <string name="client_output">Client Output</string>
-    <string name="clock">00:00:00</string>
+    <string name="clock">00:00</string>
     <string name="if_teh">IF-TEH</string>
-    <string name="company_name">IF-TEH</string>
+    <string name="company_name">GUARDLess</string>
     <string name="tv_date">1.1.2022.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="enter_pin">enter pin</string>
+    <string name="wrong_pin_message">Incorrect PIN. Please try again.</string>
 
 </resources>

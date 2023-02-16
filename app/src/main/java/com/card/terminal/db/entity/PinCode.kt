@@ -7,9 +7,8 @@ import kotlinx.serialization.Serializable
 
 @Entity
 @Serializable
-data class ReadInfo (
+data class PinCode(
     @PrimaryKey(autoGenerate = true) val uid: Int,
-    @ColumnInfo(name = "card_number") val cardNumber: String,
-    @ColumnInfo(name = "timestamp") val timestamp: String
+    @ColumnInfo(name = "pin_code") val pinCode: String,
+    //@ColumnInfo(name = "expiry_date") val expiryDate: String
 )
-val readInfoStorage = mutableListOf<ReadInfo>()
