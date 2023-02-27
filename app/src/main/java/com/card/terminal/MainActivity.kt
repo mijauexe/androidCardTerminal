@@ -12,6 +12,7 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -31,6 +32,7 @@ import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
@@ -53,9 +55,30 @@ class MainActivity : AppCompatActivity() {
     private var exitBtnClicked = false
     var cardScannerActive = false
 
+    private fun disableButtons() {
+        val decorView: View = this.window.decorView
+        val uiOptions: Int = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+        val timer = Timer()
+        val task: TimerTask = object : TimerTask() {
+            override fun run() {
+                runOnUiThread { decorView.systemUiVisibility = uiOptions }
+            }
+        }
+        timer.scheduleAtFixedRate(task, 1, 2)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+//        disableButtons()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+//        disableButtons()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -106,7 +129,6 @@ class MainActivity : AppCompatActivity() {
 
         val enterButton = findViewById<Button>(R.id.ib_enter)
         val exitButton = findViewById<Button>(R.id.ib_exit)
-
 
         workButton.setOnClickListener {
             if (workBtnClicked) {
@@ -269,17 +291,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun getDateTime(): LocalDateTime? {
+    fun getDateTime(): LocalDateTime? {
         return mutableDateTime.value
     }
 
     override fun onPause() {
         super.onPause()
+        MyHttpClient.stop()
         cardService?.releaseService()
     }
 
     public override fun onStop() {
         super.onStop()
+//        MyHttpClient.stop()
         OmniCard.release()
     }
 

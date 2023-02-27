@@ -1,18 +1,27 @@
 package com.card.terminal
 
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.http.plugins.configureRouting
-import com.card.terminal.http.plugins.configureSerialization
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 
 var database: AppDatabase? = null
 
+//private val server by lazy {
+//    embeddedServer(Netty, port = 6969) {
+//        configureSerialization()
+//        configureRouting()
+//    }
+//}
+
 fun main(appDatabase: AppDatabase) {
     database = appDatabase
-
-    embeddedServer(Netty, port = 6969, host = "0.0.0.0") {
-        configureSerialization()
-        configureRouting()
-    }.start(wait = true)
 }
+
+//fun stopNetty() {
+//    try {
+//        if (scope!!.isActive) {
+//            server.stop(1000, 2000)
+//            scope!!.cancel()
+//        }
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//    }
+//}

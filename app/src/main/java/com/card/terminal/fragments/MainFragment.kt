@@ -1,14 +1,13 @@
 package com.card.terminal.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
-import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.databinding.FragmentMainBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

@@ -101,6 +101,15 @@
             android:layout_marginEnd="100sp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_coffee" />
+
+
+        <Button
+            android:id="@+id/socketOpen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="open socket" />
+
+
     </GridLayout>
 
     <GridLayout

@@ -4,11 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import com.card.terminal.http.MyHttpClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,10 +34,12 @@ class FirstFragment : Fragment() {
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         var act = activity as MainActivity
-        binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-        binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
+        binding.tvDate.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        binding.tvClock.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("HH:mm"))
 
         act.cardScannerActive = true
         return binding.root
@@ -40,17 +47,21 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var act = activity as MainActivity
+        val act = activity as MainActivity
         act.setButtons()
 
-        binding.buttonSecond.setOnClickListener{
+        binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
         }
-
-    }
-
-    fun metoda() {
-        println("gas")
+        binding.socketOpen.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                MyHttpClient.communicateWithTeo(act)
+            }
+        }
+//        val socketOpenButton = findViewById<Button>(R.id.socketOpen)
+//        socketOpenButton?.setOnClickListener {
+//            MyHttpClient.communicateWithTeo(this)
+//        }
     }
 
     override fun onDestroyView() {
