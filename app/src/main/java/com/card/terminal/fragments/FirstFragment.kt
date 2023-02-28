@@ -56,6 +56,7 @@ class FirstFragment : Fragment() {
         binding.socketOpen.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 MyHttpClient.communicateWithTeo(act)
+//                MyHttpClient.experiment()
             }
         }
 //        val socketOpenButton = findViewById<Button>(R.id.socketOpen)

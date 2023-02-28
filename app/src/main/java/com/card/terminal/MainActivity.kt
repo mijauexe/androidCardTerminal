@@ -258,14 +258,14 @@ class MainActivity : AppCompatActivity() {
 
                         cardText(it["CardNumber"].toString(), accessGranted)
                         //resetButtons() //!!!!!
-                        //TODO rijesi to kad ce trebat
-                        //                        if (MyHttpClient.isClientReady() and accessGranted) {
-                        //                            if (exitBtnClicked) {
-                        //                                MyHttpClient.postData(mapOf("status" to "exit"))
-                        //                            } else {
-                        //                                MyHttpClient.postData(mapOf("status" to "enter"))
-                        //                            }
-                        //                        }
+//                        TODO rijesi to kad ce trebat
+//                        if (MyHttpClient.isClientReady() and accessGranted) {
+//                            if (exitBtnClicked) {
+//                                MyHttpClient.postData(mapOf("status" to "exit"))
+//                            } else {
+//                                MyHttpClient.postData(mapOf("status" to "enter"))
+//                            }
+//                        }
                     }
                 }
             } else {

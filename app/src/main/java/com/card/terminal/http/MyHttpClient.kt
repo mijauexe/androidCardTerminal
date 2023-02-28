@@ -19,6 +19,7 @@ import io.ktor.server.netty.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.nio.ByteBuffer
+import com.card.terminal.http.MySocketClient
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -27,6 +28,7 @@ object MyHttpClient {
     private var mContext: Application? = null
     private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
+
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase) {
         mutableCode = code
         database = appDatabase
@@ -46,52 +48,32 @@ object MyHttpClient {
             val receiveChannel = socket.openReadChannel()
             val sendChannel = socket.openWriteChannel(autoFlush = true)
 
+
             launch(Dispatchers.IO) {
-                //read
-                val dataInfo = getSocketResponse(sendChannel, receiveChannel, "GVA<Datainfo>>")
-                println(dataInfo)
 
-                val lastRead = dataInfo[0] + dataInfo[1] + dataInfo[2] + dataInfo[3]
-                val lastSave = dataInfo[4] + dataInfo[5] + dataInfo[6] + dataInfo[7]
-                val numData = dataInfo[8] + dataInfo[9]
-                val maxData = dataInfo[10] + dataInfo[11]
-                val full = dataInfo[12]
+                for (i in 1..5) {
 
-                //pointer
-                val pointerC = pack("SVA<Dataread>", "VC", lastRead, full)
-                val pointerCResponse =
-                    getSocketResponse(sendChannel, receiveChannel, pointerC.toString())
-                println(pointerCResponse)
+                    val event = getSocketResponse(sendChannel, receiveChannel, "GVA<Event>")
+                    println(String(event))
 
-                //write
-                val writeC =
-                    pack("SVA<Datainfo>", "VVvvC", lastRead, lastSave, numData, maxData, full)
-                val writeCResponse =
-                    getSocketResponse(sendChannel, receiveChannel, writeC.toString())
-                println(writeCResponse)
+                    val event1 = getSocketResponse(sendChannel, receiveChannel, "SVA<Dataread>")
+                    println(String(event1))
 
-                //write
-                val writeC1 =
-                    pack("GVA<Datainfo>", "VVvvC", lastRead, lastSave, numData, maxData, full)
-                val writeC1Response =
-                    getSocketResponse(sendChannel, receiveChannel, writeC1.toString())
-                println(writeC1Response)
+                    val event2 = getSocketResponse(sendChannel, receiveChannel, "SVA<Datainfo>")
+                    println(String(event2))
 
-                //read event
-                val readEvent = getSocketResponse(sendChannel, receiveChannel, "GVA<Event>")
-                println(readEvent)
+                    sendChannel.awaitFreeSpace()
+                    receiveChannel.awaitContent()
+                }
 
-//                Handler(Looper.getMainLooper()).post {
-//                    Toast.makeText(act, String(event), Toast.LENGTH_LONG).show()
-//                }
+
 
                 socket.close()
                 selectorManager.close()
             }
+
         }
-
     }
-
     fun pack(vararg args: Any): ByteArray {
         val buffer = ByteBuffer.allocate(args.sumOf { sizeOf(it) })
         for (arg in args) {
@@ -129,9 +111,9 @@ object MyHttpClient {
         msg: String
     ): ByteArray {
         sendChannel.writeStringUtf8(msg)
-        receiveChannel.awaitContent()
         var i = 0
         var byteResponseArray = byteArrayOf()
+
         while (true) {
             try {
                 val response = receiveChannel.readByte()
@@ -143,7 +125,6 @@ object MyHttpClient {
         }
         return byteResponseArray
     }
-
     fun execute() {
         stop()
         scope = CoroutineScope(Dispatchers.Default)
@@ -153,8 +134,28 @@ object MyHttpClient {
                 configureSerialization()
                 configureRouting()
             }.start(wait = true)
+
+
+
+
         }
     }
+
+    suspend fun experiment() {
+        val socketClient = MySocketClient("192.168.0.200", 8005)
+        socketClient.startClient()
+
+        socketClient.sendData("GVA<Event>")
+        socketClient.readData()
+
+//        socketClient.sendData("GVA<Event>")
+        socketClient.readData()
+
+//        socketClient.sendData("GVA<Event>")
+        socketClient.readData()
+
+    }
+
 
     fun stop() {
         try {
