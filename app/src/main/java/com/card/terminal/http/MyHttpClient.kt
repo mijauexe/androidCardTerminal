@@ -1,12 +1,16 @@
 package com.card.terminal.http
 
-import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
+import androidx.work.*
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.plugins.configureRouting
 import com.card.terminal.http.plugins.configureSerialization
+import com.card.terminal.ipOfPCB
 import com.card.terminal.main
+import com.card.terminal.portOfPCB
+import com.card.terminal.utils.ContextProvider
+import com.card.terminal.utils.LarusWorker
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -18,8 +22,9 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import com.card.terminal.http.MySocketClient
+
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -28,6 +33,10 @@ object MyHttpClient {
     private var mContext: Application? = null
     private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
+
+    var myWorkRequest: OneTimeWorkRequest? = null
+
+    data class Person(val cardCode: Int, val dateTime: String)
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase) {
         mutableCode = code
@@ -38,79 +47,260 @@ object MyHttpClient {
             }
         }
         execute()
+//        myWorkRequest = PeriodicWorkRequestBuilder<Worker>(
+//            1, TimeUnit.SECONDS,
+//            flexTimeInterval = 1, TimeUnit.SECONDS
+//        ).build()
+//        WorkManager.getInstance(ContextProvider.getApplicationContext())
+//            .enqueueUniquePeriodicWork(
+//                "my_periodic_work",
+//                ExistingPeriodicWorkPolicy.REPLACE,
+//                myWorkRequest!!
+//            )
+
+        startLarusWorker()
     }
 
-    suspend fun communicateWithTeo(act: Activity) {
+    fun stopLarusWorker() {
+        val workRequestId = myWorkRequest!!.id
+
+        // Cancels the work request with the given ID
+        WorkManager.getInstance(ContextProvider.getApplicationContext()).cancelWorkById(workRequestId)
+    }
+
+    fun startLarusWorker() {
+        myWorkRequest = OneTimeWorkRequestBuilder<LarusWorker>().build()
+        WorkManager.getInstance(ContextProvider.getApplicationContext()).enqueueUniqueWork(
+            "board_pinging", ExistingWorkPolicy.REPLACE,
+            myWorkRequest!!
+        )
+    }
+
+    fun openDoor(doorNum: Int) {
         runBlocking {
-            val selectorManager = SelectorManager(Dispatchers.IO)
-            val socket = aSocket(selectorManager).tcp().connect("192.168.0.200", 8005)
-
-            val receiveChannel = socket.openReadChannel()
-            val sendChannel = socket.openWriteChannel(autoFlush = true)
-
-
             launch(Dispatchers.IO) {
+                val selectorManager = SelectorManager(Dispatchers.IO)
+                val socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
 
-                for (i in 1..5) {
+                val receiveChannel = socket.openReadChannel()
+                val sendChannel = socket.openWriteChannel(autoFlush = true)
 
-                    val event = getSocketResponse(sendChannel, receiveChannel, "GVA<Event>")
-                    println(String(event))
+                val byteArray = "SVA<Opendoor$doorNum>".toByteArray()
+                val buffer = ByteBuffer.allocate(byteArray.size)
+                buffer.put(byteArray)
+                buffer.position(0)
 
-                    val event1 = getSocketResponse(sendChannel, receiveChannel, "SVA<Dataread>")
-                    println(String(event1))
-
-                    val event2 = getSocketResponse(sendChannel, receiveChannel, "SVA<Datainfo>")
-                    println(String(event2))
-
-                    sendChannel.awaitFreeSpace()
-                    receiveChannel.awaitContent()
-                }
-
-
-
+                val doorOpenResponse = getSocketResponse(sendChannel, receiveChannel, buffer)
+                println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
             }
 
         }
     }
-    fun pack(vararg args: Any): ByteArray {
-        val buffer = ByteBuffer.allocate(args.sumOf { sizeOf(it) })
-        for (arg in args) {
-            when (arg) {
-                is Byte -> buffer.put(arg)
-                is Short -> buffer.putShort(arg)
-                is Int -> buffer.putInt(arg)
-                is Long -> buffer.putLong(arg)
-                is Float -> buffer.putFloat(arg)
-                is Double -> buffer.putDouble(arg)
-                is Char -> buffer.putChar(arg)
-                is String -> buffer.put(arg.toByteArray())
-                is ByteArray -> buffer.put(arg)
-                else -> throw IllegalArgumentException("Invalid argument type: ${arg.javaClass}")
+
+    fun reset() {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                val selectorManager = SelectorManager(Dispatchers.IO)
+                val socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+
+                val receiveChannel = socket.openReadChannel()
+                val sendChannel = socket.openWriteChannel(autoFlush = true)
+
+                val byteArray = "SVA<Reset>".toByteArray()
+
+                val buffer = ByteBuffer.allocate(byteArray.size)
+                buffer.put(byteArray)
+                buffer.position(0)
+
+                val doorOpenResponse = getSocketResponse(sendChannel, receiveChannel, buffer)
+                println(doorOpenResponse)
+                socket.close()
+                selectorManager.close()
             }
         }
-        return buffer.array()
     }
 
-    private fun sizeOf(arg: Any): Int {
-        return when (arg) {
-            is Byte, is Char -> 1
-            is Short -> 2
-            is Int, is Float -> 4
-            is Long, is Double -> 8
-            is String -> arg.length
-            is ByteArray -> arg.size
-            else -> throw IllegalArgumentException("Invalid argument type: ${arg.javaClass}")
+    fun setDoorTime(
+        openDoorTime1: Int,
+        openDoorTime2: Int,
+        closeDoorTime1: Int,
+        closeDoorTime2: Int
+    ) {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                val selectorManager = SelectorManager(Dispatchers.IO)
+                val socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+
+                val receiveChannel = socket.openReadChannel()
+                val sendChannel = socket.openWriteChannel(autoFlush = true)
+
+                var byteArray = "SVA<Doors>".toByteArray()
+
+                val buffer = ByteBuffer.allocate(byteArray.size + 2 + 2 + 1 + 2 + 2 + 1)
+                buffer.put(byteArray)
+
+                byteArray = byteArrayOf(
+                    (openDoorTime1 shr 0).toByte(),
+                    (openDoorTime1 shr 8).toByte(),
+                    (closeDoorTime1 shr 0).toByte(),
+                    (closeDoorTime1 shr 8).toByte(),
+                    0,
+                    (openDoorTime2 shr 0).toByte(),
+                    (openDoorTime2 shr 8).toByte(),
+                    (closeDoorTime2 shr 0).toByte(),
+                    (closeDoorTime2 shr 8).toByte(),
+                    0
+                )
+
+                buffer.put(byteArray)
+
+                buffer.position(0)
+
+//                val doorOpenResponse = getSocketResponse(sendChannel, receiveChannel, buffer)
+                sendChannel.writeAvailable(buffer)
+//                val oupen = (doorOpenResponse[0].toUByte() + doorOpenResponse[1].toUByte()).toInt()
+
+//                println(doorOpenResponse)
+                socket.close()
+                selectorManager.close()
+            }
+
         }
+    }
+
+//    suspend fun scanForNewEvents() {
+//        GlobalScope.launch {
+//        while (true) {
+    // Call your runBlocking function here
+//            readLatestEvent()
+//            delay(1 * 1000) // Introduce a delay of x seconds between successive function calls
+//        }
+//        }
+
+//    }
+
+    suspend fun readLatestEvent(): Person {
+//        runBlocking {
+//            launch(Dispatchers.IO) {
+        var selectorManager = SelectorManager(Dispatchers.IO)
+        var socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+
+        var receiveChannel = socket.openReadChannel()
+        var sendChannel = socket.openWriteChannel(autoFlush = true)
+
+        var byteArray = "GVA<Datainfo>".toByteArray()
+        var buffer = ByteBuffer.allocate(byteArray.size)
+        buffer.put(byteArray)
+        buffer.position(0)
+
+        val dataInfo = getSocketResponse(sendChannel, receiveChannel, buffer)
+        println(dataInfo)
+
+        var lastRead =
+            byteArrayToInt(byteArrayOf(dataInfo[0], dataInfo[1], dataInfo[2], dataInfo[3]))
+
+        val lastSave =
+            byteArrayToInt(byteArrayOf(dataInfo[4], dataInfo[5], dataInfo[6], dataInfo[7]))
+
+        val full = dataInfo[12].toInt()
+
+        socket.close()
+        selectorManager.close()
+
+        if (lastRead < lastSave || full == 1) {
+            lastRead += 12
+            selectorManager = SelectorManager(Dispatchers.IO)
+            socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+
+            receiveChannel = socket.openReadChannel()
+            sendChannel = socket.openWriteChannel(autoFlush = true)
+
+            byteArray = "GVA<Event>".toByteArray()
+            buffer = ByteBuffer.allocate(byteArray.size)
+            buffer.put(byteArray)
+            buffer.position(0)
+
+            val event = getSocketResponse(sendChannel, receiveChannel, buffer)
+            println("kartica = $event")
+
+            val eventType = event[0]
+            val cardCode =
+                byteArrayToInt(byteArrayOf(event[1], event[2], event[3], event[4]))
+
+            println("cardCode:$cardCode")
+            val hour = event[5]
+            val minute = event[6]
+            val second = event[7]
+            val day = event[8]
+            val month = event[9]
+            val year = "20" + event[10]
+
+            val door = event[11] //uvijek 1??
+
+            val dateTimeString = "$year-$month-$day" + "T" + "$hour:$minute:$second"
+
+            println(dateTimeString)
+
+            socket.close()
+            selectorManager.close()
+
+
+            selectorManager = SelectorManager(Dispatchers.IO)
+            socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+
+            receiveChannel = socket.openReadChannel()
+            sendChannel = socket.openWriteChannel(autoFlush = true)
+
+            val outputStream = ByteArrayOutputStream()
+            //outputStream.write("SVA<Dataread>".toByteArray(Charsets.US_ASCII))
+            byteArray = "GVA<Dataread>".toByteArray()
+            buffer = ByteBuffer.allocate(5 + byteArray.size)
+            buffer.put(byteArray)
+
+            byteArray = byteArrayOf(
+                (lastRead shr 0).toByte(),
+                (lastRead shr 8).toByte(),
+                (lastRead shr 16).toByte(),
+                (lastRead shr 24).toByte(),
+                0
+            )
+            buffer.put(byteArray)
+            buffer.position(0)
+
+            val movePointer = getSocketResponse(sendChannel, receiveChannel, buffer)
+
+            println("mp: " + movePointer)
+
+            socket.close()
+            selectorManager.close()
+
+            return Person(cardCode, dateTimeString)
+        }
+//            }
+//        }
+
+        return Person(0, "")
+    }
+
+    fun byteArrayToInt(byteArray: ByteArray): Int {
+        var result = 0
+        var ctr = 0
+        for (b in byteArray) {
+            result += Math.pow(2.0, ctr.toDouble()).toInt() * b.toUByte().toInt()
+            ctr += 8
+        }
+        return result
     }
 
     suspend fun getSocketResponse(
         sendChannel: ByteWriteChannel,
         receiveChannel: ByteReadChannel,
-        msg: String
+        buffer: ByteBuffer
     ): ByteArray {
-        sendChannel.writeStringUtf8(msg)
+        sendChannel.writeAvailable(buffer)
+
         var i = 0
         var byteResponseArray = byteArrayOf()
 
@@ -125,6 +315,7 @@ object MyHttpClient {
         }
         return byteResponseArray
     }
+
     fun execute() {
         stop()
         scope = CoroutineScope(Dispatchers.Default)
@@ -134,28 +325,8 @@ object MyHttpClient {
                 configureSerialization()
                 configureRouting()
             }.start(wait = true)
-
-
-
-
         }
     }
-
-    suspend fun experiment() {
-        val socketClient = MySocketClient("192.168.0.200", 8005)
-        socketClient.startClient()
-
-        socketClient.sendData("GVA<Event>")
-        socketClient.readData()
-
-//        socketClient.sendData("GVA<Event>")
-        socketClient.readData()
-
-//        socketClient.sendData("GVA<Event>")
-        socketClient.readData()
-
-    }
-
 
     fun stop() {
         try {

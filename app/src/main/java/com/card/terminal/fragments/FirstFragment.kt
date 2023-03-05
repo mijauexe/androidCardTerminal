@@ -53,12 +53,21 @@ class FirstFragment : Fragment() {
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
         }
-        binding.socketOpen.setOnClickListener {
+        binding.test1.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                MyHttpClient.communicateWithTeo(act)
+//                MyHttpClient.scanForNewEvents()
+//                MyHttpClient.readLatestEvent()
+//                MyHttpClient.openDoor(2)
+                MyHttpClient.stopLarusWorker()
+//                MyHttpClient.setDoorTime(1, 1)
 //                MyHttpClient.experiment()
             }
         }
+
+        binding.test2.setOnClickListener {
+            MyHttpClient.startLarusWorker()
+        }
+
 //        val socketOpenButton = findViewById<Button>(R.id.socketOpen)
 //        socketOpenButton?.setOnClickListener {
 //            MyHttpClient.communicateWithTeo(this)

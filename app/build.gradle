@@ -62,6 +62,7 @@ dependencies {
 
     implementation("io.ktor:ktor-client-okhttp:$ktor_version")
     implementation("androidx.room:room-runtime:$room_version")
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     annotationProcessor("androidx.room:room-compiler:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
     //ksp("androidx.room:room-compiler:$room_version")

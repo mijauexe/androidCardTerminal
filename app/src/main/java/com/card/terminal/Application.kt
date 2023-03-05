@@ -3,6 +3,11 @@ package com.card.terminal
 import com.card.terminal.db.AppDatabase
 
 var database: AppDatabase? = null
+var ipOfPCB = "192.168.0.200"
+var portOfPCB = 8005
+var ipOfServer = ""
+var portOfServer = ""
+
 
 //private val server by lazy {
 //    embeddedServer(Netty, port = 6969) {

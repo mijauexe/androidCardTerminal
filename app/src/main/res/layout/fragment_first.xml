@@ -104,10 +104,17 @@
 
 
         <Button
-            android:id="@+id/socketOpen"
+            android:id="@+id/test1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="open socket" />
+            android:text="test1" />
+
+        <Button
+            android:id="@+id/test2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test2" />
+
 
 
     </GridLayout>
