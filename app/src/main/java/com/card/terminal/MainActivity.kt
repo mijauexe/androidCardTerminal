@@ -1,6 +1,7 @@
 package com.card.terminal
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -12,9 +13,9 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.view.View
+import android.view.Window
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -27,10 +28,12 @@ import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
@@ -53,14 +56,36 @@ class MainActivity : AppCompatActivity() {
     private var exitBtnClicked = false
     var cardScannerActive = false
 
+    private fun disableButtons() {
+        val decorView: View = this.window.decorView
+        val uiOptions: Int = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+        val timer = Timer()
+        val task: TimerTask = object : TimerTask() {
+            override fun run() {
+                runOnUiThread { decorView.systemUiVisibility = uiOptions }
+            }
+        }
+        timer.scheduleAtFixedRate(task, 1, 2)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+//        disableButtons()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+//        disableButtons()
+        ContextProvider.setApplicationContext(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-
+        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
     }
 
     override fun onResume() {
@@ -95,6 +120,7 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
+            MyHttpClient.bindHttpClient(mutableServerCode, db)
         }
         setObservers()
     }
@@ -106,7 +132,6 @@ class MainActivity : AppCompatActivity() {
 
         val enterButton = findViewById<Button>(R.id.ib_enter)
         val exitButton = findViewById<Button>(R.id.ib_exit)
-
 
         workButton.setOnClickListener {
             if (workBtnClicked) {
@@ -236,14 +261,14 @@ class MainActivity : AppCompatActivity() {
 
                         cardText(it["CardNumber"].toString(), accessGranted)
                         //resetButtons() //!!!!!
-                        //TODO rijesi to kad ce trebat
-                        //                        if (MyHttpClient.isClientReady() and accessGranted) {
-                        //                            if (exitBtnClicked) {
-                        //                                MyHttpClient.postData(mapOf("status" to "exit"))
-                        //                            } else {
-                        //                                MyHttpClient.postData(mapOf("status" to "enter"))
-                        //                            }
-                        //                        }
+//                        TODO rijesi to kad ce trebat
+//                        if (MyHttpClient.isClientReady() and accessGranted) {
+//                            if (exitBtnClicked) {
+//                                MyHttpClient.postData(mapOf("status" to "exit"))
+//                            } else {
+//                                MyHttpClient.postData(mapOf("status" to "enter"))
+//                            }
+//                        }
                     }
                 }
             } else {
@@ -269,17 +294,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    public fun getDateTime(): LocalDateTime? {
+    fun getDateTime(): LocalDateTime? {
         return mutableDateTime.value
     }
 
     override fun onPause() {
         super.onPause()
+        MyHttpClient.stop()
         cardService?.releaseService()
     }
 
     public override fun onStop() {
         super.onStop()
+//        MyHttpClient.stop()
         OmniCard.release()
     }
 

@@ -16,7 +16,7 @@ fun Route.allowedAccessRouting() {
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
             } else {
-                call.respondText("No customers found", status = HttpStatusCode.OK)
+                call.respondText("allowedAccess is empty", status = HttpStatusCode.OK)
             }
         }
         post {
