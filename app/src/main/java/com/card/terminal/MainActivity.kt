@@ -1,7 +1,6 @@
 package com.card.terminal
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -13,9 +12,9 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.Window
-import android.widget.*
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,7 +32,6 @@ import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
@@ -48,7 +46,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var db: AppDatabase
-
     private var workBtnClicked = false
     private var privateBtnClicked = false
     private var coffeeBtnClicked = false
@@ -56,33 +53,15 @@ class MainActivity : AppCompatActivity() {
     private var exitBtnClicked = false
     var cardScannerActive = false
 
-    private fun disableButtons() {
-        val decorView: View = this.window.decorView
-        val uiOptions: Int = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-        val timer = Timer()
-        val task: TimerTask = object : TimerTask() {
-            override fun run() {
-                runOnUiThread { decorView.systemUiVisibility = uiOptions }
-            }
-        }
-        timer.scheduleAtFixedRate(task, 1, 2)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-//        disableButtons()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        disableButtons()
+
         ContextProvider.setApplicationContext(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
+
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
@@ -90,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
         mutableDateTime.postValue(LocalDateTime.now())
 
         db = Room.databaseBuilder(
