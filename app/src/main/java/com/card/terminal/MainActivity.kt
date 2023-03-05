@@ -10,8 +10,7 @@ import android.os.Looper
 import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
 import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -35,13 +34,12 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
-
 class MainActivity : AppCompatActivity() {
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
 
     private var mutableCardCode = MutableLiveData<Map<String, String>>()
-    private var mutableServerCode = MutableLiveData<Map<String, String>>()
+    var mutableLarusCode = MutableLiveData<Map<String, String>>()
     private var mutableDateTime = MutableLiveData<LocalDateTime>()
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -52,23 +50,68 @@ class MainActivity : AppCompatActivity() {
     private var enterBtnClicked = false
     private var exitBtnClicked = false
     var cardScannerActive = false
+    private var screensaverShowing = false
+
+    private val SCREENSAVER_DELAY = 30000L // 3 seconds
+
+    private val handler = Handler()
+
+    private val screensaverRunnable = Runnable {
+        // Show screensaver view
+        val screensaverView = LayoutInflater.from(this).inflate(R.layout.screensaver_layout, null)
+        screensaverView.tag = "screensaver"
+        addContentView(
+            screensaverView,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+    }
+
+    private fun resetScreensaverTimer() {
+        handler.removeCallbacks(screensaverRunnable)
+        handler.postDelayed(screensaverRunnable, SCREENSAVER_DELAY)
+    }
+
+    private fun removeScreensaverView() {
+        val rootView = findViewById<ViewGroup>(android.R.id.content)
+        val screensaverView = rootView.getChildAt(rootView.childCount - 1)
+        if (screensaverView != null && screensaverView.tag == "screensaver") {
+            rootView.removeView(screensaverView)
+            screensaverShowing = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        disableButtons()
-
         ContextProvider.setApplicationContext(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
-
         setContentView(binding.root)
-
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
+//        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
+
+        val rootView = findViewById<View>(android.R.id.content)
+        rootView.setOnTouchListener { _, _ ->
+            resetScreensaverTimer()
+            setContentView(binding.root)
+            false
+        }
+
+        // Start screensaver timer on app launch
+        resetScreensaverTimer()
     }
+
 
     override fun onResume() {
         super.onResume()
+
+        resetScreensaverTimer()
+        // Hide screensaver view if it's currently showing
+        if (screensaverShowing) {
+            removeScreensaverView()
+        }
 
         mutableDateTime.postValue(LocalDateTime.now())
 
@@ -90,7 +133,7 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
-                MyHttpClient.bindHttpClient(mutableServerCode, db)
+//                MyHttpClient.bindHttpClient(mutableLarusCode, db)
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -100,8 +143,9 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-            MyHttpClient.bindHttpClient(mutableServerCode, db)
+//            MyHttpClient.bindHttpClient(mutableLarusCode, db)
         }
+        MyHttpClient.bindHttpClient(mutableLarusCode, db)
         setObservers()
     }
 
@@ -200,7 +244,6 @@ class MainActivity : AppCompatActivity() {
         enterBtnClicked = false
     }
 
-
     private fun cardText(text: String, access: Boolean) {
         Handler(Looper.getMainLooper()).post {
             resetButtons()
@@ -217,6 +260,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setObservers() {
+        mutableLarusCode.observe(this) {
+            resetScreensaverTimer()
+            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+        }
+
         mutableCardCode.observe(this) {
             if (!cardScannerActive) {
                 return@observe
@@ -280,6 +328,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        resetScreensaverTimer()
         MyHttpClient.stop()
         cardService?.releaseService()
     }

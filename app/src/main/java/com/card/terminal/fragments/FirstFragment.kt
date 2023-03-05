@@ -4,16 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.http.MyHttpClient
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -53,25 +49,14 @@ class FirstFragment : Fragment() {
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
         }
+
         binding.test1.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-//                MyHttpClient.scanForNewEvents()
-//                MyHttpClient.readLatestEvent()
-//                MyHttpClient.openDoor(2)
-                MyHttpClient.stopLarusWorker()
-//                MyHttpClient.setDoorTime(1, 1)
-//                MyHttpClient.experiment()
-            }
+                MyHttpClient.readLatestEvent()
         }
 
         binding.test2.setOnClickListener {
-            MyHttpClient.startLarusWorker()
+            MyHttpClient.startLarusTask()
         }
-
-//        val socketOpenButton = findViewById<Button>(R.id.socketOpen)
-//        socketOpenButton?.setOnClickListener {
-//            MyHttpClient.communicateWithTeo(this)
-//        }
     }
 
     override fun onDestroyView() {

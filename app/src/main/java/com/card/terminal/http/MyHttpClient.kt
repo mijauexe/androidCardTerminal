@@ -2,15 +2,12 @@ package com.card.terminal.http
 
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
-import androidx.work.*
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.plugins.configureRouting
 import com.card.terminal.http.plugins.configureSerialization
 import com.card.terminal.ipOfPCB
 import com.card.terminal.main
 import com.card.terminal.portOfPCB
-import com.card.terminal.utils.ContextProvider
-import com.card.terminal.utils.LarusWorker
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -22,8 +19,8 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.util.*
 
 
 object MyHttpClient {
@@ -33,12 +30,24 @@ object MyHttpClient {
     private var mContext: Application? = null
     private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
+    private var timer : Timer?= null
+    private var delay : Long = 0L
+    private var period : Long= 0L
+    private var task : TimerTask?= null
 
-    var myWorkRequest: OneTimeWorkRequest? = null
-
-    data class Person(val cardCode: Int, val dateTime: String)
+    class MyTask : TimerTask() {
+        override fun run() {
+            readLatestEvent()
+        }
+    }
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase) {
+        timer = Timer()
+        delay = 0L // Initial delay before the task starts
+        period = 2000L // Interval between each task in milliseconds
+
+        task = MyTask()
+
         mutableCode = code
         database = appDatabase
         client = HttpClient() {
@@ -47,33 +56,15 @@ object MyHttpClient {
             }
         }
         execute()
-//        myWorkRequest = PeriodicWorkRequestBuilder<Worker>(
-//            1, TimeUnit.SECONDS,
-//            flexTimeInterval = 1, TimeUnit.SECONDS
-//        ).build()
-//        WorkManager.getInstance(ContextProvider.getApplicationContext())
-//            .enqueueUniquePeriodicWork(
-//                "my_periodic_work",
-//                ExistingPeriodicWorkPolicy.REPLACE,
-//                myWorkRequest!!
-//            )
-
-        startLarusWorker()
+        startLarusTask()
     }
 
-    fun stopLarusWorker() {
-        val workRequestId = myWorkRequest!!.id
-
-        // Cancels the work request with the given ID
-        WorkManager.getInstance(ContextProvider.getApplicationContext()).cancelWorkById(workRequestId)
+    fun startLarusTask() {
+        timer?.scheduleAtFixedRate(task, delay, period)
     }
 
-    fun startLarusWorker() {
-        myWorkRequest = OneTimeWorkRequestBuilder<LarusWorker>().build()
-        WorkManager.getInstance(ContextProvider.getApplicationContext()).enqueueUniqueWork(
-            "board_pinging", ExistingWorkPolicy.REPLACE,
-            myWorkRequest!!
-        )
+    fun stopLarusTask() {
+        timer?.cancel()
     }
 
     fun openDoor(doorNum: Int) {
@@ -170,118 +161,103 @@ object MyHttpClient {
         }
     }
 
-//    suspend fun scanForNewEvents() {
-//        GlobalScope.launch {
-//        while (true) {
-    // Call your runBlocking function here
-//            readLatestEvent()
-//            delay(1 * 1000) // Introduce a delay of x seconds between successive function calls
-//        }
-//        }
+    fun readLatestEvent() {
+        runBlocking {
+            launch(Dispatchers.IO) {
+                var selectorManager = SelectorManager(Dispatchers.IO)
+                var socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
 
-//    }
+                var receiveChannel = socket.openReadChannel()
+                var sendChannel = socket.openWriteChannel(autoFlush = true)
 
-    suspend fun readLatestEvent(): Person {
-//        runBlocking {
-//            launch(Dispatchers.IO) {
-        var selectorManager = SelectorManager(Dispatchers.IO)
-        var socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+                var byteArray = "GVA<Datainfo>".toByteArray()
+                var buffer = ByteBuffer.allocate(byteArray.size)
+                buffer.put(byteArray)
+                buffer.position(0)
 
-        var receiveChannel = socket.openReadChannel()
-        var sendChannel = socket.openWriteChannel(autoFlush = true)
+                val dataInfo = getSocketResponse(sendChannel, receiveChannel, buffer)
+                println(dataInfo)
 
-        var byteArray = "GVA<Datainfo>".toByteArray()
-        var buffer = ByteBuffer.allocate(byteArray.size)
-        buffer.put(byteArray)
-        buffer.position(0)
+                var lastRead =
+                    byteArrayToInt(byteArrayOf(dataInfo[0], dataInfo[1], dataInfo[2], dataInfo[3]))
 
-        val dataInfo = getSocketResponse(sendChannel, receiveChannel, buffer)
-        println(dataInfo)
+                val lastSave =
+                    byteArrayToInt(byteArrayOf(dataInfo[4], dataInfo[5], dataInfo[6], dataInfo[7]))
 
-        var lastRead =
-            byteArrayToInt(byteArrayOf(dataInfo[0], dataInfo[1], dataInfo[2], dataInfo[3]))
+                val full = dataInfo[12].toInt()
 
-        val lastSave =
-            byteArrayToInt(byteArrayOf(dataInfo[4], dataInfo[5], dataInfo[6], dataInfo[7]))
-
-        val full = dataInfo[12].toInt()
-
-        socket.close()
-        selectorManager.close()
-
-        if (lastRead < lastSave || full == 1) {
-            lastRead += 12
-            selectorManager = SelectorManager(Dispatchers.IO)
-            socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
-
-            receiveChannel = socket.openReadChannel()
-            sendChannel = socket.openWriteChannel(autoFlush = true)
-
-            byteArray = "GVA<Event>".toByteArray()
-            buffer = ByteBuffer.allocate(byteArray.size)
-            buffer.put(byteArray)
-            buffer.position(0)
-
-            val event = getSocketResponse(sendChannel, receiveChannel, buffer)
-            println("kartica = $event")
-
-            val eventType = event[0]
-            val cardCode =
-                byteArrayToInt(byteArrayOf(event[1], event[2], event[3], event[4]))
-
-            println("cardCode:$cardCode")
-            val hour = event[5]
-            val minute = event[6]
-            val second = event[7]
-            val day = event[8]
-            val month = event[9]
-            val year = "20" + event[10]
-
-            val door = event[11] //uvijek 1??
-
-            val dateTimeString = "$year-$month-$day" + "T" + "$hour:$minute:$second"
-
-            println(dateTimeString)
-
-            socket.close()
-            selectorManager.close()
+                socket.close()
+                selectorManager.close()
 
 
-            selectorManager = SelectorManager(Dispatchers.IO)
-            socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+                if (lastRead < lastSave || full == 1) {
+                    lastRead += 12
+                    selectorManager = SelectorManager(Dispatchers.IO)
+                    socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
 
-            receiveChannel = socket.openReadChannel()
-            sendChannel = socket.openWriteChannel(autoFlush = true)
+                    receiveChannel = socket.openReadChannel()
+                    sendChannel = socket.openWriteChannel(autoFlush = true)
 
-            val outputStream = ByteArrayOutputStream()
-            //outputStream.write("SVA<Dataread>".toByteArray(Charsets.US_ASCII))
-            byteArray = "GVA<Dataread>".toByteArray()
-            buffer = ByteBuffer.allocate(5 + byteArray.size)
-            buffer.put(byteArray)
+                    byteArray = "GVA<Event>".toByteArray()
+                    buffer = ByteBuffer.allocate(byteArray.size)
+                    buffer.put(byteArray)
+                    buffer.position(0)
 
-            byteArray = byteArrayOf(
-                (lastRead shr 0).toByte(),
-                (lastRead shr 8).toByte(),
-                (lastRead shr 16).toByte(),
-                (lastRead shr 24).toByte(),
-                0
-            )
-            buffer.put(byteArray)
-            buffer.position(0)
+                    val event = getSocketResponse(sendChannel, receiveChannel, buffer)
 
-            val movePointer = getSocketResponse(sendChannel, receiveChannel, buffer)
+                    val eventType = event[0]
+                    val cardCode =
+                        byteArrayToInt(byteArrayOf(event[1], event[2], event[3], event[4]))
 
-            println("mp: " + movePointer)
+                    println("cardCode:$cardCode")
+                    val hour = event[5]
+                    val minute = event[6]
+                    val second = event[7]
+                    val day = event[8]
+                    val month = event[9]
+                    val year = "20" + event[10]
 
-            socket.close()
-            selectorManager.close()
+                    val door = event[11] //uvijek 1??
 
-            return Person(cardCode, dateTimeString)
+                    val dateTimeString = "$year-$month-$day" + "T" + "$hour:$minute:$second"
+
+                    println(dateTimeString)
+//
+                    socket.close()
+                    selectorManager.close()
+
+                    selectorManager = SelectorManager(Dispatchers.IO)
+                    socket = aSocket(selectorManager).tcp().connect(ipOfPCB, portOfPCB)
+//
+                    receiveChannel = socket.openReadChannel()
+                    sendChannel = socket.openWriteChannel(autoFlush = true)
+
+                    byteArray = "GVA<Dataread>".toByteArray()
+                    buffer = ByteBuffer.allocate(5 + byteArray.size)
+                    buffer.put(byteArray)
+
+                    byteArray = byteArrayOf(
+                        (lastRead shr 0).toByte(),
+                        (lastRead shr 8).toByte(),
+                        (lastRead shr 16).toByte(),
+                        (lastRead shr 24).toByte(),
+                        0
+                    )
+                    buffer.put(byteArray)
+                    buffer.position(0)
+
+//                    val movePointer = getSocketResponse(sendChannel, receiveChannel, buffer)
+                    sendChannel.writeAvailable(buffer)
+//                    println("mp: " + movePointer)
+
+                    socket.close()
+
+                    selectorManager.close()
+//
+                    mutableCode.postValue(mapOf("CardCode" to cardCode.toString(), "DateTime" to dateTimeString))
+                }
+            }
         }
-//            }
-//        }
-
-        return Person(0, "")
     }
 
     fun byteArrayToInt(byteArray: ByteArray): Int {
