@@ -19,7 +19,15 @@
     <string name="tv_date">1.1.2022.</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="enter_pin">enter pin</string>
+    <string name="enter_pin">Unesi pin</string>
     <string name="wrong_pin_message">Incorrect PIN. Please try again.</string>
+    <string name="larusip">192.168.0.200</string>
+    <string name="larusport">8005</string>
+    <string name="serverip">192.168.0.199</string>
+    <string name="serverport">80</string>
+    <string name="larus_ip_adresa">Larus IP adresa</string>
+    <string name="larus_port">Larus port</string>
+    <string name="server_ip_adresa">Server IP adresa</string>
+    <string name="server_port">Server port</string>
 
 </resources>

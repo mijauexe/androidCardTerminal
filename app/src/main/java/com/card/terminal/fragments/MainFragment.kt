@@ -35,11 +35,13 @@ class MainFragment : Fragment() {
     ): View? {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        if(act.getDateTime() != null) {
-            binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-            binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("HH:mm"))
+        if (act.getDateTime() != null) {
+            binding.tvDate.text =
+                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            binding.tvClock.text =
+                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("HH:mm"))
         }
         act.cardScannerActive = false
         return binding.root
@@ -48,12 +50,16 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.cardButton.setOnClickListener{
+        binding.cardButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_FirstFragment)
         }
 
-        binding.pinButton.setOnClickListener{
+        binding.pinButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_SecondFragment)
+        }
+
+        binding.settingsButton.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
         }
     }
 

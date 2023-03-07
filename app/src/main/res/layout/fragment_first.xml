@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient"
+    android:background="#0679ae"
     tools:context=".fragments.FirstFragment">
 
 
@@ -102,21 +102,6 @@
             android:layout_marginEnd="100sp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_coffee" />
-
-
-        <Button
-            android:id="@+id/test1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test1" />
-
-        <Button
-            android:id="@+id/test2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test2" />
-
-
 
     </GridLayout>
 

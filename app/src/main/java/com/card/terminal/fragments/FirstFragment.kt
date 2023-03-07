@@ -9,7 +9,6 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
-import com.card.terminal.http.MyHttpClient
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -48,14 +47,6 @@ class FirstFragment : Fragment() {
 
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
-        }
-
-        binding.test1.setOnClickListener {
-                MyHttpClient.readLatestEvent()
-        }
-
-        binding.test2.setOnClickListener {
-            MyHttpClient.startLarusTask()
         }
     }
 

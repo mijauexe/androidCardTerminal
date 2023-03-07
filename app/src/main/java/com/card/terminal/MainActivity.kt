@@ -1,6 +1,7 @@
 package com.card.terminal
 
 import android.app.AlertDialog
+import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -35,6 +36,8 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var mySharedPreferences: SharedPreferences
+
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
 
@@ -52,9 +55,55 @@ class MainActivity : AppCompatActivity() {
     var cardScannerActive = false
     private var screensaverShowing = false
 
-    private val SCREENSAVER_DELAY = 30000L // 3 seconds
+    private val SCREENSAVER_DELAY = 30000L
 
     private val handler = Handler()
+
+    val PREFS_NAME = "MyPrefsFile"
+    val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ContextProvider.setApplicationContext(this)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
+        if (isFirstTime) {
+            val editor = prefs.edit()
+            editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
+            // Set the preferences if they haven't been set already
+            editor.putString("larusIP", "192.168.0.200")
+            editor.putInt("larusPort", 8005)
+            editor.putString("serverIP", "192.168.0.199")
+            editor.putInt("serverPort", 80)
+            editor.apply()
+            editor.apply()
+        }
+
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+//        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
+//        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        val rootView = findViewById<View>(android.R.id.content)
+        rootView.setOnTouchListener { _, _ ->
+            resetScreensaverTimer()
+            setContentView(binding.root)
+            false
+        }
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+
+//        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+//        val wakeLock = powerManager.newWakeLock(
+//            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+//            "MyApp:WakeLockTag"
+//        )
+//        wakeLock.acquire()
+
+        // Start screensaver timer on app launch
+        resetScreensaverTimer()
+    }
 
     private val screensaverRunnable = Runnable {
         // Show screensaver view
@@ -70,6 +119,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetScreensaverTimer() {
+        setContentView(binding.root)
         handler.removeCallbacks(screensaverRunnable)
         handler.postDelayed(screensaverRunnable, SCREENSAVER_DELAY)
     }
@@ -83,30 +133,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        ContextProvider.setApplicationContext(this)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-
-//        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
-
-        val rootView = findViewById<View>(android.R.id.content)
-        rootView.setOnTouchListener { _, _ ->
-            resetScreensaverTimer()
-            setContentView(binding.root)
-            false
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return true // Consume the event to disable volume buttons
         }
-
-        // Start screensaver timer on app launch
-        resetScreensaverTimer()
+        return super.onKeyDown(keyCode, event)
     }
-
 
     override fun onResume() {
         super.onResume()
-
         resetScreensaverTimer()
         // Hide screensaver view if it's currently showing
         if (screensaverShowing) {
@@ -115,10 +150,14 @@ class MainActivity : AppCompatActivity() {
 
         mutableDateTime.postValue(LocalDateTime.now())
 
-        db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "AppDatabase"
-        ).build()
+//        runBlocking {
+//            launch(Dispatchers.Main) {
+                db = Room.databaseBuilder(
+                    applicationContext,
+                    AppDatabase::class.java, "AppDatabase"
+                ).build()
+//            }
+//        }
 
 //        thread {
 //            db.clearAllTables()
@@ -263,6 +302,9 @@ class MainActivity : AppCompatActivity() {
         mutableLarusCode.observe(this) {
             resetScreensaverTimer()
             Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+             if(!it["cardCode"].equals("0")) {
+                MyHttpClient.pingy()
+            }
         }
 
         mutableCardCode.observe(this) {
@@ -312,12 +354,16 @@ class MainActivity : AppCompatActivity() {
         mutableDateTime.observe(this) {
             if (it != null) {
                 val dateText = findViewById<TextView>(R.id.tv_date)
-                dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                if(dateText != null) {
+                    dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                        .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                }
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
-                clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("HH:mm"))
+                if(clockText != null) {
+                    clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+                }
             }
         }
     }
