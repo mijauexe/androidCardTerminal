@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity() {
         mutableLarusCode.observe(this) {
             resetScreensaverTimer()
             Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-             if(!it["cardCode"].equals("0")) {
+             if(!it["CardCode"].equals("0")) {
                 MyHttpClient.pingy()
             }
         }

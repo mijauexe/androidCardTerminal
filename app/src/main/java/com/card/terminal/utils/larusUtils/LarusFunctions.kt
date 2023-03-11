@@ -17,9 +17,6 @@ class LarusFunctions(
     val mutableCode: MutableLiveData<Map<String, String>>
 ) {
 
-    var scope1: Job? = null
-    var scope2: Job? = null
-
     fun pingEndpoint() {
         runBlocking {
             launch(Dispatchers.IO) {
@@ -36,9 +33,8 @@ class LarusFunctions(
         var lastSave = 0
         var full = 0
         val scope = CoroutineScope(Dispatchers.IO)
-        scope1 = scope.launch {
+        scope.launch {
             try {
-                scope2?.join()
 
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val socket = aSocket(selectorManager).tcp()
@@ -195,9 +191,8 @@ class LarusFunctions(
 
     fun openDoor(doorNum: Int) {
         val scope = CoroutineScope(Dispatchers.IO)
-        scope2 = scope.launch {
+        scope.launch {
             try {
-                scope1?.join()
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val socket = aSocket(selectorManager).tcp()
                 val socket1: Socket?

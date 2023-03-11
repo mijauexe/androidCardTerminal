@@ -53,7 +53,12 @@ object MyHttpClient {
     }
 
     fun pingy() {
+//        (larusCheckScansTask as LarusCheckScansTask).stopTask()
         larusFunctions?.openDoor(1)
+
+//        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+//        (larusCheckScansTask as LarusCheckScansTask).startTask()
+
 //        scope = CoroutineScope(Dispatchers.Default)
 //        scope.launch {
 //            val response = client?.get("192.168.0.200") {
