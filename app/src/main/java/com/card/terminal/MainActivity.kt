@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.room.Room
@@ -304,6 +305,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
              if(!it["CardCode"].equals("0")) {
                 MyHttpClient.pingy()
+                //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
+                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+                 val navController = navHostFragment.navController
+                 navController.navigate(R.id.action_mainFragment_to_FirstFragment)
             }
         }
 
