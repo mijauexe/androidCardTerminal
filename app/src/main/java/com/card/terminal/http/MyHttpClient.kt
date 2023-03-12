@@ -53,21 +53,7 @@ object MyHttpClient {
     }
 
     fun pingy() {
-//        (larusCheckScansTask as LarusCheckScansTask).stopTask()
         larusFunctions?.openDoor(1)
-
-//        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
-//        (larusCheckScansTask as LarusCheckScansTask).startTask()
-
-//        scope = CoroutineScope(Dispatchers.Default)
-//        scope.launch {
-//            val response = client?.get("192.168.0.200") {
-//            }
-//            if (response != null) {
-//                mutableCode.postValue(mapOf("response" to response.toString()))
-//            }
-//        }
-//        larusFunctions?.readLatestEvent()
     }
 
     suspend fun getSocketResponse(
@@ -107,10 +93,14 @@ object MyHttpClient {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
             database?.let { main(it) }
-            embeddedServer(Netty, port = 6969) {
+            val server = embeddedServer(Netty, port = 6969) {
                 configureSerialization()
                 configureRouting()
-            }.start(wait = true)
+            }
+            Runtime.getRuntime().addShutdownHook(Thread {
+                server.stop(1000, 5000)
+            })
+            server.start(wait = true)
         }
     }
 

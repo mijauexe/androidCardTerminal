@@ -6,7 +6,7 @@ import java.util.*
 class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     TimerTask() {
     private var timer: Timer? = null
-    val delay = 5000L
+    val delay = 0L
     val period = 2000L
 
     override fun run() {

@@ -84,8 +84,6 @@ class MainActivity : AppCompatActivity() {
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-//        MyHttpClient.setDoorTime(1000, 1000, 1000, 1000)
-//        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         val rootView = findViewById<View>(android.R.id.content)
         rootView.setOnTouchListener { _, _ ->
             resetScreensaverTimer()
@@ -93,20 +91,28 @@ class MainActivity : AppCompatActivity() {
             false
         }
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-
-//        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-//        val wakeLock = powerManager.newWakeLock(
-//            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-//            "MyApp:WakeLockTag"
-//        )
-//        wakeLock.acquire()
-
-        // Start screensaver timer on app launch
         resetScreensaverTimer()
     }
 
     private val screensaverRunnable = Runnable {
         // Show screensaver view
+        //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        when(navHostFragment.navController.currentDestination?.id) {
+            R.id.FirstFragment -> {
+                navController.navigate(R.id.action_FirstFragment_to_mainFragment)
+            }
+            R.id.SecondFragment -> {
+                navController.navigate(R.id.action_SecondFragment_to_mainFragment)
+            }
+
+            R.id.SettingsFragment -> {
+                return@Runnable
+            }
+        }
+
         val screensaverView = LayoutInflater.from(this).inflate(R.layout.screensaver_layout, null)
         screensaverView.tag = "screensaver"
         addContentView(
@@ -125,6 +131,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun removeScreensaverView() {
+
         val rootView = findViewById<ViewGroup>(android.R.id.content)
         val screensaverView = rootView.getChildAt(rootView.childCount - 1)
         if (screensaverView != null && screensaverView.tag == "screensaver") {
