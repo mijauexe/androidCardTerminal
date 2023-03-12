@@ -7,9 +7,10 @@ import kotlinx.serialization.Serializable
 
 @Entity
 @Serializable
-data class ReadInfo (
+class Event (
     @PrimaryKey(autoGenerate = true) val uid: Int,
+    @ColumnInfo(name = "event_code") val eventCode: Int,
     @ColumnInfo(name = "card_number") val cardNumber: String,
-    @ColumnInfo(name = "timestamp") val timestamp: String
+    @ColumnInfo(name = "date_time") val dateTime: String,
+    @ColumnInfo(name = "published") val published: Boolean,
 )
-val readInfoStorage = mutableListOf<ReadInfo>()

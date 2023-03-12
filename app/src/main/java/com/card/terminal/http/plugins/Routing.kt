@@ -1,15 +1,15 @@
 package com.card.terminal.http.plugins
 
-import com.card.terminal.http.routes.allowedAccessRouting
-import com.card.terminal.http.routes.pinCodeRouting
-import com.card.terminal.http.routes.readInfoRouting
+import com.card.terminal.http.routes.cardRouting
+import com.card.terminal.http.routes.eventRouting
+import com.card.terminal.http.routes.personRouting
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
     routing {
-        readInfoRouting()
-        allowedAccessRouting()
-        pinCodeRouting()
+        cardRouting()
+        personRouting()
+        eventRouting()
     }
 }

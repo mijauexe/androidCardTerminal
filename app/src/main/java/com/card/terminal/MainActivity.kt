@@ -33,7 +33,6 @@ import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -156,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                 db = Room.databaseBuilder(
                     applicationContext,
                     AppDatabase::class.java, "AppDatabase"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
 //            }
 //        }
 
@@ -324,7 +323,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else if (it["CardNumber"] != null) {
                     thread {
-                        val allowedAccessDao = db.AllowedAccessDao()
+                        val allowedAccessDao = db.CardDao()
 
                         val dataList = allowedAccessDao.getAll()
 
@@ -409,24 +408,5 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    fun checkPin(text: CharSequence?): Boolean {
-        if (text == null) return false
-        val queuee = LinkedBlockingQueue<Boolean>()
-        thread {
-            val pinCodeDao = db.PinCodeDao()
-
-            val dataList = pinCodeDao.getAll()
-
-            for (r in dataList) {
-                if (r.pinCode == text) {
-                    queuee.add(true)
-                    return@thread
-                }
-            }
-            queuee.add(false)
-        }
-        return queuee.take()
     }
 }
