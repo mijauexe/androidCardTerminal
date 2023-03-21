@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
         //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
-
+        //TODO POPRAVIT OVO SRANJE NE RADI DOBRO
         when(navHostFragment.navController.currentDestination?.id) {
             R.id.FirstFragment -> {
                 navController.navigate(R.id.action_FirstFragment_to_mainFragment)
@@ -157,6 +157,8 @@ class MainActivity : AppCompatActivity() {
 
         mutableDateTime.postValue(LocalDateTime.now())
 
+
+        //TODO popravit ovo sranje da radi u threadu zasebnom
 //        runBlocking {
 //            launch(Dispatchers.Main) {
                 db = Room.databaseBuilder(
@@ -312,9 +314,9 @@ class MainActivity : AppCompatActivity() {
              if(!it["CardCode"].equals("0")) {
                 MyHttpClient.pingy()
                 //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
-                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                 val navController = navHostFragment.navController
-                 navController.navigate(R.id.action_mainFragment_to_FirstFragment)
+//                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+//                 val navController = navHostFragment.navController
+//                 navController.navigate(R.id.action_mainFragment_to_FirstFragment)
             }
         }
 

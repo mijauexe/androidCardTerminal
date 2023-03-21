@@ -11,6 +11,7 @@ import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.engine.*
@@ -54,6 +55,7 @@ object MyHttpClient {
 
     fun pingy() {
         larusFunctions?.openDoor(1)
+        postData(mapOf("test" to "sven", "test1" to "miro"))
     }
 
     suspend fun getSocketResponse(
@@ -121,12 +123,13 @@ object MyHttpClient {
     fun postData(cardResponseMap: Map<String, String>) {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
-            val response = client?.post("http://192.168.0.188:5000") {
+            val response = client?.post("http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST") {
                 contentType(ContentType.Application.Json)
                 setBody(cardResponseMap)
             }
             if (response != null) {
                 println(response)
+                println(response.bodyAsText())
             }
         }
     }
