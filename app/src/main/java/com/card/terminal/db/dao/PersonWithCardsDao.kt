@@ -10,4 +10,12 @@ interface PersonWithCardsDao {
     @Transaction
     @Query("SELECT * FROM Person")
     fun getAll(): List<PersonWithCards>
+
+//    @Transaction
+//    @Query("SELECT * FROM PersonWithCards where owner = :ownerId")
+//    fun getPersonAndCards(vararg ownerId : Int): List<PersonWithCards>
+
+    @Transaction
+    @Query("DELETE FROM Card WHERE owner = :uid")
+    fun deleteCard(vararg uid: Int): Int
 }
