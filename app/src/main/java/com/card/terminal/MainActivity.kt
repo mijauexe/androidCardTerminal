@@ -1,7 +1,6 @@
 package com.card.terminal
 
 import android.app.AlertDialog
-import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -23,7 +22,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.room.Room
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
@@ -36,7 +34,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mySharedPreferences: SharedPreferences
 
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
@@ -65,6 +62,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
+
+        db = AppDatabase.getInstance((this))
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -76,9 +76,8 @@ class MainActivity : AppCompatActivity() {
             // Set the preferences if they haven't been set already
             editor.putString("larusIP", "192.168.0.200")
             editor.putInt("larusPort", 8005)
-            editor.putString("serverIP", "192.168.0.199")
+            editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
-            editor.apply()
             editor.apply()
         }
 
@@ -99,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
+
         //TODO POPRAVIT OVO SRANJE NE RADI DOBRO
         when(navHostFragment.navController.currentDestination?.id) {
             R.id.FirstFragment -> {
@@ -161,10 +161,10 @@ class MainActivity : AppCompatActivity() {
         //TODO popravit ovo sranje da radi u threadu zasebnom
 //        runBlocking {
 //            launch(Dispatchers.Main) {
-                db = Room.databaseBuilder(
-                    applicationContext,
-                    AppDatabase::class.java, "AppDatabase"
-                ).fallbackToDestructiveMigration().build()
+//                db = Room.databaseBuilder(
+//                    applicationContext,
+//                    AppDatabase::class.java, "AppDatabase"
+//                ).fallbackToDestructiveMigration().build()
 //            }
 //        }
 
@@ -193,7 +193,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
 //            MyHttpClient.bindHttpClient(mutableLarusCode, db)
         }
-        MyHttpClient.bindHttpClient(mutableLarusCode, db)
+        MyHttpClient.bindHttpClient(mutableLarusCode)
         setObservers()
     }
 
@@ -312,7 +312,7 @@ class MainActivity : AppCompatActivity() {
             resetScreensaverTimer()
             Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
              if(!it["CardCode"].equals("0")) {
-                MyHttpClient.pingy()
+                 it["CardCode"]?.let { it1 -> MyHttpClient.pingy(it1) }
                 //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
 //                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 //                 val navController = navHostFragment.navController

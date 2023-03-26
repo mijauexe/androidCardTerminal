@@ -23,7 +23,7 @@
     <string name="wrong_pin_message">Incorrect PIN. Please try again.</string>
     <string name="larusip">192.168.0.200</string>
     <string name="larusport">8005</string>
-    <string name="serverip">192.168.0.199</string>
+    <string name="serverip">http://sucic.info/b0pass/b0pass_iftp2.php</string>
     <string name="serverport">80</string>
     <string name="larus_ip_adresa">Larus IP adresa</string>
     <string name="larus_port">Larus port</string>

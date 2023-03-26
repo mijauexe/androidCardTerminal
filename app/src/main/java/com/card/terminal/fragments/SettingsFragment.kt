@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSettingsBinding
+import com.card.terminal.utils.ContextProvider
 
 
 class SettingsFragment : Fragment() {
@@ -52,43 +53,31 @@ class SettingsFragment : Fragment() {
 
         val larusIPEditText = binding.larusIP
         larusIPEditText.setText(
-            requireActivity().getSharedPreferences(
-                "MyPreferences",
-                Context.MODE_PRIVATE
-            ).getString("larusIP", "")
+            ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("larusIP", "")
         )
 
         val serverIPEditText = binding.ServerIP
         serverIPEditText.setText(
-            requireActivity().getSharedPreferences(
-                "MyPreferences",
-                Context.MODE_PRIVATE
-            ).getString("serverIP", "")
+            ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("serverIP", "")
         )
 
         val larusPortEditText = binding.larusPort
         larusPortEditText.setText(
             Integer.toString(
-                requireActivity().getSharedPreferences(
-                    "MyPreferences",
-                    Context.MODE_PRIVATE
-                ).getInt("larusPort", 0)
+                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("larusPort", 0)
             )
         )
 
         val serverPortEditText = binding.ServerPort
         serverPortEditText.setText(
             Integer.toString(
-                requireActivity().getSharedPreferences(
-                    "MyPreferences",
-                    Context.MODE_PRIVATE
-                ).getInt("serverPort", 0)
+                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("serverPort", 0)
             )
         )
 
         binding.saveSettingsButton.setOnClickListener {
             mySharedPreferences =
-                requireActivity().getSharedPreferences("MyPreferences", Context.MODE_PRIVATE)
+                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             // Set the value of a preference
             val editor = mySharedPreferences.edit()
             editor.putString("larusIP", larusIPEditText.text.toString())
