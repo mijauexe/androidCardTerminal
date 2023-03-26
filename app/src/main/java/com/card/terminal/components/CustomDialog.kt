@@ -11,13 +11,17 @@ import com.card.terminal.R
 
 
 class CustomDialog
-    (var c: Activity, var text: String) : Dialog(c), View.OnClickListener {
+    (var c: Activity, var text: String, var yes: Boolean) : Dialog(c), View.OnClickListener {
     var d: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
-        setContentView(R.layout.custom_dialog)
+        if (yes) {
+            setContentView(R.layout.custom_dialog_yes)
+        } else {
+            setContentView(R.layout.custom_dialog_no)
+        }
         findViewById<TextView>(R.id.cardNumber).text = text
     }
 

@@ -7,80 +7,109 @@
     android:background="#0679ae"
     tools:context=".fragments.SecondFragment">
 
-    <GridLayout
-        android:id="@+id/glMain"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:columnCount="1"
-        android:paddingHorizontal="20dp"
-        android:useDefaultMargins="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <LinearLayout>
-            <ImageView
-                android:layout_width="400dp"
-                android:layout_height="wrap_content"
-                android:src="@drawable/hep_logo"/>
-            <TextView
-                android:id="@+id/tv_company_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="30dp"
-                android:text="@string/company_attribute"
-                android:textColor="@color/pinScreen"
-                android:textSize="@dimen/title" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tv_date"
+        <GridLayout
+            android:id="@+id/glMain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/tv_date"
-            android:textColor="@color/pinScreen"
-            android:textSize="@dimen/date" />
+            android:columnCount="1"
+            android:paddingHorizontal="20dp"
+            android:useDefaultMargins="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tv_clock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/clock"
-            android:textColor="@color/pinScreen"
-            android:textSize="@dimen/time" />
+            <GridLayout android:columnCount="2">
 
-        <TextView
-            android:id="@+id/textview_output"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text=""
-            android:textColor="@color/pinScreen"
-            android:textSize="20sp" />
+                <TextView android:text="@string/larus_ip_adresa" />
 
-    </GridLayout>
+                <EditText
+                    android:id="@+id/larusIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.200"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/larus_port" />
+
+                <EditText
+                    android:id="@+id/larusPort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="@string/larusport"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/server_ip_adresa" />
+
+                <EditText
+                    android:id="@+id/ServerIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.199"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/server_port" />
+
+                <EditText
+                    android:id="@+id/ServerPort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="80"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+
+                <Button
+                    android:id="@+id/saveSettingsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OK" />
+
+            </GridLayout>
+
+
+        </GridLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pinLayout"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/glMain"
+        app:layout_constraintStart_toStartOf="@+id/constraintLayout"
         app:layout_constraintTop_toTopOf="parent">
 
         <GridLayout
             android:id="@+id/pinBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:orientation="vertical">
+            app:layout_constraintTop_toTopOf="parent">
+
             <TextView
                 android:id="@+id/pinPreviewText"
                 android:layout_width="@android:dimen/thumbnail_width"
@@ -91,7 +120,8 @@
 
                 android:textColorHint="#aaaaaa"
                 android:textSize="50sp"
-                app:backgroundTint="#2448ff"/>
+                app:backgroundTint="#2448ff" />
+
             <TextView
                 android:id="@+id/tv_err_msg"
                 android:layout_width="@android:dimen/thumbnail_width"
@@ -99,11 +129,11 @@
                 android:text="@string/wrong_pin_message"
                 android:textAlignment="center"
                 android:textColor="@color/info_msg"
-                android:visibility="gone"
-
                 android:textColorHint="#aaaaaa"
+
                 android:textSize="20sp"
-                app:backgroundTint="#2448ff"/>
+                android:visibility="gone"
+                app:backgroundTint="#2448ff" />
         </GridLayout>
 
         <GridLayout
@@ -137,9 +167,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="1"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -161,9 +191,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="2"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -185,9 +215,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="3"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -209,9 +239,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="4"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -233,9 +263,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="5"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -257,9 +287,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="6"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -281,9 +311,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="7"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -305,9 +335,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="8"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -329,9 +359,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="9"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -351,8 +381,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:elevation="16dp"
-                    android:drawableStart="@drawable/ic_delete" />
+                    android:drawableStart="@drawable/ic_delete"
+                    android:elevation="16dp" />
             </FrameLayout>
 
             <FrameLayout
@@ -374,9 +404,9 @@
                     android:layout_gravity="center"
                     android:elevation="16dp"
                     android:text="0"
-                    android:textSize="@dimen/pin_text"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/pinScreen" />
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
             </FrameLayout>
 
             <FrameLayout
@@ -396,15 +426,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:elevation="16dp"
-                    android:drawableStart="@drawable/ic_done"/>
+                    android:drawableStart="@drawable/ic_done"
+                    android:elevation="16dp" />
             </FrameLayout>
 
         </GridLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageButton
-        android:id="@+id/button_second"
+        android:id="@+id/button_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"

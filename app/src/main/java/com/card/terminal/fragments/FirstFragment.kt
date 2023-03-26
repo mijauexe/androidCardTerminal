@@ -29,10 +29,12 @@ class FirstFragment : Fragment() {
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         var act = activity as MainActivity
-        binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-        binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("HH:mm"))
+        binding.tvDate.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        binding.tvClock.text =
+            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("HH:mm"))
 
         act.cardScannerActive = true
         return binding.root
@@ -40,13 +42,12 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var act = activity as MainActivity
+        val act = activity as MainActivity
         act.setButtons()
 
-        binding.buttonSecond.setOnClickListener{
+        binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
         }
-
     }
 
     override fun onDestroyView() {

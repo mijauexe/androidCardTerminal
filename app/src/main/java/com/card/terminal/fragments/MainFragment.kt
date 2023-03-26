@@ -1,14 +1,13 @@
 package com.card.terminal.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
-import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.databinding.FragmentMainBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -36,11 +35,13 @@ class MainFragment : Fragment() {
     ): View? {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        if(act.getDateTime() != null) {
-            binding.tvDate.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-            binding.tvClock.text = LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("HH:mm"))
+        if (act.getDateTime() != null) {
+            binding.tvDate.text =
+                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            binding.tvClock.text =
+                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("HH:mm"))
         }
         act.cardScannerActive = false
         return binding.root
@@ -49,12 +50,16 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.cardButton.setOnClickListener{
+        binding.cardButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_FirstFragment)
         }
 
-        binding.pinButton.setOnClickListener{
+        binding.pinButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_SecondFragment)
+        }
+
+        binding.settingsButton.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
         }
     }
 

@@ -4,8 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient"
+    android:background="#0679ae"
     tools:context=".fragments.MainFragment">
+
+
 
     <GridLayout
         android:id="@+id/glMain"
@@ -22,13 +24,14 @@
             <ImageView
                 android:layout_width="400dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ina_logo"/>
+                android:src="@drawable/hep_logo"/>
             <TextView
                 android:id="@+id/tv_company_name"
+                android:layout_marginLeft="30dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/company_name"
+                android:text="@string/company_attribute"
                 android:textColor="@color/pinScreen"
                 android:textSize="@dimen/title" />
         </LinearLayout>
@@ -62,29 +65,57 @@
     </GridLayout>
 
     <GridLayout
+        android:id="@+id/gridLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="2"
+        android:columnCount="4"
         android:useDefaultMargins="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/glMain"
-        >
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
 
         <Button
             android:id="@+id/pinButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
             android:layout_marginRight="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/pin_button_selector"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/glMain"
-            android:drawableStart="@drawable/pin_button_selector"/>
+            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+
         <Button
             android:id="@+id/cardButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/card_button_selector"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+
+        <Button
+            android:id="@+id/fingerprintButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/fingerprint_button_selector"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/glMain" />
+
+
+        <Button
+            android:id="@+id/helpButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
@@ -93,7 +124,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/glMain"
-            android:drawableStart="@drawable/card_button_selector"/>
+            android:drawableStart="@drawable/help_button_selector"/>
+
+
     </GridLayout>
+
+    <Button
+        android:id="@+id/settingsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:drawableEnd="@drawable/settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

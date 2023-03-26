@@ -10,8 +10,7 @@ import android.os.Looper
 import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
 import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -20,55 +19,154 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.room.Room
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
+
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var cardService: ICardService? = null
 
     private var mutableCardCode = MutableLiveData<Map<String, String>>()
-    private var mutableServerCode = MutableLiveData<Map<String, String>>()
+    var mutableLarusCode = MutableLiveData<Map<String, String>>()
     private var mutableDateTime = MutableLiveData<LocalDateTime>()
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var db: AppDatabase
-
     private var workBtnClicked = false
     private var privateBtnClicked = false
     private var coffeeBtnClicked = false
     private var enterBtnClicked = false
     private var exitBtnClicked = false
-
     var cardScannerActive = false
+    private var screensaverShowing = false
+
+    private val SCREENSAVER_DELAY = 30000L
+
+    private val handler = Handler()
+
+    val PREFS_NAME = "MyPrefsFile"
+    val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ContextProvider.setApplicationContext(this)
+
+        db = AppDatabase.getInstance((this))
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
+        if (isFirstTime) {
+            val editor = prefs.edit()
+            editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
+            // Set the preferences if they haven't been set already
+            editor.putString("larusIP", "192.168.0.200")
+            editor.putInt("larusPort", 8005)
+            editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
+            editor.putInt("serverPort", 80)
+            editor.apply()
+        }
+
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+        val rootView = findViewById<View>(android.R.id.content)
+        rootView.setOnTouchListener { _, _ ->
+            resetScreensaverTimer()
+            setContentView(binding.root)
+            false
+        }
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        resetScreensaverTimer()
+    }
+
+    private val screensaverRunnable = Runnable {
+        // Show screensaver view
+        //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        //TODO POPRAVIT OVO SRANJE NE RADI DOBRO
+        when(navHostFragment.navController.currentDestination?.id) {
+            R.id.FirstFragment -> {
+                navController.navigate(R.id.action_FirstFragment_to_mainFragment)
+            }
+            R.id.SecondFragment -> {
+                navController.navigate(R.id.action_SecondFragment_to_mainFragment)
+            }
+
+            R.id.SettingsFragment -> {
+                return@Runnable
+            }
+        }
+
+        val screensaverView = LayoutInflater.from(this).inflate(R.layout.screensaver_layout, null)
+        screensaverView.tag = "screensaver"
+        addContentView(
+            screensaverView,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
+    }
+
+    private fun resetScreensaverTimer() {
+        setContentView(binding.root)
+        handler.removeCallbacks(screensaverRunnable)
+        handler.postDelayed(screensaverRunnable, SCREENSAVER_DELAY)
+    }
+
+    private fun removeScreensaverView() {
+
+        val rootView = findViewById<ViewGroup>(android.R.id.content)
+        val screensaverView = rootView.getChildAt(rootView.childCount - 1)
+        if (screensaverView != null && screensaverView.tag == "screensaver") {
+            rootView.removeView(screensaverView)
+            screensaverShowing = false
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return true // Consume the event to disable volume buttons
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     override fun onResume() {
         super.onResume()
+        resetScreensaverTimer()
+        // Hide screensaver view if it's currently showing
+        if (screensaverShowing) {
+            removeScreensaverView()
+        }
+
         mutableDateTime.postValue(LocalDateTime.now())
 
-        db = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "AppDatabase"
-        ).build()
+
+        //TODO popravit ovo sranje da radi u threadu zasebnom
+//        runBlocking {
+//            launch(Dispatchers.Main) {
+//                db = Room.databaseBuilder(
+//                    applicationContext,
+//                    AppDatabase::class.java, "AppDatabase"
+//                ).fallbackToDestructiveMigration().build()
+//            }
+//        }
 
 //        thread {
 //            db.clearAllTables()
@@ -83,8 +181,7 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
-            //TODO rijesi kasnije
-            //                MyHttpClient.bindHttpClient(mutableServerCode, db)
+//                MyHttpClient.bindHttpClient(mutableLarusCode, db)
             } else {
                 ActivityCompat.requestPermissions(
                     this,
@@ -94,7 +191,9 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
+//            MyHttpClient.bindHttpClient(mutableLarusCode, db)
         }
+        MyHttpClient.bindHttpClient(mutableLarusCode)
         setObservers()
     }
 
@@ -105,7 +204,6 @@ class MainActivity : AppCompatActivity() {
 
         val enterButton = findViewById<Button>(R.id.ib_enter)
         val exitButton = findViewById<Button>(R.id.ib_exit)
-
 
         workButton.setOnClickListener {
             if (workBtnClicked) {
@@ -195,30 +293,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun cardText(text: String, access: Boolean) {
-        if(access){
-            val dialog = this.let { CustomDialog(it, "Card number: $text") }
+        Handler(Looper.getMainLooper()).post {
+            resetButtons()
+            val dialog = this.let { CustomDialog(it, "Card number: $text", access) }
             dialog.setOnShowListener {
-                Thread.sleep(5000)
+                Thread.sleep(3000)
                 it.dismiss()
             }
             dialog.show()
-        } else {
-            Handler(Looper.getMainLooper()).post {
-                val cardNumber = findViewById<TextView>(R.id.textview_output)
-                cardNumber.text = text
-            }
-            if (cardScannerActive) {
-                resetButtons()
-            }
-            Thread.sleep(5000)
-            Handler(Looper.getMainLooper()).post {
-                val cardNumber = findViewById<TextView>(R.id.textview_output)
-                cardNumber.text = ""
-            }
+//            if (access) {
+//                binding.root.findNavController().navigate(R.id.MainFragment) ovo kurca ne radi
+//            }
         }
     }
 
     private fun setObservers() {
+        mutableLarusCode.observe(this) {
+            resetScreensaverTimer()
+            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+             if(!it["CardCode"].equals("0")) {
+                 it["CardCode"]?.let { it1 -> MyHttpClient.pingy(it1) }
+                //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
+//                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+//                 val navController = navHostFragment.navController
+//                 navController.navigate(R.id.action_mainFragment_to_FirstFragment)
+            }
+        }
+
         mutableCardCode.observe(this) {
             if (!cardScannerActive) {
                 return@observe
@@ -231,7 +332,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else if (it["CardNumber"] != null) {
                     thread {
-                        val allowedAccessDao = db.AllowedAccessDao()
+                        val allowedAccessDao = db.CardDao()
 
                         val dataList = allowedAccessDao.getAll()
 
@@ -242,15 +343,15 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         cardText(it["CardNumber"].toString(), accessGranted)
-
-                        //TODO rijesi to kad ce trebat
-                        //                        if (MyHttpClient.isClientReady() and accessGranted) {
-                        //                            if (exitBtnClicked) {
-                        //                                MyHttpClient.postData(mapOf("status" to "exit"))
-                        //                            } else {
-                        //                                MyHttpClient.postData(mapOf("status" to "enter"))
-                        //                            }
-                        //                        }
+                        //resetButtons() //!!!!!
+//                        TODO rijesi to kad ce trebat
+//                        if (MyHttpClient.isClientReady() and accessGranted) {
+//                            if (exitBtnClicked) {
+//                                MyHttpClient.postData(mapOf("status" to "exit"))
+//                            } else {
+//                                MyHttpClient.postData(mapOf("status" to "enter"))
+//                            }
+//                        }
                     }
                 }
             } else {
@@ -266,27 +367,34 @@ class MainActivity : AppCompatActivity() {
         mutableDateTime.observe(this) {
             if (it != null) {
                 val dateText = findViewById<TextView>(R.id.tv_date)
-                dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                if(dateText != null) {
+                    dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                        .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                }
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
-                clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("HH:mm"))
+                if(clockText != null) {
+                    clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                        .format(DateTimeFormatter.ofPattern("HH:mm"))
+                }
             }
         }
     }
 
-    public fun getDateTime(): LocalDateTime? {
+    fun getDateTime(): LocalDateTime? {
         return mutableDateTime.value
     }
 
     override fun onPause() {
         super.onPause()
+        resetScreensaverTimer()
+        MyHttpClient.stop()
         cardService?.releaseService()
     }
 
     public override fun onStop() {
         super.onStop()
+//        MyHttpClient.stop()
         OmniCard.release()
     }
 
@@ -309,24 +417,5 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    fun checkPin(text: CharSequence?): Boolean {
-        if (text == null) return false
-        val queuee = LinkedBlockingQueue<Boolean>()
-        thread {
-            val pinCodeDao = db.PinCodeDao()
-
-            val dataList = pinCodeDao.getAll()
-
-            for (r in dataList) {
-                if (r.pinCode == text) {
-                    queuee.add(true)
-                    return@thread
-                }
-            }
-            queuee.add(false)
-        }
-        return queuee.take()
     }
 }
