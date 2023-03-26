@@ -50,13 +50,13 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.cardButton.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_FirstFragment)
-        }
-
-        binding.pinButton.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_SecondFragment)
-        }
+//        binding.cardButton.setOnClickListener {
+//            findNavController().navigate(R.id.action_mainFragment_to_FirstFragment)
+//        }
+//
+//        binding.pinButton.setOnClickListener {
+//            findNavController().navigate(R.id.action_mainFragment_to_SecondFragment)
+//        }
 
         binding.settingsButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)

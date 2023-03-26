@@ -29,5 +29,6 @@
     <string name="larus_port">Larus port</string>
     <string name="server_ip_adresa">Server IP adresa</string>
     <string name="server_port">Server port</string>
+    <string name="please_scan_card">Molimo očitajte karticu.</string>
 
 </resources>
