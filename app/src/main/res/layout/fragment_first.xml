@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0679ae"
+    android:background="#D9D9D9"
     tools:context=".fragments.FirstFragment">
 
 
@@ -21,24 +21,16 @@
 
         <LinearLayout>
             <ImageView
+                android:layout_marginTop="50dp"
                 android:layout_width="400dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/hep_logo"/>
-            <TextView
-                android:id="@+id/tv_company_name"
-                android:layout_marginLeft="30dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/company_attribute"
-                android:textColor="@color/pinScreen"
-                android:textSize="@dimen/title" />
+                android:src="@drawable/erv_hep"/>
         </LinearLayout>
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
-            android:textColor="@color/pinScreen"
+            android:textColor="@color/black"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/tv_date"
@@ -46,7 +38,7 @@
 
         <TextView
             android:id="@+id/tv_clock"
-            android:textColor="@color/pinScreen"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -54,14 +46,26 @@
             android:textSize="45sp" />
 
         <TextView
-            android:id="@+id/textview_output"
+            android:id="@+id/first_and_last_name"
             android:layout_marginTop="50dp"
-            android:textColor="@color/pinScreen"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text=""
+            android:text="Ime Prezime"
             android:textSize="50sp" />
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_unknown_person" />
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="100dp"
+            android:src="@drawable/hep_logo"/>
 
     </GridLayout>
 
@@ -74,42 +78,6 @@
         app:layout_constraintEnd_toStartOf="@+id/glRight"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/glMain">
-
-        <Button
-            android:id="@+id/ib_work"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="50sp"
-            android:layout_marginEnd="50sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_work" />
-
-        <Button
-            android:id="@+id/ib_private"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="50sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_home" />
-
-        <Button
-            android:id="@+id/ib_coffee"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="50sp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_coffee" />
-
-        <Button
-            android:id="@+id/ib_doctor"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_stethoscope" />
 
     </GridLayout>
 
@@ -126,36 +94,70 @@
         app:layout_constraintStart_toEndOf="@+id/glMain"
         app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:id="@+id/reason_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/black"
+            android:text="Molimo unesite razlog izlaska:"
+            android:textSize="30dp" />
+
         <Button
-            android:id="@+id/ib_enter"
+            android:id="@+id/ib_work"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_gravity="start"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="25dp"
+            android:textAllCaps="false"
+            android:text="Poslovno  "
+            android:textColor="@android:color/black"
+            android:textSize="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_work" />
+
+        <Button
+            android:id="@+id/ib_private"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
-            android:layout_marginBottom="50dp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="25dp"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:text="Privatno  "
+            android:textSize="50dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_enter" />
+            android:drawableStart="@drawable/ic_home" />
 
         <Button
-            android:id="@+id/ib_exit"
+            android:id="@+id/ib_doctor"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="50dp"
+            android:layout_gravity="start"
+            android:textAllCaps="false"
+            android:text="Liječnik  "
+            android:textColor="@android:color/black"
+            android:textSize="50dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_exit" />
+            android:drawableStart="@drawable/ic_stethoscope" />
 
+        <Button
+            android:id="@+id/ib_coffee"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginTop="25dp"
+            android:layout_marginBottom="25dp"
+            android:textAllCaps="false"
+            android:text="Pauza  "
+            android:textColor="@android:color/black"
+            android:textSize="50dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_coffee" />
     </GridLayout>
-
-    <ImageButton
-        android:id="@+id/button_second"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/back_selector"
-        android:background="@android:color/transparent"
-        android:paddingTop="20dp"
-        android:paddingLeft="20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

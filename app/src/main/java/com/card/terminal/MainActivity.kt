@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private var workBtnClicked = false
     private var privateBtnClicked = false
     private var coffeeBtnClicked = false
+    private var doctorBtnBlicked = false
     private var enterBtnClicked = false
     private var exitBtnClicked = false
     var cardScannerActive = false
@@ -131,7 +132,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun removeScreensaverView() {
-
         val rootView = findViewById<ViewGroup>(android.R.id.content)
         val screensaverView = rootView.getChildAt(rootView.childCount - 1)
         if (screensaverView != null && screensaverView.tag == "screensaver") {
@@ -156,43 +156,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         mutableDateTime.postValue(LocalDateTime.now())
-
-
-        //TODO popravit ovo sranje da radi u threadu zasebnom
-//        runBlocking {
-//            launch(Dispatchers.Main) {
-//                db = Room.databaseBuilder(
-//                    applicationContext,
-//                    AppDatabase::class.java, "AppDatabase"
-//                ).fallbackToDestructiveMigration().build()
-//            }
-//        }
-
-//        thread {
-//            db.clearAllTables()
-//        }
-
         ShowDateTime.setDateAndTime(mutableDateTime)
 
-        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    PERMISSION_TO_BIND_BACKEND_SERVICE
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                OmniCard.bindCardBackend(this, mutableCardCode, false)
-//                MyHttpClient.bindHttpClient(mutableLarusCode, db)
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
-                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
-                )
-            }
-        } else {
-            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-//            MyHttpClient.bindHttpClient(mutableLarusCode, db)
-        }
+//        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
+//            if (ContextCompat.checkSelfPermission(
+//                    this,
+//                    PERMISSION_TO_BIND_BACKEND_SERVICE
+//                ) == PackageManager.PERMISSION_GRANTED
+//            ) {
+//                OmniCard.bindCardBackend(this, mutableCardCode, false)
+////                MyHttpClient.bindHttpClient(mutableLarusCode, db)
+//            } else {
+//                ActivityCompat.requestPermissions(
+//                    this,
+//                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
+//                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
+//                )
+//            }
+//        } else {
+//            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
+////            MyHttpClient.bindHttpClient(mutableLarusCode, db)
+//        }
+
         MyHttpClient.bindHttpClient(mutableLarusCode)
         setObservers()
     }
@@ -201,9 +186,7 @@ class MainActivity : AppCompatActivity() {
         val workButton = findViewById<Button>(R.id.ib_work)
         val privateButton = findViewById<Button>(R.id.ib_private)
         val coffeeButton = findViewById<Button>(R.id.ib_coffee)
-
-        val enterButton = findViewById<Button>(R.id.ib_enter)
-        val exitButton = findViewById<Button>(R.id.ib_exit)
+        val doctorButton = findViewById<Button>(R.id.ib_doctor)
 
         workButton.setOnClickListener {
             if (workBtnClicked) {
@@ -216,9 +199,11 @@ class MainActivity : AppCompatActivity() {
 
             privateButton.setBackgroundColor(Color.TRANSPARENT)
             coffeeButton.setBackgroundColor(Color.TRANSPARENT)
+            doctorButton.setBackgroundColor(Color.TRANSPARENT)
 
             privateBtnClicked = false
             coffeeBtnClicked = false
+            doctorBtnBlicked = false
         }
 
         privateButton.setOnClickListener {
@@ -232,9 +217,11 @@ class MainActivity : AppCompatActivity() {
 
             workButton.setBackgroundColor(Color.TRANSPARENT)
             coffeeButton.setBackgroundColor(Color.TRANSPARENT)
+            doctorButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
             coffeeBtnClicked = false
+            doctorBtnBlicked = false
         }
 
         coffeeButton.setOnClickListener {
@@ -248,33 +235,29 @@ class MainActivity : AppCompatActivity() {
 
             workButton.setBackgroundColor(Color.TRANSPARENT)
             privateButton.setBackgroundColor(Color.TRANSPARENT)
+            doctorButton.setBackgroundColor(Color.TRANSPARENT)
 
             workBtnClicked = false
+            doctorBtnBlicked = false
             privateBtnClicked = false
         }
 
-        enterButton.setOnClickListener {
-            if (enterBtnClicked) {
-                enterBtnClicked = false
-                enterButton.setBackgroundColor(Color.TRANSPARENT)
+        doctorButton.setOnClickListener {
+            if (doctorBtnBlicked) {
+                doctorBtnBlicked = false
+                doctorButton.setBackgroundColor(Color.TRANSPARENT)
             } else {
-                enterBtnClicked = true
-                enterButton.setBackgroundResource(R.drawable.button_background_green)
+                doctorBtnBlicked = true
+                doctorButton.setBackgroundResource(R.drawable.card_button_background)
             }
-            exitButton.setBackgroundColor(Color.TRANSPARENT)
-            exitBtnClicked = false
-        }
 
-        exitButton.setOnClickListener {
-            if (exitBtnClicked) {
-                exitBtnClicked = false
-                exitButton.setBackgroundColor(Color.TRANSPARENT)
-            } else {
-                exitBtnClicked = true
-                exitButton.setBackgroundResource(R.drawable.button_background_red)
-            }
-            enterButton.setBackgroundColor(Color.TRANSPARENT)
-            enterBtnClicked = false
+            workButton.setBackgroundColor(Color.TRANSPARENT)
+            privateButton.setBackgroundColor(Color.TRANSPARENT)
+            coffeeButton.setBackgroundColor(Color.TRANSPARENT)
+
+            workBtnClicked = false
+            coffeeBtnClicked = false
+            privateBtnClicked = false
         }
     }
 
@@ -282,8 +265,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
-        findViewById<Button>(R.id.ib_enter).setBackgroundColor(Color.TRANSPARENT)
-        findViewById<Button>(R.id.ib_exit).setBackgroundColor(Color.TRANSPARENT)
+//        findViewById<Button>(R.id.ib_enter).setBackgroundColor(Color.TRANSPARENT)
+//        findViewById<Button>(R.id.ib_exit).setBackgroundColor(Color.TRANSPARENT)
 
         workBtnClicked = false
         privateBtnClicked = false
@@ -301,9 +284,6 @@ class MainActivity : AppCompatActivity() {
                 it.dismiss()
             }
             dialog.show()
-//            if (access) {
-//                binding.root.findNavController().navigate(R.id.MainFragment) ovo kurca ne radi
-//            }
         }
     }
 
@@ -325,7 +305,7 @@ class MainActivity : AppCompatActivity() {
                 return@observe
             }
             var accessGranted = false
-            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) and (enterBtnClicked or exitBtnClicked)) {
+            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
                 if (it["ErrorCode"].equals("1")) {
                     thread {
                         cardText(it["CardResponse"].toString(), accessGranted)
