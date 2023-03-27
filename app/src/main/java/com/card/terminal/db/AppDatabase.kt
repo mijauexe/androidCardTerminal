@@ -23,11 +23,12 @@ abstract class AppDatabase : RoomDatabase() {
                 instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java, "AppDatabase"
-                ).fallbackToDestructiveMigration().build()
+                ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
             }
             return instance as AppDatabase
         }
     }
+
     abstract fun CardDao(): CardDao
     abstract fun EventDao(): EventDao
     abstract fun PersonDao(): PersonDao

@@ -30,5 +30,7 @@
     <string name="server_ip_adresa">Server IP adresa</string>
     <string name="server_port">Server port</string>
     <string name="please_scan_card">Molimo očitajte karticu.</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>

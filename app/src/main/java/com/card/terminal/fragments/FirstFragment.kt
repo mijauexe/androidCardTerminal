@@ -1,14 +1,14 @@
 package com.card.terminal.fragments
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
-import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import com.card.terminal.utils.ContextProvider
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -45,9 +45,11 @@ class FirstFragment : Fragment() {
         val act = activity as MainActivity
         act.setButtons()
 
-        binding.buttonSecond.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
-        }
+        binding.firstAndLastName.text = arguments?.getString("name")
+
+//        binding.buttonSecond.setOnClickListener {
+//            findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
+//        }
     }
 
     override fun onDestroyView() {

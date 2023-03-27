@@ -19,53 +19,55 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout>
-            <ImageView
-                android:layout_marginTop="50dp"
-                android:layout_width="400dp"
-                android:layout_height="wrap_content"
-                android:src="@drawable/erv_hep"/>
-        </LinearLayout>
+
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            android:src="@drawable/erv_hep" />
+
 
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
-            android:textColor="@color/black"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/tv_date"
+            android:textColor="@color/black"
             android:textSize="50sp" />
 
         <TextView
             android:id="@+id/tv_clock"
-            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/clock"
+            android:textColor="@color/black"
             android:textSize="45sp" />
 
         <TextView
             android:id="@+id/first_and_last_name"
-            android:layout_marginTop="50dp"
-            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Ime Prezime"
+            android:layout_marginTop="50dp"
+            android:text="Đuro Đurić"
+            android:textColor="@color/black"
             android:textSize="50sp" />
 
         <ImageView
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_unknown_person" />
+            android:src="@drawable/person_sample" />
 
         <ImageView
             android:layout_width="150dp"
-            android:layout_gravity="center_horizontal"
             android:layout_height="100dp"
-            android:src="@drawable/hep_logo"/>
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/hep_logo" />
 
     </GridLayout>
 
@@ -99,23 +101,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textColor="@color/black"
             android:text="Molimo unesite razlog izlaska:"
+            android:textColor="@color/black"
             android:textSize="30dp" />
 
         <Button
             android:id="@+id/ib_work"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
-            android:layout_gravity="start"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="25dp"
-            android:textAllCaps="false"
-            android:text="Poslovno  "
-            android:textColor="@android:color/black"
-            android:textSize="50dp"
+            android:layout_gravity="start"
+            android:layout_marginBottom="20dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_work" />
+            android:drawableStart="@drawable/ic_work"
+            android:text="Poslovno  "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="50dp" />
 
         <Button
             android:id="@+id/ib_private"
@@ -123,13 +125,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginBottom="25dp"
+            android:layout_marginBottom="20dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_home"
+            android:text="Privatno  "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
-            android:text="Privatno  "
-            android:textSize="50dp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_home" />
+            android:textSize="50dp" />
 
         <Button
             android:id="@+id/ib_doctor"
@@ -137,12 +139,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:textAllCaps="false"
-            android:text="Liječnik  "
-            android:textColor="@android:color/black"
-            android:textSize="50dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_stethoscope" />
+            android:drawableStart="@drawable/ic_stethoscope"
+            android:text="Liječnik  "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="50dp" />
 
         <Button
             android:id="@+id/ib_coffee"
@@ -150,14 +152,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginTop="25dp"
-            android:layout_marginBottom="25dp"
-            android:textAllCaps="false"
-            android:text="Pauza  "
-            android:textColor="@android:color/black"
-            android:textSize="50dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_coffee" />
+            android:drawableStart="@drawable/ic_coffee"
+            android:text="Pauza  "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="50dp" />
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

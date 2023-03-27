@@ -13,6 +13,12 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.util.*
 
 
 class LarusFunctions(
@@ -111,7 +117,6 @@ class LarusFunctions(
                     val event =
                         MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
 
-                    val eventType = event[0]
                     val cardCode =
                         MyHttpClient.byteArrayToInt(
                             byteArrayOf(
@@ -123,16 +128,10 @@ class LarusFunctions(
                         )
 
                     println("cardCode:$cardCode")
-                    val hour = event[5]
-                    val minute = event[6]
-                    val second = event[7]
-                    val day = event[8]
-                    val month = event[9]
-                    val year = "20" + event[10]
 
                     val door = event[11] //uvijek 1??
-
-                    val dateTimeString = "$year-$month-$day" + "T" + "$hour:$minute:$second"
+                    print(door)
+                    val dateTimeString = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
 
                     println(dateTimeString)
 

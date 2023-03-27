@@ -1,6 +1,7 @@
 package com.card.terminal
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -29,6 +30,7 @@ import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
+import kotlinx.coroutines.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
@@ -83,61 +85,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-
-        val rootView = findViewById<View>(android.R.id.content)
-        rootView.setOnTouchListener { _, _ ->
-            resetScreensaverTimer()
-            setContentView(binding.root)
-            false
-        }
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        resetScreensaverTimer()
-    }
-
-    private val screensaverRunnable = Runnable {
-        // Show screensaver view
-        //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-        val navController = navHostFragment.navController
-
-        //TODO POPRAVIT OVO SRANJE NE RADI DOBRO
-        when(navHostFragment.navController.currentDestination?.id) {
-            R.id.FirstFragment -> {
-                navController.navigate(R.id.action_FirstFragment_to_mainFragment)
-            }
-            R.id.SecondFragment -> {
-                navController.navigate(R.id.action_SecondFragment_to_mainFragment)
-            }
-
-            R.id.SettingsFragment -> {
-                return@Runnable
-            }
-        }
-
-        val screensaverView = LayoutInflater.from(this).inflate(R.layout.screensaver_layout, null)
-        screensaverView.tag = "screensaver"
-        addContentView(
-            screensaverView,
-            ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-        )
-    }
-
-    private fun resetScreensaverTimer() {
-        setContentView(binding.root)
-        handler.removeCallbacks(screensaverRunnable)
-        handler.postDelayed(screensaverRunnable, SCREENSAVER_DELAY)
-    }
-
-    private fun removeScreensaverView() {
-        val rootView = findViewById<ViewGroup>(android.R.id.content)
-        val screensaverView = rootView.getChildAt(rootView.childCount - 1)
-        if (screensaverView != null && screensaverView.tag == "screensaver") {
-            rootView.removeView(screensaverView)
-            screensaverShowing = false
-        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -149,11 +96,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        resetScreensaverTimer()
-        // Hide screensaver view if it's currently showing
-        if (screensaverShowing) {
-            removeScreensaverView()
-        }
 
         mutableDateTime.postValue(LocalDateTime.now())
         ShowDateTime.setDateAndTime(mutableDateTime)
@@ -165,7 +107,7 @@ class MainActivity : AppCompatActivity() {
 //                ) == PackageManager.PERMISSION_GRANTED
 //            ) {
 //                OmniCard.bindCardBackend(this, mutableCardCode, false)
-////                MyHttpClient.bindHttpClient(mutableLarusCode, db)
+//                MyHttpClient.bindHttpClient(mutableLarusCode, db)
 //            } else {
 //                ActivityCompat.requestPermissions(
 //                    this,
@@ -175,7 +117,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        } else {
 //            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-////            MyHttpClient.bindHttpClient(mutableLarusCode, db)
+//            MyHttpClient.bindHttpClient(mutableLarusCode, db)
 //        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
@@ -258,6 +200,22 @@ class MainActivity : AppCompatActivity() {
             workBtnClicked = false
             coffeeBtnClicked = false
             privateBtnClicked = false
+
+            showSpinningCircle(3)
+
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+            val navController = navHostFragment.navController
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.FirstFragment -> {
+                    navController.navigate(
+                        R.id.action_FirstFragment_to_CheckoutFragment
+                    )
+                }
+
+            }
+
         }
     }
 
@@ -265,14 +223,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
-//        findViewById<Button>(R.id.ib_enter).setBackgroundColor(Color.TRANSPARENT)
-//        findViewById<Button>(R.id.ib_exit).setBackgroundColor(Color.TRANSPARENT)
 
         workBtnClicked = false
         privateBtnClicked = false
         coffeeBtnClicked = false
-        exitBtnClicked = false
-        enterBtnClicked = false
+        doctorBtnBlicked = false
     }
 
     private fun cardText(text: String, access: Boolean) {
@@ -287,43 +242,95 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setObservers() {
-        mutableLarusCode.observe(this) {
-            resetScreensaverTimer()
-            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-             if(!it["CardCode"].equals("0")) {
-                 it["CardCode"]?.let { it1 -> MyHttpClient.pingy(it1) }
-                //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
-//                 val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-//                 val navController = navHostFragment.navController
-//                 navController.navigate(R.id.action_mainFragment_to_FirstFragment)
+    fun showSpinningCircle(seconds: Long) {
+        // create a progress dialog with a circular progress bar
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Molimo pričekajte...")
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        progressDialog.setCancelable(false)
+
+        GlobalScope.launch {
+            // show the progress dialog on the main thread
+            withContext(Dispatchers.Main) {
+                progressDialog.show()
+            }
+            // suspend the coroutine for 5 seconds
+            delay(seconds * 1000) // 5000 milliseconds = 5 seconds
+            // dismiss the progress dialog on the main thread
+            withContext(Dispatchers.Main) {
+                progressDialog.dismiss()
             }
         }
+    }
 
-        mutableCardCode.observe(this) {
-            if (!cardScannerActive) {
-                return@observe
-            }
-            var accessGranted = false
-            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
-                if (it["ErrorCode"].equals("1")) {
-                    thread {
-                        cardText(it["CardResponse"].toString(), accessGranted)
+private fun setObservers() {
+    mutableLarusCode.observe(this) {
+        Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+        if (!it["CardCode"].equals("0")) {
+            it["CardCode"]?.let { it1 -> MyHttpClient.pingy(it1) }
+            //TODO navHostFragment.navController.currentDestination ako ocemo vidjet u kojem smo
+
+
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+            val navController = navHostFragment.navController
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    val bundle = Bundle()
+                    bundle.putString("CardCode", it["CardCode"])
+                    bundle.putString("DateTime", it["DateTime"])
+                    try {
+                        val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
+                        val person = db.PersonDao().get(cardOwner)
+                        bundle.putString("name", person.firstName + " " + person.lastName)
+                        navController.navigate(R.id.action_mainFragment_to_FirstFragment, bundle)
+
+
+                    } catch (e : Exception) {
+                        Toast.makeText(this, "KARTICA NE POSTOJI U SUSTAVU!", Toast.LENGTH_LONG).show() //TODO dodat neki dijalog il nes
                     }
-                } else if (it["CardNumber"] != null) {
-                    thread {
-                        val allowedAccessDao = db.CardDao()
 
-                        val dataList = allowedAccessDao.getAll()
+                }
 
-                        for (r in dataList) {
-                            if (r.cardNumber.equals(it["CardNumber"])) {
-                                accessGranted = true
-                            }
+                R.id.SettingsFragment -> {
+                    Toast.makeText(
+                        this,
+                        "skenirana kartica ali nije inicijaliziran prolaz",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+    mutableCardCode.observe(this) {
+        if (!cardScannerActive) {
+            return@observe
+        }
+        var accessGranted = false
+        if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
+            if (it["ErrorCode"].equals("1")) {
+                thread {
+                    cardText(
+                        it["CardResponse"].toString(),
+                        accessGranted
+                    ) //TODO INA TREBA FIXAT OVO
+                }
+            } else if (it["CardNumber"] != null) {
+                thread {
+                    val allowedAccessDao = db.CardDao()
+
+                    val dataList = allowedAccessDao.getAll()
+
+                    for (r in dataList) {
+                        if (r.cardNumber.equals(it["CardNumber"])) {
+                            accessGranted = true
                         }
+                    }
 
-                        cardText(it["CardNumber"].toString(), accessGranted)
-                        //resetButtons() //!!!!!
+                    cardText(it["CardNumber"].toString(), accessGranted)
+                    //resetButtons() //!!!!!
 //                        TODO rijesi to kad ce trebat
 //                        if (MyHttpClient.isClientReady() and accessGranted) {
 //                            if (exitBtnClicked) {
@@ -332,70 +339,70 @@ class MainActivity : AppCompatActivity() {
 //                                MyHttpClient.postData(mapOf("status" to "enter"))
 //                            }
 //                        }
-                    }
-                }
-            } else {
-                val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
-                alertDialog.setTitle("Napomena")
-                alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
-                alertDialog.setButton(
-                    AlertDialog.BUTTON_NEUTRAL, "OK",
-                    { dialog, which -> dialog.dismiss() })
-                alertDialog.show()
-            }
-        }
-        mutableDateTime.observe(this) {
-            if (it != null) {
-                val dateText = findViewById<TextView>(R.id.tv_date)
-                if(dateText != null) {
-                    dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                        .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                }
-
-                val clockText = findViewById<TextView>(R.id.tv_clock)
-                if(clockText != null) {
-                    clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                        .format(DateTimeFormatter.ofPattern("HH:mm"))
                 }
             }
+        } else {
+            val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
+            alertDialog.setTitle("Napomena")
+            alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
+            alertDialog.setButton(
+                AlertDialog.BUTTON_NEUTRAL, "OK",
+                { dialog, which -> dialog.dismiss() })
+            alertDialog.show()
         }
     }
 
-    fun getDateTime(): LocalDateTime? {
-        return mutableDateTime.value
-    }
+    mutableDateTime.observe(this) {
+        if (it != null) {
+            val dateText = findViewById<TextView>(R.id.tv_date)
+            if (dateText != null) {
+                dateText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            }
 
-    override fun onPause() {
-        super.onPause()
-        resetScreensaverTimer()
-        MyHttpClient.stop()
-        cardService?.releaseService()
+            val clockText = findViewById<TextView>(R.id.tv_clock)
+            if (clockText != null) {
+                clockText.text = LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
+                    .format(DateTimeFormatter.ofPattern("HH:mm"))
+            }
+        }
     }
+}
 
-    public override fun onStop() {
-        super.onStop()
+fun getDateTime(): LocalDateTime? {
+    return mutableDateTime.value
+}
+
+override fun onPause() {
+    super.onPause()
+    MyHttpClient.stop()
+    cardService?.releaseService()
+}
+
+public override fun onStop() {
+    super.onStop()
 //        MyHttpClient.stop()
-        OmniCard.release()
-    }
+    OmniCard.release()
+}
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
+override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    // Inflate the menu; this adds items to the action bar if it is present.
+    menuInflater.inflate(R.menu.menu_main, menu)
+    return true
+}
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
+override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
+    return when (item.itemId) {
+        R.id.action_settings -> true
+        else -> super.onOptionsItemSelected(item)
     }
+}
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
+override fun onSupportNavigateUp(): Boolean {
+    val navController = findNavController(R.id.nav_host_fragment_content_main)
+    return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+}
 }
