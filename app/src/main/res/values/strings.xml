@@ -32,5 +32,11 @@
     <string name="please_scan_card">Molimo očitajte karticu.</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="app_admin_receiver">AppAdminReceiver</string>
+    <string name="sample_device_admin">admin</string>
+    <string name="admin_receiver_status">admin</string>
+    <string name="admin_receiver_status_enabled">admin_enabled</string>
+    <string name="admin_receiver_status_disable_warning">admin_disable_warning</string>
+    <string name="admin_receiver_status_disabled">admin_disabled</string>
 
 </resources>

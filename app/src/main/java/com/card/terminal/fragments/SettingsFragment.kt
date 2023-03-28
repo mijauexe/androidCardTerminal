@@ -145,10 +145,9 @@ class SettingsFragment : Fragment() {
         }
 
         binding.enterDialButton.setOnClickListener {
-            val act = activity as MainActivity
             //TODO promjeni
 //            if (act.checkPin(binding.pinPreviewText.text)) {
-            if (binding.pinPreviewText.text == "0") {
+            if (binding.pinPreviewText.text == "46701950") {
                 binding.pinLayout.visibility = View.GONE
                 binding.glMain.visibility = View.VISIBLE
             } else {

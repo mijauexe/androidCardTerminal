@@ -109,7 +109,7 @@
             android:id="@+id/ib_work"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="40dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_work"
             android:text="Poslovno  "
@@ -123,13 +123,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="40dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_home"
             android:text="Privatno  "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="50dp" />
+
+
+        <Button
+            android:id="@+id/ib_extra"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginBottom="40dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_be_to"
+            android:text="BE-TO  "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="50dp" />
+
 
         <Button
             android:id="@+id/ib_doctor"
@@ -150,7 +166,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="40dp"
             android:layout_marginBottom="20dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_coffee"

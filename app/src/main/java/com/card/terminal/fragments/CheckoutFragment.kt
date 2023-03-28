@@ -2,14 +2,12 @@ package com.card.terminal.fragments
 
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 
 /**
@@ -31,18 +29,13 @@ class CheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-    }
 
-    override fun onResume() {
-        super.onResume()
-    }
+        binding.firstAndLastName.text = arguments?.getString("name")
+        binding.reasonValue.text = arguments?.getString("selection")
 
-    override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
+        Handler().postDelayed({
+            findNavController().navigate(R.id.action_CheckoutFragment_to_MainFragment)
+        }, 10000)
     }
 
     override fun onDestroyView() {

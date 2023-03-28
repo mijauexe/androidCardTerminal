@@ -1,6 +1,8 @@
 package com.card.terminal.fragments
 
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +13,7 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -47,11 +50,32 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+        var tracker = IntArray(3)
+        Handler().postDelayed({
+            tracker = IntArray(3)
+            binding.settingsButton.visibility = View.GONE
+        }, 10000)
+
         binding.ervHepLogo.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_FirstFragment)
+            tracker[0]++
+        }
+
+        binding.tvClock.setOnClickListener {
+            tracker[1]++
+        }
+
+        binding.pleaseScanIcon.setOnClickListener {
+            tracker[2]++
+            if (tracker[0] == 1 && tracker[1] == 2 && tracker[2] == 3) {
+                binding.settingsButton.visibility = View.VISIBLE
+            }
         }
 
 //        binding.pinButton.setOnClickListener {
@@ -60,6 +84,7 @@ class MainFragment : Fragment() {
 
         binding.settingsButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
+
         }
     }
 

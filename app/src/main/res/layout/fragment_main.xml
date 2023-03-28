@@ -78,6 +78,7 @@
             android:textSize="@dimen/menu" />
 
         <ImageView
+            android:id="@+id/please_scan_icon"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:src="@drawable/card_scan" />
@@ -133,6 +134,7 @@
 
     <Button
         android:id="@+id/settingsButton"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
