@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/card_button_smaller"
+    android:height="@dimen/card_button_smaller"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+  <path
+      android:fillColor="#FF000000"
+      android:pathData="M120,840L120,425.92l200,-85.15v78.46L520,339v101h320v400L120,840ZM150.77,809.23h658.46v-338.37h-320v-86.71l-200,80v-78.23l-138.46,61v362.31ZM453.85,701.54h52.31L506.15,578.46h-52.31v123.08ZM293.85,701.54h52.31L346.15,578.46h-52.31v123.08ZM613.85,701.54h52.31L666.15,578.46h-52.31v123.08ZM840,440L724.61,440l40,-289.23h40L840,440ZM150.77,809.23h658.46,-658.46Z"/>
+</vector>

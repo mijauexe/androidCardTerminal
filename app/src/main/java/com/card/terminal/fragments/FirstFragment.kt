@@ -1,5 +1,6 @@
 package com.card.terminal.fragments
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import com.card.terminal.utils.ContextProvider
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -42,12 +44,44 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val act = activity as MainActivity
-        act.setButtons()
+        binding.firstAndLastName.text = arguments?.getString("name")
 
-        binding.buttonSecond.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
+        val existingBundle = requireArguments()
+        print(existingBundle)
+
+        binding.ibWork.setOnClickListener {
+            binding.ibWork.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Poslovno")
+            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
         }
+
+        binding.ibPrivate.setOnClickListener {
+            binding.ibPrivate.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Privatno")
+            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+        }
+
+        binding.ibCoffee.setOnClickListener {
+            binding.ibCoffee.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Pauza")
+            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+        }
+
+        binding.ibDoctor.setOnClickListener {
+            binding.ibDoctor.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Liječnik")
+            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+        }
+
+        binding.ibExtra.setOnClickListener {
+            binding.ibExtra.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "BE-TO")
+            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+        }
+
+//        binding.buttonSecond.setOnClickListener {
+//            findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
+//        }
     }
 
     override fun onDestroyView() {

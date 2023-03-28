@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9D9D9"
+    tools:context=".fragments.CheckoutFragment">
+
+
+    <GridLayout
+        android:id="@+id/glMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_marginTop="50dp"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/erv_hep"/>
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:textColor="@color/black"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/tv_date"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/tv_clock"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/clock"
+            android:textSize="45sp" />
+
+        <TextView
+            android:id="@+id/first_and_last_name"
+            android:layout_marginTop="50dp"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Đuro Đurić"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/person"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/person_sample" />
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="100dp"
+            android:src="@drawable/hep_logo"/>
+
+    </GridLayout>
+
+    <GridLayout
+        android:id="@+id/glDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/glMain"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
+
+    </GridLayout>
+
+    <GridLayout
+        android:background="@drawable/card_button_background"
+        android:id="@+id/glRight"
+        android:layout_width="700dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/glMain"
+        android:layout_toStartOf="@+id/glMain"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/glMain"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/confirmation_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/black"
+            android:text="Potvrda"
+            android:textSize="65dp" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom"
+            android:columnCount="2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteX="0dp">
+
+            <GridLayout
+                android:id="@+id/gridLayout3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnCount="2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <TextView
+                    android:id="@+id/readout_key"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:text="Očitanje:"
+                    android:layout_marginStart="10dp"
+                    android:textAllCaps="false"
+                    android:textSize="45dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/readout_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginStart="50dp"
+                    android:text="Izlaz "
+                    android:layout_marginBottom="50dp"
+                    android:textAllCaps="false"
+                    android:textSize="45dp"
+                    android:layout_marginEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/idk1" />
+
+
+                <TextView
+                    android:id="@+id/reason_key"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="Razlog izlaza"
+                    android:textAllCaps="false"
+                    android:textSize="45dp"
+                    android:layout_marginStart="10dp"
+
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/reason_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginStart="50dp"
+                    android:text="Službeni izlaz "
+                    android:textAllCaps="false"
+                    android:textSize="45dp"
+                    android:layout_marginEnd="5dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/idk3" />
+            </GridLayout>
+
+
+            <GridLayout
+                android:id="@+id/gridLayout4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:layout_marginTop="50dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/gridLayout3">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hvala."
+                    android:textSize="70dp" />
+
+                <Button
+                    android:id="@+id/smile"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:background="@android:color/transparent"
+                    android:drawableStart="@drawable/happy_smile"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="-10dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="50dp" />
+            </GridLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+
+
+
+
+    </GridLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

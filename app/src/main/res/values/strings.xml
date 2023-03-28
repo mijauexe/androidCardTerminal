@@ -23,11 +23,20 @@
     <string name="wrong_pin_message">Incorrect PIN. Please try again.</string>
     <string name="larusip">192.168.0.200</string>
     <string name="larusport">8005</string>
-    <string name="serverip">192.168.0.199</string>
+    <string name="serverip">http://sucic.info/b0pass/b0pass_iftp2.php</string>
     <string name="serverport">80</string>
     <string name="larus_ip_adresa">Larus IP adresa</string>
     <string name="larus_port">Larus port</string>
     <string name="server_ip_adresa">Server IP adresa</string>
     <string name="server_port">Server port</string>
+    <string name="please_scan_card">Molimo očitajte karticu.</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="app_admin_receiver">AppAdminReceiver</string>
+    <string name="sample_device_admin">admin</string>
+    <string name="admin_receiver_status">admin</string>
+    <string name="admin_receiver_status_enabled">admin_enabled</string>
+    <string name="admin_receiver_status_disable_warning">admin_disable_warning</string>
+    <string name="admin_receiver_status_disabled">admin_disabled</string>
 
 </resources>

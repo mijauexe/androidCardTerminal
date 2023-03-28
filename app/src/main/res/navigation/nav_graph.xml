@@ -14,6 +14,10 @@
         <action
             android:id="@+id/action_FirstFragment_to_mainFragment"
             app:destination="@id/MainFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_CheckoutFragment"
+            app:destination="@id/CheckoutFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -31,6 +35,15 @@
         tools:layout="@layout/fragment_settings">
         <action
             android:id="@+id/action_SettingsFragment_to_mainFragment"
+            app:destination="@id/MainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/CheckoutFragment"
+        android:name="com.card.terminal.fragments.CheckoutFragment"
+        android:label="CheckoutFragment"
+        tools:layout="@layout/fragment_checkout">
+        <action
+            android:id="@+id/action_CheckoutFragment_to_MainFragment"
             app:destination="@id/MainFragment" />
     </fragment>
     <fragment

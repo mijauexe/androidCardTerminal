@@ -16,4 +16,5 @@
     <style name="Theme.androidCardTerminal.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.androidCardTerminal.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>

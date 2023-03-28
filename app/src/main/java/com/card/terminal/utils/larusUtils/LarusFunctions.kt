@@ -1,7 +1,9 @@
 package com.card.terminal.utils.larusUtils
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.ContextProvider
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,6 +13,13 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.util.*
+
 
 class LarusFunctions(
     val client: HttpClient,
@@ -18,29 +27,40 @@ class LarusFunctions(
 ) {
 
     fun pingEndpoint() {
-        runBlocking {
-            launch(Dispatchers.IO) {
-                val response: HttpResponse = client.request("192.168.0.200") {
-                    method = HttpMethod.Get
-                }
-                mutableCode.postValue(mapOf("response" to response.toString()))
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            val larusEndpoint = getPortAndIP()
+            val response: HttpResponse = client.request(larusEndpoint.ip) {
+                method = HttpMethod.Get
             }
+            mutableCode.postValue(mapOf("pingResponse" to response.toString()))
         }
     }
 
+    data class LarusEndpoint(var ip: String, var port: Int)
+
+    fun getPortAndIP(): LarusEndpoint {
+        val sharedPreferences = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+        val ip = sharedPreferences.getString("larusIP", "0")
+        val port = sharedPreferences.getInt("larusPort", 8005)
+        return LarusEndpoint(ip!!, port)
+    }
+
     fun readLatestEvent() {
-        var lastRead = 0
-        var lastSave = 0
-        var full = 0
+        var lastRead: Int
+        var lastSave: Int
+        var full: Int
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             try {
+                val larusEndpoint = getPortAndIP()
 
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val socket = aSocket(selectorManager).tcp()
                 var socket1: Socket?
                 withTimeout(2000) {
-                    socket1 = socket.connect("192.168.0.200", 8005)
+                    socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                 }
                 var receiveChannel = socket1!!.openReadChannel()
                 var sendChannel = socket1!!.openWriteChannel(autoFlush = true)
@@ -84,7 +104,7 @@ class LarusFunctions(
                     lastRead += 12
 
                     withTimeout(2000) {
-                        socket1 = socket.connect("192.168.0.200", 8005)
+                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                     }
                     receiveChannel = socket1!!.openReadChannel()
                     sendChannel = socket1!!.openWriteChannel(autoFlush = true)
@@ -97,7 +117,6 @@ class LarusFunctions(
                     val event =
                         MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
 
-                    val eventType = event[0]
                     val cardCode =
                         MyHttpClient.byteArrayToInt(
                             byteArrayOf(
@@ -109,16 +128,10 @@ class LarusFunctions(
                         )
 
                     println("cardCode:$cardCode")
-                    val hour = event[5]
-                    val minute = event[6]
-                    val second = event[7]
-                    val day = event[8]
-                    val month = event[9]
-                    val year = "20" + event[10]
 
                     val door = event[11] //uvijek 1??
-
-                    val dateTimeString = "$year-$month-$day" + "T" + "$hour:$minute:$second"
+                    print(door)
+                    val dateTimeString = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
 
                     println(dateTimeString)
 
@@ -127,7 +140,7 @@ class LarusFunctions(
                     }
 
                     withTimeout(2000) {
-                        socket1 = socket.connect("192.168.0.200", 8005)
+                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                     }
                     receiveChannel = socket1!!.openReadChannel()
                     sendChannel = socket1!!.openWriteChannel(autoFlush = true)
@@ -162,7 +175,7 @@ class LarusFunctions(
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
             } catch (e: Exception) {
-                println("Exception: ${e.message}")
+                println ("Exception: ${e.message}")
             }
         }
     }
@@ -193,11 +206,12 @@ class LarusFunctions(
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             try {
+                val larusEndpoint = getPortAndIP()
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val socket = aSocket(selectorManager).tcp()
                 val socket1: Socket?
                 withTimeout(2000) {
-                    socket1 = socket.connect("192.168.0.200", 8005)
+                    socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                 }
 
                 val receiveChannel = socket1?.openReadChannel()
@@ -226,8 +240,8 @@ class LarusFunctions(
         runBlocking {
             launch(Dispatchers.IO) {
                 val selectorManager = SelectorManager(Dispatchers.IO)
-                val socket = aSocket(selectorManager).tcp().connect("192.168.0.200", 8005)
-
+                val larusEndpoint = getPortAndIP()
+                val socket = aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
 
                 val receiveChannel = socket.openReadChannel()
                 val sendChannel = socket.openWriteChannel(autoFlush = true)
@@ -255,8 +269,8 @@ class LarusFunctions(
         runBlocking {
             launch(Dispatchers.IO) {
                 val selectorManager = SelectorManager(Dispatchers.IO)
-                val socket = aSocket(selectorManager).tcp().connect("192.168.0.200", 8005)
-
+                val larusEndpoint = getPortAndIP()
+                val socket = aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
 
                 val receiveChannel = socket.openReadChannel()
                 val sendChannel = socket.openWriteChannel(autoFlush = true)

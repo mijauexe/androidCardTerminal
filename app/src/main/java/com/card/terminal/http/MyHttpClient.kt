@@ -7,6 +7,7 @@ import com.card.terminal.http.plugins.configureRouting
 import com.card.terminal.http.plugins.configureSerialization
 import com.card.terminal.http.tasks.LarusCheckScansTask
 import com.card.terminal.main
+import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -34,7 +35,7 @@ object MyHttpClient {
     private var larusFunctions: LarusFunctions? = null
 
 
-    fun bindHttpClient(code: MutableLiveData<Map<String, String>>, appDatabase: AppDatabase) {
+    fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
         client = HttpClient() {
             install(ContentNegotiation) {
                 json()
@@ -46,16 +47,18 @@ object MyHttpClient {
         larusFunctions = LarusFunctions(client!!, mutableCode)
         larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
 
-        database = appDatabase
+        database = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
 
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
     }
 
-    fun pingy() {
+    fun pingy(cardNumber : String) {
         larusFunctions?.openDoor(1)
-        postData(mapOf("test" to "sven", "test1" to "miro"))
+        //postData(mapOf("test" to "sven", "test1" to "miro"))
+        //postData(mapOf("ACT" to "NEW_EVENTS", mapOf<String, Map>("CREAD" to )))
+        postString(cardNumber)
     }
 
     suspend fun getSocketResponse(
@@ -126,6 +129,23 @@ object MyHttpClient {
             val response = client?.post("http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST") {
                 contentType(ContentType.Application.Json)
                 setBody(cardResponseMap)
+            }
+            if (response != null) {
+                println(response)
+                println(response.bodyAsText())
+            }
+        }
+    }
+
+    fun postString(cardResponse: String) {
+        scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            val response = client?.post("http://sucic.info/b0pass/b0pass_iftp2.php") {
+                contentType(ContentType.Application.Json)
+                val str = "{\"ACT\": \"NEW_EVENTS\",\n" +
+                        "\"CREAD\":[{\"CN\":\"${cardResponse}\", \"GENT\":\"2023-03-23T15:00:05\", \"ECODE\":\"1\"}]" +
+                        "}"
+                setBody(str)
             }
             if (response != null) {
                 println(response)
