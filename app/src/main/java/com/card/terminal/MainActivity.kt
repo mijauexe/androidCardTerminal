@@ -109,8 +109,9 @@ class MainActivity : AppCompatActivity() {
         val isAdmin = isAdmin()
 
         if (isAdmin) {
-            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
             val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+            setKioskPolicies(true, true)
             btn1.setOnClickListener {
                 setKioskPolicies(true, true)
             }
@@ -124,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         } else {
-            Toast.makeText(this, "you're NOT admin!", Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, "you're NOT admin!", Toast.LENGTH_LONG).show()
         }
 
     }
