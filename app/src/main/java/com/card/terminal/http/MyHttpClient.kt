@@ -1,13 +1,17 @@
 package com.card.terminal.http
 
 import android.app.Application
+import android.content.Context
+import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.db.AppDatabase
+import com.card.terminal.db.entity.Event
 import com.card.terminal.http.plugins.configureRouting
 import com.card.terminal.http.plugins.configureSerialization
 import com.card.terminal.http.tasks.LarusCheckScansTask
 import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
+import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -27,7 +31,8 @@ object MyHttpClient {
 
     private var mutableCode = MutableLiveData<Map<String, String>>()
     private var mContext: Application? = null
-    private var database: AppDatabase? = null
+
+        private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
 
     private var larusCheckScansTask: TimerTask? = null
@@ -54,11 +59,9 @@ object MyHttpClient {
         (larusCheckScansTask as LarusCheckScansTask).startTask()
     }
 
-    fun pingy(cardNumber : String) {
+    fun pingy(bundle: Bundle) {
         larusFunctions?.openDoor(1)
-        //postData(mapOf("test" to "sven", "test1" to "miro"))
-        //postData(mapOf("ACT" to "NEW_EVENTS", mapOf<String, Map>("CREAD" to )))
-        postString(cardNumber)
+        posaljiOcitanje(bundle)
     }
 
     suspend fun getSocketResponse(
@@ -97,6 +100,7 @@ object MyHttpClient {
         stop()
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
+
             database?.let { main(it) }
             val server = embeddedServer(Netty, port = 6969) {
                 configureSerialization()
@@ -123,33 +127,39 @@ object MyHttpClient {
         return client != null
     }
 
-    fun postData(cardResponseMap: Map<String, String>) {
+    fun posaljiOcitanje(cardResponse: Bundle) {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
-            val response = client?.post("http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST") {
-                contentType(ContentType.Application.Json)
-                setBody(cardResponseMap)
-            }
-            if (response != null) {
-                println(response)
-                println(response.bodyAsText())
-            }
-        }
-    }
 
-    fun postString(cardResponse: String) {
-        scope = CoroutineScope(Dispatchers.Default)
-        scope.launch {
-            val response = client?.post("http://sucic.info/b0pass/b0pass_iftp2.php") {
-                contentType(ContentType.Application.Json)
-                val str = "{\"ACT\": \"NEW_EVENTS\",\n" +
-                        "\"CREAD\":[{\"CN\":\"${cardResponse}\", \"GENT\":\"2023-03-23T15:00:05\", \"ECODE\":\"1\"}]" +
-                        "}"
-                setBody(str)
-            }
+            val mySharedPreferences =
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+            val response =
+                mySharedPreferences.getString(
+                    "serverIP",
+                    "http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST"
+                )
+                    ?.let {
+                        client?.post(it) {
+                            contentType(ContentType.Application.Json)
+                            setBody(MiroConverter().convertToPOSTFormat(cardResponse))
+                        }
+                    }
             if (response != null) {
                 println(response)
                 println(response.bodyAsText())
+                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+                val event = Event(
+                    eventCode = MiroConverter().convertECode(
+                        cardResponse.get("selection").toString()
+                    ),
+                    cardNumber = cardResponse.get("CardCode").toString().toInt(),
+                    dateTime = cardResponse.get("DateTime").toString(),
+                    published = response.status == HttpStatusCode.OK,
+                    uid = 0 //auto-generate
+                )
+                db.EventDao().insert(event)
             }
         }
     }

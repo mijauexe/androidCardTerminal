@@ -1,6 +1,7 @@
 package com.card.terminal.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -16,14 +17,10 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSettingsBinding
 import com.card.terminal.utils.ContextProvider
 
-
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
     private lateinit var mySharedPreferences: SharedPreferences
 
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
     private var resetPin = false
     override fun onCreateView(
@@ -49,6 +46,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         setKeyboardButtons()
 
         val larusIPEditText = binding.larusIP
@@ -159,34 +157,6 @@ class SettingsFragment : Fragment() {
             }
         }
     }
-
-//    fun setTexts() {
-//        ipOfPCB = binding.larusIP.text.toString()
-//        val editText1 = binding.larusIP
-//        editText1.setText(ipOfPCB, TextView.BufferType.EDITABLE)
-//
-//        try {
-//            portOfPCB = binding.larusPort.text.toString().toInt()
-//            val editText2 = binding.larusPort
-//            editText2.setText(binding.larusPort.text, TextView.BufferType.EDITABLE)
-//        } catch (e: java.lang.NumberFormatException) {
-//            Toast.makeText(this@SettingsFragment.context, "Unesi broj za port.", Toast.LENGTH_LONG)
-//                .show()
-//        }
-//
-//        ipOfServer = binding.ServerIP.text.toString()
-//        val editText3 = binding.ServerIP
-//        editText3.setText(ipOfServer, TextView.BufferType.EDITABLE)
-//
-//        try {
-//            portOfServer = binding.ServerPort.text.toString().toInt()
-//            val editText4 = binding.ServerPort
-//            editText4.setText(binding.ServerPort.text, TextView.BufferType.EDITABLE)
-//        } catch (e: java.lang.NumberFormatException) {
-//            Toast.makeText(this@SettingsFragment.context, "Unesi broj za port.", Toast.LENGTH_LONG)
-//                .show()
-//        }
-//    }
 
     override fun onDestroyView() {
         super.onDestroyView()

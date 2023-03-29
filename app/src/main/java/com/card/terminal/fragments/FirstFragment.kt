@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -65,6 +66,7 @@ class FirstFragment : Fragment() {
             binding.ibCoffee.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "Pauza")
             findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+            MyHttpClient.pingy(existingBundle)
         }
 
         binding.ibDoctor.setOnClickListener {

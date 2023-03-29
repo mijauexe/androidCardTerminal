@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PersonWithCards(
     @Embedded val person: Person,
+    @Serializable
     @Relation(
         parentColumn = "uid",
         entityColumn = "owner"

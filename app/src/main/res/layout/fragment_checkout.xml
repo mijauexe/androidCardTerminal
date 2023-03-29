@@ -155,7 +155,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:text="Razlog izlaza"
+                    android:text="Razlog izlaza:"
                     android:textAllCaps="false"
                     android:textSize="45dp"
                     android:layout_marginStart="10dp"

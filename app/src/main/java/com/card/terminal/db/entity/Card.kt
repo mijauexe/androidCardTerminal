@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Entity
 @Serializable
 class Card(
-    @PrimaryKey @ColumnInfo(name = "card_number") val cardNumber: String,
-    @ColumnInfo(name = "owner") val owner: Int,
-    @ColumnInfo(name = "expiration_date") val expirationDate: String,
+    @Serializable @PrimaryKey @ColumnInfo(name = "card_number") val cardNumber: String,
+    @Serializable @ColumnInfo(name = "owner") val owner: Int,
+    @Serializable @ColumnInfo(name = "expiration_date") val expirationDate: String,
 )

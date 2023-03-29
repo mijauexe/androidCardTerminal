@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Entity
 @Serializable
 class Person(
-    @PrimaryKey @ColumnInfo(name = "uid") val uid: Int,
-    @ColumnInfo(name = "first_name") val firstName: String,
-    @ColumnInfo(name = "last_name") val lastName: String,
+    @Serializable @PrimaryKey @ColumnInfo(name = "uid") val uid: Int,
+    @Serializable  @ColumnInfo(name = "first_name") val firstName: String,
+    @Serializable @ColumnInfo(name = "last_name") val lastName: String,
 //    @Ignore val picture: Bitmap?
 )

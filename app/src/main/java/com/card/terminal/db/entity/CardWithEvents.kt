@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CardWithEvents(
     @Embedded val card: Card,
+    @Serializable
     @Relation(
         parentColumn = "card_number",
         entityColumn = "card_number"

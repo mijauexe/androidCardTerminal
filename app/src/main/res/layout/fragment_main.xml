@@ -118,6 +118,22 @@
 <!--            app:layout_constraintStart_toEndOf="@id/erv_hep_logo"-->
 <!--            app:layout_constraintTop_toTopOf="parent" />-->
 
+        <Button
+            android:id="@+id/setKioskPolicies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Kiosk Policies"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/erv_hep_logo" />
+
+        <Button
+            android:id="@+id/removeKioskPolicies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remove Kiosk Policies"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/setKioskPolicies" />
+
         <ImageView
             android:id="@+id/ifsimus_logo"
             android:layout_marginEnd="50dp"

@@ -1,13 +1,29 @@
 package com.card.terminal.http.routes
 
 import com.card.terminal.database
+import com.card.terminal.db.entity.Event
+import com.card.terminal.db.entity.Person
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.eventRouting() {
     route("/event") {
+        post {
+            val event = call.receive<Event>()
+            try {
+                database?.EventDao()?.insert(event)
+                call.respondText("Event stored correctly", status = HttpStatusCode.Created)
+            } catch (e: Exception) {
+                print(e.printStackTrace())
+                call.respondText(
+                    e.printStackTrace().toString(), status = HttpStatusCode.BadRequest
+                )
+            }
+        }
+
         get {
             val list = database?.EventDao()?.getAll()
             if (list?.isNotEmpty() == true) {

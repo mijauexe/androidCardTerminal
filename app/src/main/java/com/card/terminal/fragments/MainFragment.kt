@@ -60,7 +60,12 @@ class MainFragment : Fragment() {
         var tracker = IntArray(3)
         Handler().postDelayed({
             tracker = IntArray(3)
-            binding.settingsButton.visibility = View.GONE
+            if(_binding != null) {
+                val btn = binding.settingsButton
+                if(btn != null) {
+                    binding.settingsButton.visibility = View.GONE
+                }
+            }
         }, 10000)
 
         binding.ervHepLogo.setOnClickListener {
