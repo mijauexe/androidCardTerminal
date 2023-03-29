@@ -1,9 +1,9 @@
 package com.card.terminal.fragments
 
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
@@ -14,17 +14,6 @@ import com.card.terminal.databinding.FragmentMainBinding
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [MainFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
 
@@ -53,43 +42,75 @@ class MainFragment : Fragment() {
     override fun onStart() {
         super.onStart()
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
 
-        var tracker = IntArray(3)
+        var trackerSettingsIcon = IntArray(3)
+
         Handler().postDelayed({
-            tracker = IntArray(3)
-            if(_binding != null) {
-                val btn = binding.settingsButton
-                if(btn != null) {
-                    binding.settingsButton.visibility = View.GONE
-                }
-            }
+            trackerSettingsIcon = IntArray(3)
+            binding.settingsButton.visibility = View.GONE
         }, 10000)
 
+        var trackerKioskIcons = IntArray(3)
+
+        Handler().postDelayed({
+            trackerKioskIcons = IntArray(3)
+            binding.setKioskPolicies.visibility = View.GONE
+            binding.removeKioskPolicies.visibility = View.GONE
+        }, 10000)
+
+        binding.tvDate.setOnClickListener {
+            trackerKioskIcons[0]++
+        }
+
+        binding.pleaseScanCardText.setOnClickListener {
+            trackerKioskIcons = IntArray(3)
+            trackerSettingsIcon = IntArray(3)
+            binding.setKioskPolicies.visibility = View.GONE
+            binding.removeKioskPolicies.visibility = View.GONE
+            binding.settingsButton.visibility = View.GONE
+        }
+
+        binding.ifsimusLogo.setOnClickListener {
+            trackerKioskIcons[2]++
+            if (trackerKioskIcons[0] == 2 && trackerKioskIcons[1] == 3 && trackerKioskIcons[2] == 5) {
+                if(binding.setKioskPolicies.visibility == View.VISIBLE) {
+                    binding.setKioskPolicies.visibility = View.GONE
+                    binding.removeKioskPolicies.visibility = View.GONE
+                } else {
+                    binding.setKioskPolicies.visibility = View.VISIBLE
+                    binding.removeKioskPolicies.visibility = View.VISIBLE
+                }
+                trackerKioskIcons = IntArray(3)
+            }
+        }
+
         binding.ervHepLogo.setOnClickListener {
-            tracker[0]++
+            trackerSettingsIcon[0]++
         }
 
         binding.tvClock.setOnClickListener {
-            tracker[1]++
+            trackerSettingsIcon[1]++
         }
 
         binding.pleaseScanIcon.setOnClickListener {
-            tracker[2]++
-            if (tracker[0] == 1 && tracker[1] == 2 && tracker[2] == 3) {
-                binding.settingsButton.visibility = View.VISIBLE
+            trackerSettingsIcon[2]++
+            trackerKioskIcons[1]++
+            if (trackerSettingsIcon[0] == 1 && trackerSettingsIcon[1] == 2 && trackerSettingsIcon[2] == 3) {
+                if(binding.settingsButton.visibility == View.VISIBLE) {
+                    binding.settingsButton.visibility = View.GONE
+                } else {
+                    binding.settingsButton.visibility = View.VISIBLE
+                }
+                trackerSettingsIcon = IntArray(3)
             }
         }
 
-//        binding.pinButton.setOnClickListener {
-//            findNavController().navigate(R.id.action_mainFragment_to_SecondFragment)
-//        }
-
         binding.settingsButton.setOnClickListener {
             findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
-
         }
     }
 

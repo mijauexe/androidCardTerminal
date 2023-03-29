@@ -159,7 +159,7 @@ object MyHttpClient {
                         "http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST"
                     )
                         ?.let {
-                            client?.post("gf") {
+                            client?.post(it) {
                                 contentType(ContentType.Application.Json)
                                 setBody(MiroConverter().convertToPOSTFormat(cardResponse))
                             }

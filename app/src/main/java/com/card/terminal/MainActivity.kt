@@ -68,8 +68,6 @@ class MainActivity : AppCompatActivity() {
     val PREFS_NAME = "MyPrefsFile"
     val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
 
-
-
     companion object {
         const val LOCK_ACTIVITY_KEY = "com.card.terminal.MainActivity"
     }
@@ -137,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         mutableDateTime.postValue(LocalDateTime.now())
         ShowDateTime.setDateAndTime(mutableDateTime)
 
-
+        //TODO INA
 //        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
 //            if (ContextCompat.checkSelfPermission(
 //                    this,
@@ -162,28 +160,11 @@ class MainActivity : AppCompatActivity() {
         setObservers()
     }
 
-    fun switchToCheckoutFragment(selection: String) {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-        val navController = navHostFragment.navController
-
-        val bundle = Bundle()
-        bundle.putString("selection", selection)
-
-        when (navHostFragment.navController.currentDestination?.id) {
-            R.id.FirstFragment -> {
-                navController.navigate(
-                    R.id.action_FirstFragment_to_CheckoutFragment, bundle
-                )
-            }
-        }
-    }
-
     private fun resetButtons() {
         findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
         findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
-        //TODO EXTRA i doktor za INA?
+        //TODO EXTRAbtn i doktor za INA?
         workBtnClicked = false
         privateBtnClicked = false
         coffeeBtnClicked = false
@@ -195,7 +176,7 @@ class MainActivity : AppCompatActivity() {
             resetButtons()
             val dialog = this.let { CustomDialog(it, "Card number: $text", access) }
             dialog.setOnShowListener {
-                Thread.sleep(3000)
+                Thread.sleep(3000) //TODO OVO JE JAKO LOSE
                 it.dismiss()
             }
             dialog.show()
@@ -219,6 +200,22 @@ class MainActivity : AppCompatActivity() {
             // dismiss the progress dialog on the main thread
             withContext(Dispatchers.Main) {
                 progressDialog.dismiss()
+            }
+        }
+    }
+
+    fun showDialog(text: String, boolean: Boolean) {
+        val dialog = CustomDialog(this, text, boolean)
+        GlobalScope.launch {
+            // show the progress dialog on the main thread
+            withContext(Dispatchers.Main) {
+                dialog.show()
+            }
+            // suspend the coroutine for 5 seconds
+            delay(5 * 1000) // 5000 milliseconds = 5 seconds
+            // dismiss the progress dialog on the main thread
+            withContext(Dispatchers.Main) {
+                dialog.dismiss()
             }
         }
     }
@@ -249,18 +246,13 @@ class MainActivity : AppCompatActivity() {
                                 bundle
                             )
                         } catch (e: Exception) {
-                            Toast.makeText(this, "KARTICA NE POSTOJI U SUSTAVU!", Toast.LENGTH_LONG)
-                                .show() //TODO dodat neki dijalog il nes
+                            showDialog("Kartica ne postoji u sustavu", false)
                         }
 
                     }
 
                     R.id.SettingsFragment -> {
-                        Toast.makeText(
-                            this,
-                            "skenirana kartica ali nije inicijaliziran prolaz",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        showDialog("skenirana kartica ali nije inicijaliziran prolaz...", false)
                     }
                 }
             }
@@ -479,48 +471,5 @@ class MainActivity : AppCompatActivity() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             window.decorView.systemUiVisibility = flags
         }
-    }
-
-    private fun createIntentSender(
-        context: Context?,
-        sessionId: Int,
-        packageName: String?
-    ): IntentSender {
-        val intent = Intent("INSTALL_COMPLETE")
-        if (packageName != null) {
-            intent.putExtra("PACKAGE_NAME", packageName)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            sessionId,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        return pendingIntent.intentSender
-    }
-
-    private fun installApp() {
-        if (!isAdmin()) {
-            return
-        }
-        val raw = resources.openRawResource(R.raw.other_app)
-        val packageInstaller: PackageInstaller = packageManager.packageInstaller
-        val params =
-            PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-        params.setAppPackageName("com.mrugas.smallapp")
-        val sessionId = packageInstaller.createSession(params)
-        val session = packageInstaller.openSession(sessionId)
-        val out = session.openWrite("SmallApp", 0, -1)
-        val buffer = ByteArray(65536)
-        var c: Int
-        while (raw.read(buffer).also { c = it } != -1) {
-            out.write(buffer, 0, c)
-        }
-        session.fsync(out)
-        out.close()
-        createIntentSender(this, sessionId, packageName).let { intentSender ->
-            session.commit(intentSender)
-        }
-        session.close()
     }
 }

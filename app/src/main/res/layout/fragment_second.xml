@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/hep_logo"/>
             <TextView
-                android:id="@+id/tv_company_name"
+                android:id="@+id/please_scan_card_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
