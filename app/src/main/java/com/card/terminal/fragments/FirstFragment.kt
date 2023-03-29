@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
@@ -50,40 +51,51 @@ class FirstFragment : Fragment() {
         val existingBundle = requireArguments()
         print(existingBundle)
 
+
+
+
         binding.ibWork.setOnClickListener {
             binding.ibWork.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "Poslovno")
-            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibPrivate.setOnClickListener {
             binding.ibPrivate.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "Privatno")
-            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+            goToCheckoutWithBundle(existingBundle)
+
         }
 
         binding.ibCoffee.setOnClickListener {
             binding.ibCoffee.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "Pauza")
-            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
-            MyHttpClient.pingy(existingBundle)
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibDoctor.setOnClickListener {
             binding.ibDoctor.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "Liječnik")
-            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibExtra.setOnClickListener {
             binding.ibExtra.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putString("selection", "BE-TO")
-            findNavController().navigate(R.id.action_FirstFragment_to_CheckoutFragment, existingBundle)
+            goToCheckoutWithBundle(existingBundle)
         }
+    }
 
-//        binding.buttonSecond.setOnClickListener {
-//            findNavController().navigate(R.id.action_FirstFragment_to_mainFragment)
-//        }
+    fun goToCheckoutWithBundle(bundle: Bundle) {
+        when (findNavController().currentDestination?.id) {
+            R.id.FirstFragment -> {
+                findNavController().navigate(
+                    R.id.action_FirstFragment_to_CheckoutFragment,
+                    bundle
+                )
+            }
+        }
+        MyHttpClient.pingy(bundle)
     }
 
     override fun onDestroyView() {

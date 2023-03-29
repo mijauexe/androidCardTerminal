@@ -14,6 +14,7 @@ import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -23,6 +24,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import java.net.ConnectException
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -32,7 +34,7 @@ object MyHttpClient {
     private var mutableCode = MutableLiveData<Map<String, String>>()
     private var mContext: Application? = null
 
-        private var database: AppDatabase? = null
+    private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
 
     private var larusCheckScansTask: TimerTask? = null
@@ -44,6 +46,19 @@ object MyHttpClient {
         client = HttpClient() {
             install(ContentNegotiation) {
                 json()
+            }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                exponentialDelay()
+                retryIf { request, response ->
+                    !response.status.isSuccess()
+                }
+                retryOnExceptionIf { request, cause ->
+                    cause is Exception
+                }
+                delayMillis { retry ->
+                    retry * 3000L
+                } // retries in 3, 6, 9, etc. seconds
             }
         }
 
@@ -135,32 +150,40 @@ object MyHttpClient {
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 
-            val response =
-                mySharedPreferences.getString(
-                    "serverIP",
-                    "http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST"
-                )
-                    ?.let {
-                        client?.post(it) {
-                            contentType(ContentType.Application.Json)
-                            setBody(MiroConverter().convertToPOSTFormat(cardResponse))
+
+
+            try {
+                val response =
+                    mySharedPreferences.getString(
+                        "serverIP",
+                        "http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST"
+                    )
+                        ?.let {
+                            client?.post("gf") {
+                                contentType(ContentType.Application.Json)
+                                setBody(MiroConverter().convertToPOSTFormat(cardResponse))
+                            }
                         }
-                    }
-            if (response != null) {
-                println(response)
-                println(response.bodyAsText())
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-                val event = Event(
-                    eventCode = MiroConverter().convertECode(
-                        cardResponse.get("selection").toString()
-                    ),
-                    cardNumber = cardResponse.get("CardCode").toString().toInt(),
-                    dateTime = cardResponse.get("DateTime").toString(),
-                    published = response.status == HttpStatusCode.OK,
-                    uid = 0 //auto-generate
-                )
-                db.EventDao().insert(event)
+                insertInDatabase(cardResponse, true)
+            } catch (ce: ConnectException) {
+                insertInDatabase(cardResponse, false)
             }
         }
     }
+
+    fun insertInDatabase(cardResponse: Bundle, b: Boolean) {
+        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        val event = Event(
+            eventCode = MiroConverter().convertECode(
+                cardResponse.get("selection").toString()
+            ),
+            cardNumber = cardResponse.get("CardCode").toString().toInt(),
+            dateTime = cardResponse.get("DateTime").toString(),
+            published = b,
+            uid = 0 //auto-generate
+        )
+        db.EventDao().insert(event)
+    }
+
+
 }
