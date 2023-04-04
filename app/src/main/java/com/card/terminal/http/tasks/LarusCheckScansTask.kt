@@ -7,7 +7,7 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     TimerTask() {
     private var timer: Timer? = null
     val delay = 0L
-    val period = 2000L
+    val period = 1000L
 
     override fun run() {
         larusFunctions.readLatestEvent()

@@ -1,12 +1,13 @@
 package com.card.terminal
 
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
-import android.graphics.Color
+import android.content.pm.PackageManager
 import android.os.*
 import android.provider.Settings
 import android.smartcardio.ipc.ICardService
@@ -18,7 +19,10 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -27,6 +31,7 @@ import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.utils.AdminUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
@@ -34,10 +39,11 @@ import com.card.terminal.utils.cardUtils.OmniCard
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.concurrent.thread
 
 
@@ -74,9 +80,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Thread.setDefaultUncaughtExceptionHandler(
+            UEHandler(
+                this,
+                MainActivity::class.java
+            )
+        )
 
         ContextProvider.setApplicationContext(this)
-
 
         db = AppDatabase.getInstance((this))
 
@@ -86,15 +97,26 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
-        startLogger()
+        val permission = READ_EXTERNAL_STORAGE
+        val requestCode = 123 // You can choose any integer value for the request code
+
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
+        } else {
+            startLogger()
+        }
+
+
+
+        Timber.d("hello world")
 
         if (isFirstTime) {
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
             // Set the preferences for first time app install...
             editor.putBoolean("kioskMode", false)
-            editor.putString("larusIP", "nsve.tplinkdns.com")
-            editor.putInt("larusPort", 6798)
+            editor.putString("larusIP", "192.168.0.200")
+            editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
             editor.apply()
@@ -114,31 +136,27 @@ class MainActivity : AppCompatActivity() {
 
         val isAdmin = isAdmin()
 
-        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
-        btn1.setOnClickListener {
-            setKioskPolicies(true, true)
-            val editor = prefs.edit()
-            editor.putBoolean("kioskMode", true)
-            editor.apply()
-        }
-
-
-        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
-        btn2.setOnClickListener {
-            setKioskPolicies(false, true)
-            val editor = prefs.edit()
-            editor.putBoolean("kioskMode", false)
-            editor.apply()
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
-            intent.putExtra(LOCK_ACTIVITY_KEY, false)
-            startActivity(intent)
-        }
-
-
-
         if (isAdmin && prefs.getBoolean("kioskMode", false)) {
+            val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+            btn1.setOnClickListener {
+                setKioskPolicies(true, true)
+                val editor = prefs.edit()
+                editor.putBoolean("kioskMode", true)
+                editor.apply()
+            }
+
+            val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
+            btn2.setOnClickListener {
+                setKioskPolicies(false, true)
+                val editor = prefs.edit()
+                editor.putBoolean("kioskMode", false)
+                editor.apply()
+                val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                intent.putExtra(LOCK_ACTIVITY_KEY, false)
+                startActivity(intent)
+            }
 //            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
 
             setKioskPolicies(true, true)
@@ -153,26 +171,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startLogger() {
-//        try {
-//            val logFolder = File("/sdcard/")
-//            if (!logFolder.exists()) {
-//                logFolder.mkdir()
-//            }
-//
-//            val t: Timber.Tree = FileLoggerTree.Builder()
-//                .withFileName("TerminalLog.txt")
-//                .withDirName(logFolder.absolutePath)
-//                .withSizeLimit(5000000)
-//                .withFileLimit(1)
-//                .withMinPriority(Log.DEBUG)
-//                .withFormatter(CustomLogFormatter(this))
-//                .appendToFile(true)
-//                .build()
-//            Timber.plant(t)
-//
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
+        try {
+            val logFolder = Environment.getExternalStorageDirectory().absoluteFile
+            if (!logFolder.exists()) {
+                logFolder.mkdir()
+            }
+
+            val t = FileLoggerTree.Builder()
+                .withFileName("my_log_file.txt")
+                .withDir(logFolder)
+                .withFormatter(CustomLogFormatter())
+                .withSizeLimit(5000000)
+                .withFileLimit(3)
+                .withMinPriority(Log.DEBUG)
+                .appendToFile(true)
+                .build()
+
+            Timber.plant(t)
+            println("logger started?")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onResume() {
@@ -207,9 +226,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetButtons() {
-        findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
-        findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
-        findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
+//        findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
+//        findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
+//        findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
         //TODO EXTRAbtn i doktor za INA?
         workBtnClicked = false
         privateBtnClicked = false
@@ -277,23 +296,10 @@ class MainActivity : AppCompatActivity() {
 
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
-                        val bundle = Bundle()
-                        bundle.putString("CardCode", it["CardCode"])
-                        bundle.putString("DateTime", it["DateTime"])
-                        try {
-                            val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
-                            val person = db.PersonDao().get(cardOwner)
-                            bundle.putString("userId", person.uid.toString())
+                        handleCardScan(it, navController)
+                    }
 
-                            //TODO ADD PICTURE OF USER
-                            bundle.putString("name", person.firstName + " " + person.lastName)
-                            navController.navigate(
-                                R.id.action_mainFragment_to_FirstFragment,
-                                bundle
-                            )
-                        } catch (e: Exception) {
-                            showDialog("Kartica ne postoji u sustavu", false)
-                        }
+                    R.id.CheckoutFragment -> {
 
                     }
 
@@ -368,6 +374,26 @@ class MainActivity : AppCompatActivity() {
                             .format(DateTimeFormatter.ofPattern("HH:mm"))
                 }
             }
+        }
+    }
+
+    fun handleCardScan(it: Map<String, String>, navController: NavController) {
+        val bundle = Bundle()
+        bundle.putString("CardCode", it["CardCode"])
+        bundle.putString("DateTime", it["DateTime"])
+        try {
+            val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
+            val person = db.PersonDao().get(cardOwner)
+            bundle.putString("userId", person.uid.toString())
+
+            //TODO ADD PICTURE OF USER
+            bundle.putString("name", person.firstName + " " + person.lastName)
+            navController.navigate(
+                R.id.action_mainFragment_to_FirstFragment,
+                bundle
+            )
+        } catch (e: Exception) {
+            showDialog("Kartica ne postoji u sustavu", false)
         }
     }
 

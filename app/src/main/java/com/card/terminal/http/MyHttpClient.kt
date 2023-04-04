@@ -3,6 +3,8 @@ package com.card.terminal.http
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.view.View
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Event
@@ -72,9 +74,19 @@ object MyHttpClient {
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
+
+//        Handler().postDelayed({
+//            stopLarusSocket()
+//        }, 10000)
+
+    }
+
+    fun stopLarusSocket() {
+        (larusCheckScansTask as LarusCheckScansTask).stopTask()
     }
 
     fun pingy(bundle: Bundle) {
+//        larusFunctions?.setDoorTime(15000, 15000, 1000, 1000)
         larusFunctions?.openDoor(1)
         posaljiOcitanje(bundle)
     }
@@ -129,6 +141,7 @@ object MyHttpClient {
     }
 
     fun stop() {
+        stopLarusSocket()
         try {
             if (this::scope.isInitialized && scope.isActive) {
                 scope.cancel()
@@ -150,13 +163,11 @@ object MyHttpClient {
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 
-
-
             try {
                 val response =
                     mySharedPreferences.getString(
                         "serverIP",
-                        "http://sucic.info/b0pass/b0pass_iftp2.php?act=IFTTERM2_REQUEST"
+                        "http://sucic.info/b0pass/b0pass_iftp2.php"
                     )
                         ?.let {
                             client?.post(it) {
@@ -164,6 +175,9 @@ object MyHttpClient {
                                 setBody(MiroConverter().convertToPOSTFormat(cardResponse))
                             }
                         }
+                if (response != null) {
+                    println(response.bodyAsText())
+                }
                 insertInDatabase(cardResponse, true)
             } catch (ce: ConnectException) {
                 insertInDatabase(cardResponse, false)

@@ -18,8 +18,8 @@
     <!-- New permissions for handling wifi connections -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 
     <queries>
         <intent>
@@ -54,6 +54,8 @@
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.SCREEN_OFF" />
                 <action android:name="android.media.VOLUME_CHANGED_ACTION" />
+                <action android:name="android.settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION" />
+
             </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"

@@ -14,7 +14,7 @@ class MiroConverter {
             "Poslovno" -> eCode = 6
         }
 
-        val str = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1\"," +
+        val str = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1-sisak\"," +
                 "\"CREAD\":[" +
                 "{\"CN\":\"${cardResponse.get("CardCode")}\", \"GENT\":\"${
                     cardResponse.get(
@@ -35,11 +35,11 @@ class MiroConverter {
     fun convertECode(s: String): Int {
         var eCode = -1
         when (s) {
-            "BE-TO" -> eCode = 0
-            "Liječnik" -> eCode = 3
-            "Privatno" -> eCode = 4
-            "Pauza" -> eCode = 5
-            "Poslovno" -> eCode = 6
+            s -> eCode = 0
+//            "Liječnik" -> eCode = 3
+//            "Privatno" -> eCode = 4
+//            "Pauza" -> eCode = 5
+//            "Poslovno" -> eCode = 6
         }
         return eCode
     }
