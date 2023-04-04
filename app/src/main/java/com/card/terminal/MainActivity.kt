@@ -1,18 +1,16 @@
 package com.card.terminal
 
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.app.ProgressDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageInstaller
 import android.graphics.Color
 import android.os.*
 import android.provider.Settings
 import android.smartcardio.ipc.ICardService
-import android.view.KeyEvent
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -20,7 +18,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -34,8 +31,11 @@ import com.card.terminal.utils.AdminUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
-import com.google.android.material.snackbar.Snackbar
+import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
+import timber.log.Timber
+import java.io.File
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
@@ -76,6 +76,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         ContextProvider.setApplicationContext(this)
+
+
         db = AppDatabase.getInstance((this))
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -83,10 +85,14 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
+
+        startLogger()
+
         if (isFirstTime) {
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
             // Set the preferences for first time app install...
+            editor.putBoolean("kioskMode", false)
             editor.putString("larusIP", "nsve.tplinkdns.com")
             editor.putInt("larusPort", 6798)
             editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
@@ -108,26 +114,65 @@ class MainActivity : AppCompatActivity() {
 
         val isAdmin = isAdmin()
 
-        if (isAdmin) {
-//            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
-            val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+        btn1.setOnClickListener {
             setKioskPolicies(true, true)
-            btn1.setOnClickListener {
-                setKioskPolicies(true, true)
+            val editor = prefs.edit()
+            editor.putBoolean("kioskMode", true)
+            editor.apply()
+        }
+
+
+        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
+        btn2.setOnClickListener {
+            setKioskPolicies(false, true)
+            val editor = prefs.edit()
+            editor.putBoolean("kioskMode", false)
+            editor.apply()
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
-            val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
-            btn2.setOnClickListener {
-                setKioskPolicies(false, true)
-                val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                }
-                intent.putExtra(LOCK_ACTIVITY_KEY, false)
-                startActivity(intent)
-            }
+            intent.putExtra(LOCK_ACTIVITY_KEY, false)
+            startActivity(intent)
+        }
+
+
+
+        if (isAdmin && prefs.getBoolean("kioskMode", false)) {
+//            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
+
+            setKioskPolicies(true, true)
+
+//            setKioskPolicies(true, true) not gud samo se loopa nazad u kiosk cim se disablea isti kiosk
+
+
         } else {
 //            Toast.makeText(this, "you're NOT admin!", Toast.LENGTH_LONG).show()
         }
 
+    }
+
+    private fun startLogger() {
+//        try {
+//            val logFolder = File("/sdcard/")
+//            if (!logFolder.exists()) {
+//                logFolder.mkdir()
+//            }
+//
+//            val t: Timber.Tree = FileLoggerTree.Builder()
+//                .withFileName("TerminalLog.txt")
+//                .withDirName(logFolder.absolutePath)
+//                .withSizeLimit(5000000)
+//                .withFileLimit(1)
+//                .withMinPriority(Log.DEBUG)
+//                .withFormatter(CustomLogFormatter(this))
+//                .appendToFile(true)
+//                .build()
+//            Timber.plant(t)
+//
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
     }
 
     override fun onResume() {
@@ -367,13 +412,13 @@ class MainActivity : AppCompatActivity() {
     private fun isAdmin() = mDevicePolicyManager.isDeviceOwnerApp(packageName)
 
     private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
-        if (isAdmin) {
-            setRestrictions(enable)
-            enableStayOnWhilePluggedIn(enable)
-            setUpdatePolicy(enable)
-            setAsHomeApp(enable)
-            setKeyGuardEnabled(enable)
-        }
+//        if (isAdmin) {
+        setRestrictions(enable)
+        enableStayOnWhilePluggedIn(enable)
+        setUpdatePolicy(enable)
+        setKeyGuardEnabled(enable)
+//        }
+        setAsHomeApp(enable)
         setLockTask(enable, isAdmin)
         setImmersiveMode(enable)
     }
