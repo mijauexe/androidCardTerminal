@@ -173,6 +173,7 @@ class MainActivity : AppCompatActivity() {
                 .withFileName("my_log_file.txt")
                 .withDir(logFolder)
                 .withFormatter(CustomLogFormatter())
+                .withFileLimit(1)
                 .withSizeLimit(5000000)
                 .withMinPriority(Log.DEBUG)
                 .appendToFile(true)
