@@ -7,10 +7,12 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import timber.log.Timber
 
 fun Route.personRouting() {
     route("/person") {
         get {
+            Timber.d("Msg: GET request on /person")
             val list = database?.PersonDao()?.getAll()
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
@@ -21,6 +23,7 @@ fun Route.personRouting() {
 
         get("/{id}") {
             val id = call.parameters["id"]
+            Timber.d("Msg: GET request on /person/$id")
             val person = id?.let { it1 -> database?.PersonDao()?.get(it1.toInt()) }
             if (person != null) {
                 call.respond(person)
@@ -30,6 +33,7 @@ fun Route.personRouting() {
         }
 
         post {
+            Timber.d("Msg: POST request on /person")
             val person = call.receive<Person>()
             try {
                 database?.PersonDao()?.insert(person)
@@ -43,6 +47,7 @@ fun Route.personRouting() {
         }
 
         post("/list") {
+            Timber.d("Msg: POST request on /person/list")
             val persons = call.receive<List<Person>>()
             try {
                 database?.PersonDao()?.insertAll(persons)
@@ -56,6 +61,7 @@ fun Route.personRouting() {
         }
 
         get("/cards") {
+            Timber.d("Msg: GET request on /person/cards")
             val list = database?.PersonWithCardsDao()?.getAll()
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
@@ -65,6 +71,7 @@ fun Route.personRouting() {
         }
 
         delete("/list") {
+            Timber.d("Msg: DELETE request on /person/list")
             val listOfIdsToBeDeleted = call.receive<Map<String, List<Int>>>()
             var deletedRow = 0
             val unsuccessful = mutableListOf<Int>()

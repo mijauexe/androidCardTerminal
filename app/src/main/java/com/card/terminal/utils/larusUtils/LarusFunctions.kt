@@ -12,6 +12,7 @@ import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import timber.log.Timber
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -173,9 +174,11 @@ class LarusFunctions(
                     )
                 }
             } catch (e: TimeoutCancellationException) {
-                println("TimeoutCancellationException: ${e.message}")
+//                println("TimeoutCancellationException: ${e.message}")
+                Timber.d("Msg: TImeoutCancellationException %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             } catch (e: Exception) {
                 println ("Exception: ${e.message}")
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
         }
     }
@@ -233,6 +236,7 @@ class LarusFunctions(
             } catch (e: Exception) {
                 println("Exception: ${e.message}")
             }
+            Timber.d("Msg: Door $doorNum opened")
         }
     }
 
@@ -256,6 +260,7 @@ class LarusFunctions(
                 println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
+                Timber.d("Msg: Reset command")
             }
         }
     }
@@ -304,6 +309,7 @@ class LarusFunctions(
 //                println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
+                Timber.d("Msg: Set door time to %d %d %d %d", openDoorTime1, openDoorTime2, closeDoorTime1, closeDoorTime2)
             }
 
         }

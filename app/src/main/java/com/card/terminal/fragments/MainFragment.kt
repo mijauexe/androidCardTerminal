@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -24,6 +25,7 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Timber.d("MainFragment onCreateView")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
         if (act.getDateTime() != null) {
@@ -44,7 +46,7 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.d("MainFragment onViewCreated")
         if(_binding != null) {
             var trackerSettingsIcon = IntArray(3)
 
@@ -110,6 +112,7 @@ class MainFragment : Fragment() {
 
             _binding?.settingsButton?.setOnClickListener {
                 findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
+                Timber.d("Msg: Settings menu opened")
             }
         }
 
@@ -117,6 +120,7 @@ class MainFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Timber.d("MainFragment onDestroyView")
         _binding = null
     }
 }

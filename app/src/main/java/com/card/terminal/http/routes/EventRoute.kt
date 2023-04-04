@@ -8,10 +8,12 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import timber.log.Timber
 
 fun Route.eventRouting() {
     route("/event") {
         post {
+            Timber.d("Msg: POST request on /event")
             val event = call.receive<Event>()
             try {
                 database?.EventDao()?.insert(event)
@@ -25,6 +27,7 @@ fun Route.eventRouting() {
         }
 
         get {
+            Timber.d("Msg: GET request on /event")
             val list = database?.EventDao()?.getAll()
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
@@ -35,6 +38,7 @@ fun Route.eventRouting() {
 
         get("{id?}") {
             val id = call.parameters["id"]
+            Timber.d("Msg: GET request on /event/$id")
             val event = id?.let { it1 -> database?.EventDao()?.get(it1.toInt()) }
             if (event != null) {
                 call.respond(event)
@@ -45,6 +49,7 @@ fun Route.eventRouting() {
 
         get("/card_number/{id?}") {
             val id = call.parameters["id"]
+            Timber.d("Msg: GET request on /event/card_number/$id")
             val event = id?.let { it1 -> database?.EventDao()?.getEventsByCardNumber(it1.toInt()) }
             if (event != null) {
                 call.respond(event)
@@ -55,6 +60,7 @@ fun Route.eventRouting() {
 
         get("/event_code/{id?}") {
             val id = call.parameters["id"]
+            Timber.d("Msg: GET request on /event/event_code/$id")
             val event = id?.let { it1 -> database?.EventDao()?.getEventsByEventCode(it1.toInt()) }
             if (event != null) {
                 call.respond(event)

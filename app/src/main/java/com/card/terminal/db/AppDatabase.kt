@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.card.terminal.db.dao.*
 import com.card.terminal.db.entity.*
+import timber.log.Timber
 
 @Database(entities = [Card::class, Event::class, Person::class], version = 2)
 @TypeConverters(Converters::class)
@@ -25,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java, "AppDatabase"
                 ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
             }
+            Timber.d("Msg: Instantiating database")
             return instance as AppDatabase
         }
     }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import timber.log.Timber
 
 class AdminReceiver: DeviceAdminReceiver() {
     companion object {
@@ -18,9 +19,11 @@ class AdminReceiver: DeviceAdminReceiver() {
 
     override fun onLockTaskModeEntering(context: Context, intent: Intent, pkg: String) {
         super.onLockTaskModeEntering(context, intent, pkg)
+        Timber.d("Msg: Entering lock task mode: %s | %s | %s", context.toString(), intent.toString(), pkg.toString())
     }
 
     override fun onLockTaskModeExiting(context: Context, intent: Intent) {
         super.onLockTaskModeExiting(context, intent)
+        Timber.d("Msg: Exiting lock task mode: %s | %s", context.toString(), intent.toString())
     }
 }

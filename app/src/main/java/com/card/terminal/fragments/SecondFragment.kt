@@ -14,6 +14,7 @@ import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.FragmentSecondBinding
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -35,7 +36,7 @@ class SecondFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
+        Timber.d("SecondFragment onCreateView")
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
         binding.tvDate.text =
@@ -65,7 +66,7 @@ class SecondFragment : Fragment() {
     @SuppressLint("ResourceAsColor")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.d("SecondFragment onViewCreated")
 
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
@@ -124,7 +125,7 @@ class SecondFragment : Fragment() {
 
         binding.enterDialButton.setOnClickListener {
             val act = activity as MainActivity
-            //TODO promjeni
+            //TODO ????
 //            if (act.checkPin(binding.pinPreviewText.text)) {
             if(binding.pinPreviewText.text == "0000"){
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
@@ -153,6 +154,7 @@ class SecondFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Timber.d("SecondFragment onDestroyView")
         _binding = null
     }
 }

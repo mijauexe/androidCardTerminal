@@ -7,10 +7,12 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import timber.log.Timber
 
 fun Route.cardRouting() {
     route("/card") {
         get {
+            Timber.d("Msg: GET request on /card")
             val list = database?.CardDao()?.getAll()
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
@@ -20,6 +22,7 @@ fun Route.cardRouting() {
         }
         get("/{id?}") {
             val id = call.parameters["id"]
+            Timber.d("Msg: GET request on /card/$id")
             val card = id?.let { it1 -> database?.CardDao()?.get(it1.toInt()) }
             if (card != null) {
                 call.respond(card)
@@ -32,6 +35,7 @@ fun Route.cardRouting() {
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
+            Timber.d("Msg: GET request on /card/person/$id")
             val list = database?.CardDao()?.getCardsByPersonId(id.toInt())
             if (list?.isNotEmpty() == true) {
                 call.respond(list)
@@ -40,6 +44,7 @@ fun Route.cardRouting() {
             }
         }
         post {
+            Timber.d("Msg: POST request on /card")
             val card = call.receive<Card>()
             try {
                 database?.CardDao()?.insert(card)
@@ -52,6 +57,7 @@ fun Route.cardRouting() {
         }
 
         post("/list") {
+            Timber.d("Msg: POST request on /card/list")
             val cards = call.receive<List<Card>>()
             try {
                 database?.CardDao()?.insertAll(cards)
@@ -64,6 +70,7 @@ fun Route.cardRouting() {
         }
 
         delete("/list/owner") {
+            Timber.d("Msg: DELETE request on /card/list/owner")
             val listOfIdsToBeDeleted = call.receive<Map<String, List<Int>>>()
             var deletedRow = 0
             val unsuccessful = mutableListOf<Int>()
@@ -105,6 +112,7 @@ fun Route.cardRouting() {
         }
 
         delete("/list/card_number") {
+            Timber.d("Msg: DELETE request on /card/list/card_number")
             val listOfIdsToBeDeleted = call.receive<Map<String, List<Int>>>()
             var deletedRow = 0
             val unsuccessful = mutableListOf<Int>()

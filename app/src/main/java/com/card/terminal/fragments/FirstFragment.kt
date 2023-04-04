@@ -13,6 +13,7 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -39,19 +40,17 @@ class FirstFragment : Fragment() {
         binding.tvClock.text =
             LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
                 .format(DateTimeFormatter.ofPattern("HH:mm"))
-
+        Timber.d("FirstFragment onCreateView")
         act.cardScannerActive = true
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.d("FirstFragment onViewCreated")
         binding.firstAndLastName.text = arguments?.getString("name")
 
         val existingBundle = requireArguments()
-        print(existingBundle)
-
-
 
         binding.ibWorkTrip.setOnClickListener {
             binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
@@ -100,6 +99,7 @@ class FirstFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Timber.d("FirstFragment onDestroyView")
         _binding = null
     }
 }

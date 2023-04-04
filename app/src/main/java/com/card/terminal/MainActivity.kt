@@ -32,7 +32,6 @@ import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
-import com.card.terminal.utils.AdminUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
@@ -40,7 +39,6 @@ import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -69,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mAdminComponentName: ComponentName
     private lateinit var mDevicePolicyManager: DevicePolicyManager
-    private lateinit var adminUtils: AdminUtils
 
     val PREFS_NAME = "MyPrefsFile"
     val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
@@ -80,31 +77,31 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val permission = READ_EXTERNAL_STORAGE
+        val requestCode = 123 // You can choose any integer value for the request code
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
+        } else {
+            startLogger()
+        }
+
+        Timber.d("Msg: MainActivity OnCreate called")
         Thread.setDefaultUncaughtExceptionHandler(
             UEHandler(
                 this,
                 MainActivity::class.java
             )
         )
-
+        Timber.d("Msg: setDefaultUncaughtExceptionHandler")
         ContextProvider.setApplicationContext(this)
 
         db = AppDatabase.getInstance((this))
-
+        Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
-
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
-
-        val permission = READ_EXTERNAL_STORAGE
-        val requestCode = 123 // You can choose any integer value for the request code
-
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
-        } else {
-            startLogger()
-        }
 
 
 
@@ -132,8 +129,6 @@ class MainActivity : AppCompatActivity() {
 
         mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
 
-        adminUtils = AdminUtils(this, mDevicePolicyManager, mAdminComponentName, LOCK_ACTIVITY_KEY)
-
         val isAdmin = isAdmin()
 
         if (isAdmin && prefs.getBoolean("kioskMode", false)) {
@@ -157,17 +152,10 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra(LOCK_ACTIVITY_KEY, false)
                 startActivity(intent)
             }
-//            Toast.makeText(this, "you're admin!", Toast.LENGTH_LONG).show()
 
             setKioskPolicies(true, true)
 
-//            setKioskPolicies(true, true) not gud samo se loopa nazad u kiosk cim se disablea isti kiosk
-
-
-        } else {
-//            Toast.makeText(this, "you're NOT admin!", Toast.LENGTH_LONG).show()
         }
-
     }
 
     private fun startLogger() {
@@ -188,7 +176,6 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
             Timber.plant(t)
-            println("logger started?")
         } catch (e: IOException) {
             e.printStackTrace()
         }

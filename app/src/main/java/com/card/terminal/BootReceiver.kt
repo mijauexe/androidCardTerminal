@@ -14,7 +14,7 @@ class BootReceiver : BroadcastReceiver() {
         myIntent.putExtra("boot", "yes")
         val b = Bundle()
         b.putString("boot", "yes")
-        Timber.d("starting on boot?")
+        Timber.d("Msg: BootReceiver started the app: %s | %s", context.toString(), intent.toString())
         context.startActivity(myIntent, b)
     }
 }

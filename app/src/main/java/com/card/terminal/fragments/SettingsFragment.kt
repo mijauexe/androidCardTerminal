@@ -16,6 +16,7 @@ import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSettingsBinding
 import com.card.terminal.utils.ContextProvider
+import timber.log.Timber
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -27,6 +28,7 @@ class SettingsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Timber.d("SettingsFragment onCreateView")
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -46,7 +48,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.d("SettingsFragment onViewCreated")
         setKeyboardButtons()
 
         val larusIPEditText = binding.larusIP
@@ -83,6 +85,7 @@ class SettingsFragment : Fragment() {
             editor.putString("serverIP", serverIPEditText.text.toString())
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.apply()
+            Timber.d("Msg: Preferences changed: %s", mySharedPreferences.toString())
         }
     }
 
@@ -160,6 +163,7 @@ class SettingsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Timber.d("SettingsFragment onDestroyView")
         _binding = null
     }
 }

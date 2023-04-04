@@ -26,6 +26,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
+import timber.log.Timber
 import java.net.ConnectException
 import java.nio.ByteBuffer
 import java.util.*
@@ -137,6 +138,7 @@ object MyHttpClient {
                 server.stop(1000, 5000)
             })
             server.start(wait = true)
+            Timber.d("Msg: Netty server started")
         }
     }
 
@@ -149,6 +151,7 @@ object MyHttpClient {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        Timber.d("Msg: MyHttpClient stopped")
     }
 
     fun isClientReady(): Boolean {
@@ -179,8 +182,10 @@ object MyHttpClient {
                     println(response.bodyAsText())
                 }
                 insertInDatabase(cardResponse, true)
+                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, true)
             } catch (ce: ConnectException) {
                 insertInDatabase(cardResponse, false)
+                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
             }
         }
     }

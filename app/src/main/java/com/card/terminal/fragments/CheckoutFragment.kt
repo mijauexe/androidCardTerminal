@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
+import timber.log.Timber
 
 /**
  * An example full-screen fragment that shows and hides the system UI (i.e.
@@ -24,12 +25,13 @@ class CheckoutFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentCheckoutBinding.inflate(inflater, container, false)
+        Timber.d("CheckoutFragment onCreateView")
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.d("CheckoutFragment onViewCreated")
         binding.firstAndLastName.text = arguments?.getString("name")
         binding.reasonValue.text = arguments?.getString("selection")
 
@@ -40,6 +42,7 @@ class CheckoutFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Timber.d("CheckoutFragment onDestroyView")
         _binding = null
     }
 }

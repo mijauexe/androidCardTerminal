@@ -1,6 +1,7 @@
 package com.card.terminal.http.tasks
 
 import com.card.terminal.utils.larusUtils.LarusFunctions
+import timber.log.Timber
 import java.util.*
 
 class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
@@ -14,6 +15,7 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     }
 
     fun startTask() {
+        Timber.d("Msg: LarusCheckScansTask started")
         timer = Timer()
         timer?.scheduleAtFixedRate(
             this,
@@ -23,6 +25,7 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     }
 
     fun stopTask() {
+        Timber.d("Msg: LarusCheckScansTask stopped")
         timer?.cancel()
     }
 }
