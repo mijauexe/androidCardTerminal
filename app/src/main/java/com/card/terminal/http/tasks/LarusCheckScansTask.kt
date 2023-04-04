@@ -9,12 +9,15 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     private var timer: Timer? = null
     val delay = 0L
     val period = 1000L
+    var started = false
 
     override fun run() {
+        started = true
         larusFunctions.readLatestEvent()
     }
 
     fun startTask() {
+        started = true
         Timber.d("Msg: LarusCheckScansTask started")
         timer = Timer()
         timer?.scheduleAtFixedRate(
@@ -25,6 +28,7 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     }
 
     fun stopTask() {
+        started = false
         Timber.d("Msg: LarusCheckScansTask stopped")
         timer?.cancel()
     }

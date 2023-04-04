@@ -35,6 +35,7 @@ import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.cardUtils.OmniCard
+import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -80,7 +81,11 @@ class MainActivity : AppCompatActivity() {
 
         val permission = READ_EXTERNAL_STORAGE
         val requestCode = 123 // You can choose any integer value for the request code
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
         } else {
             startLogger()
@@ -102,8 +107,6 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
-
-
 
         Timber.d("hello world")
 
@@ -131,30 +134,31 @@ class MainActivity : AppCompatActivity() {
 
         val isAdmin = isAdmin()
 
-        if (isAdmin && prefs.getBoolean("kioskMode", false)) {
-            val btn1 = findViewById<Button>(R.id.setKioskPolicies)
-            btn1.setOnClickListener {
-                setKioskPolicies(true, true)
-                val editor = prefs.edit()
-                editor.putBoolean("kioskMode", true)
-                editor.apply()
-            }
-
-            val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
-            btn2.setOnClickListener {
-                setKioskPolicies(false, true)
-                val editor = prefs.edit()
-                editor.putBoolean("kioskMode", false)
-                editor.apply()
-                val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                }
-                intent.putExtra(LOCK_ACTIVITY_KEY, false)
-                startActivity(intent)
-            }
-
+        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+        btn1.setOnClickListener {
+            Timber.d("setKioskPolicies button clicked")
             setKioskPolicies(true, true)
+            val editor = prefs.edit()
+            editor.putBoolean("kioskMode", true)
+            editor.apply()
+        }
 
+        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
+        btn2.setOnClickListener {
+            Timber.d("removeKioskPolicies button clicked")
+            setKioskPolicies(false, true)
+            val editor = prefs.edit()
+            editor.putBoolean("kioskMode", false)
+            editor.apply()
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+            intent.putExtra(LOCK_ACTIVITY_KEY, false)
+            startActivity(intent)
+        }
+
+        if (isAdmin && prefs.getBoolean("kioskMode", false)) {
+            setKioskPolicies(true, true)
         }
     }
 
@@ -170,7 +174,6 @@ class MainActivity : AppCompatActivity() {
                 .withDir(logFolder)
                 .withFormatter(CustomLogFormatter())
                 .withSizeLimit(5000000)
-                .withFileLimit(3)
                 .withMinPriority(Log.DEBUG)
                 .appendToFile(true)
                 .build()
@@ -274,7 +277,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setObservers() {
         mutableLarusCode.observe(this) {
-            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+//            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
             if (!it["CardCode"].equals("0")) {
 
                 val navHostFragment =
@@ -284,10 +287,6 @@ class MainActivity : AppCompatActivity() {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
                         handleCardScan(it, navController)
-                    }
-
-                    R.id.CheckoutFragment -> {
-
                     }
 
                     R.id.SettingsFragment -> {
@@ -396,9 +395,9 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onStop() {
         super.onStop()
-        //TODO LOGGER???
-//        MyHttpClient.stop()
+        MyHttpClient.stop()
         OmniCard.release()
+        stopTimber()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -422,7 +421,11 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun isAdmin() = mDevicePolicyManager.isDeviceOwnerApp(packageName)
+    private fun isAdmin(): Boolean {
+        val b = mDevicePolicyManager.isDeviceOwnerApp(packageName)
+        Timber.d("isAdmin: %b", b)
+        return b
+    }
 
     private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
 //        if (isAdmin) {

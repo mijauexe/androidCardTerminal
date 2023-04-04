@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
+import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -47,6 +48,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("MainFragment onViewCreated")
+
         if(_binding != null) {
             var trackerSettingsIcon = IntArray(3)
 
@@ -114,6 +116,7 @@ class MainFragment : Fragment() {
                 findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")
             }
+
         }
 
     }

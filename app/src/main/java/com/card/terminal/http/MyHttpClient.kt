@@ -86,6 +86,13 @@ object MyHttpClient {
         (larusCheckScansTask as LarusCheckScansTask).stopTask()
     }
 
+    fun startLarusSocket() {
+        if(!((larusCheckScansTask as LarusCheckScansTask).started)) {
+            larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+            (larusCheckScansTask as LarusCheckScansTask).startTask()
+        }
+    }
+
     fun pingy(bundle: Bundle) {
 //        larusFunctions?.setDoorTime(15000, 15000, 1000, 1000)
         larusFunctions?.openDoor(1)
@@ -135,7 +142,7 @@ object MyHttpClient {
                 configureRouting()
             }
             Runtime.getRuntime().addShutdownHook(Thread {
-                server.stop(1000, 5000)
+                server.stop(500, 500)
             })
             server.start(wait = true)
             Timber.d("Msg: Netty server started")
