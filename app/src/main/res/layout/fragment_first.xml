@@ -98,6 +98,7 @@
 
         <TextView
             android:id="@+id/reason_text"
+            android:layout_marginBottom="30dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -105,75 +106,89 @@
             android:textColor="@color/black"
             android:textSize="30dp" />
 
+        <TextView
+            android:id="@+id/business_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Službeno"
+            android:textColor="@color/black"
+            android:textSize="30dp" />
+
         <Button
-            android:id="@+id/ib_work"
+            android:id="@+id/ib_work_trip"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
-            android:layout_marginBottom="40dp"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_work"
-            android:text="Poslovno  "
+            android:text="Službeno putovanje (s nalogom) "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
-            android:textSize="50dp" />
+            android:textSize="35dp" />
 
         <Button
-            android:id="@+id/ib_private"
+            android:id="@+id/ib_work_trip_local"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_marginBottom="40dp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_home"
-            android:text="Privatno  "
-            android:textAllCaps="false"
-            android:textColor="@android:color/black"
-            android:textSize="50dp" />
-
-
-        <Button
-            android:id="@+id/ib_extra"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_marginBottom="40dp"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_be_to"
-            android:text="BE-TO  "
+            android:text="Lokalno (BE-TO Sisak) "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
-            android:textSize="50dp" />
+            android:textSize="35dp" />
+
+        <Button
+            android:id="@+id/ib_work_trip_other"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="start"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_work"
+            android:text="Ostalo "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="35dp" />
+
+
+        <TextView
+            android:id="@+id/private_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Privatno "
+            android:textColor="@color/black"
+            android:textSize="30dp" />
+
+        <Button
+            android:id="@+id/ib_private_w_permission"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="start"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_home"
+            android:text="Dozvoljeno "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="35dp" />
 
 
         <Button
-            android:id="@+id/ib_doctor"
+            android:id="@+id/ib_private_wout_permission"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity="start"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_stethoscope"
-            android:text="Liječnik  "
+            android:drawableStart="@drawable/ic_work"
+            android:text="Hitno (bez dozvole) "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
-            android:textSize="50dp" />
+            android:textSize="35dp" />
 
-        <Button
-            android:id="@+id/ib_coffee"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_marginTop="40dp"
-            android:layout_marginBottom="20dp"
-            android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_coffee"
-            android:text="Pauza  "
-            android:textAllCaps="false"
-            android:textColor="@android:color/black"
-            android:textSize="50dp" />
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

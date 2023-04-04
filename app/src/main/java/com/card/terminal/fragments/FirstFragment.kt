@@ -53,35 +53,35 @@ class FirstFragment : Fragment() {
 
 
 
-
-        binding.ibWork.setOnClickListener {
-            binding.ibWork.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Poslovno")
+        binding.ibWorkTrip.setOnClickListener {
+            binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "ibWorkTrip")
             goToCheckoutWithBundle(existingBundle)
         }
 
-        binding.ibPrivate.setOnClickListener {
-            binding.ibPrivate.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno")
+        binding.ibWorkTripLocal.setOnClickListener {
+            binding.ibWorkTripLocal.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "ibWorkTripLocal")
+//            throw Exception("gas")
             goToCheckoutWithBundle(existingBundle)
 
         }
 
-        binding.ibCoffee.setOnClickListener {
-            binding.ibCoffee.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Pauza")
+        binding.ibWorkTripOther.setOnClickListener {
+            binding.ibWorkTripOther.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "ibWorkTripOther")
             goToCheckoutWithBundle(existingBundle)
         }
 
-        binding.ibDoctor.setOnClickListener {
-            binding.ibDoctor.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Liječnik")
+        binding.ibPrivateWPermission.setOnClickListener {
+            binding.ibPrivateWPermission.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "ibPrivateWPermission")
             goToCheckoutWithBundle(existingBundle)
         }
 
-        binding.ibExtra.setOnClickListener {
-            binding.ibExtra.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "BE-TO")
+        binding.ibPrivateWoutPermission.setOnClickListener {
+            binding.ibPrivateWoutPermission.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "ibPrivateWoutPermission")
             goToCheckoutWithBundle(existingBundle)
         }
     }
