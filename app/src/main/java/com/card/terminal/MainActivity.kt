@@ -102,6 +102,8 @@ class MainActivity : AppCompatActivity() {
         ContextProvider.setApplicationContext(this)
 
         db = AppDatabase.getInstance((this))
+//        db.clearAllTables()
+
         Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
 
@@ -137,24 +139,28 @@ class MainActivity : AppCompatActivity() {
         val btn1 = findViewById<Button>(R.id.setKioskPolicies)
         btn1.setOnClickListener {
             Timber.d("setKioskPolicies button clicked")
-            setKioskPolicies(true, true)
-            val editor = prefs.edit()
-            editor.putBoolean("kioskMode", true)
-            editor.apply()
+            if(isAdmin()) {
+                setKioskPolicies(true, true)
+                val editor = prefs.edit()
+                editor.putBoolean("kioskMode", true)
+                editor.apply()
+            }
         }
 
         val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
         btn2.setOnClickListener {
             Timber.d("removeKioskPolicies button clicked")
-            setKioskPolicies(false, true)
-            val editor = prefs.edit()
-            editor.putBoolean("kioskMode", false)
-            editor.apply()
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            if(isAdmin()) {
+                setKioskPolicies(false, true)
+                val editor = prefs.edit()
+                editor.putBoolean("kioskMode", false)
+                editor.apply()
+                val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                intent.putExtra(LOCK_ACTIVITY_KEY, false)
+                startActivity(intent)
             }
-            intent.putExtra(LOCK_ACTIVITY_KEY, false)
-            startActivity(intent)
         }
 
         if (isAdmin && prefs.getBoolean("kioskMode", false)) {
@@ -380,7 +386,7 @@ class MainActivity : AppCompatActivity() {
                 bundle
             )
         } catch (e: Exception) {
-            showDialog("Kartica ne postoji u sustavu", false)
+            showDialog("Kartica nevažeća!", false)
         }
     }
 

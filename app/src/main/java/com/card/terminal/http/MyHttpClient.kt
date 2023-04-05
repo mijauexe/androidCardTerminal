@@ -87,7 +87,7 @@ object MyHttpClient {
     }
 
     fun startLarusSocket() {
-        if(!((larusCheckScansTask as LarusCheckScansTask).started)) {
+        if (!((larusCheckScansTask as LarusCheckScansTask).started)) {
             larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
             (larusCheckScansTask as LarusCheckScansTask).startTask()
         }
@@ -141,8 +141,10 @@ object MyHttpClient {
                 configureSerialization()
                 configureRouting()
             }
+
             Runtime.getRuntime().addShutdownHook(Thread {
-                server.stop(500, 500)
+//                System.exit(1)
+                server.stop(0, 0)
             })
             server.start(wait = true)
             Timber.d("Msg: Netty server started")
@@ -150,7 +152,6 @@ object MyHttpClient {
     }
 
     fun stop() {
-        stopLarusSocket()
         try {
             if (this::scope.isInitialized && scope.isActive) {
                 scope.cancel()
@@ -158,6 +159,7 @@ object MyHttpClient {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        stopLarusSocket()
         Timber.d("Msg: MyHttpClient stopped")
     }
 

@@ -11,4 +11,5 @@ class Card(
     @Serializable @PrimaryKey @ColumnInfo(name = "card_number") val cardNumber: String,
     @Serializable @ColumnInfo(name = "owner") val owner: Int,
     @Serializable @ColumnInfo(name = "expiration_date") val expirationDate: String,
+    @Serializable @ColumnInfo(name = "access_level") val accessLevel: Int,
 )
