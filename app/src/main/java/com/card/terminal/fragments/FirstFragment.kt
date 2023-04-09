@@ -2,6 +2,7 @@ package com.card.terminal.fragments
 
 import android.app.ProgressDialog
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -83,6 +84,16 @@ class FirstFragment : Fragment() {
             existingBundle.putString("selection", "ibPrivateWoutPermission")
             goToCheckoutWithBundle(existingBundle)
         }
+
+        Handler().postDelayed({
+            when (findNavController().currentDestination?.id) {
+                R.id.FirstFragment -> {
+                    findNavController().navigate(
+                        R.id.action_FirstFragment_to_mainFragment
+                    )
+                }
+            }
+        }, 10000)
     }
 
     fun goToCheckoutWithBundle(bundle: Bundle) {

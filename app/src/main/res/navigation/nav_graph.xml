@@ -45,6 +45,9 @@
         <action
             android:id="@+id/action_CheckoutFragment_to_MainFragment"
             app:destination="@id/MainFragment" />
+        <action
+            android:id="@+id/action_CheckoutFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
     </fragment>
     <fragment
         android:id="@+id/MainFragment"

@@ -122,7 +122,7 @@
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_work"
-            android:text="Službeno putovanje (s nalogom) "
+            android:text="Službeno putovanje "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="35dp" />
@@ -170,7 +170,7 @@
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_home"
-            android:text="Dozvoljeno "
+            android:text="Uz dozvolu "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="35dp" />
@@ -184,7 +184,7 @@
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_work"
-            android:text="Hitno (bez dozvole) "
+            android:text="Hitno "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="35dp" />

@@ -41,6 +41,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.concurrent.thread
@@ -121,6 +122,8 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
+//            editor.putString("lastScannedCardNumber", "")
+//            editor.putString("lastScannedCardTime", "")
             editor.apply()
         }
 
@@ -139,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         val btn1 = findViewById<Button>(R.id.setKioskPolicies)
         btn1.setOnClickListener {
             Timber.d("setKioskPolicies button clicked")
-            if(isAdmin()) {
+            if (isAdmin()) {
                 setKioskPolicies(true, true)
                 val editor = prefs.edit()
                 editor.putBoolean("kioskMode", true)
@@ -150,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
         btn2.setOnClickListener {
             Timber.d("removeKioskPolicies button clicked")
-            if(isAdmin()) {
+            if (isAdmin()) {
                 setKioskPolicies(false, true)
                 val editor = prefs.edit()
                 editor.putBoolean("kioskMode", false)
@@ -293,7 +296,11 @@ class MainActivity : AppCompatActivity() {
 
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
-                        handleCardScan(it, navController)
+                        handleCardScan(it)
+                    }
+
+                    R.id.CheckoutFragment -> {
+                        handleCardScan(it)
                     }
 
                     R.id.SettingsFragment -> {
@@ -370,24 +377,58 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun handleCardScan(it: Map<String, String>, navController: NavController) {
+    fun handleCardScan(it: Map<String, String>) {
         val bundle = Bundle()
         bundle.putString("CardCode", it["CardCode"])
         bundle.putString("DateTime", it["DateTime"])
-        try {
-            val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
-            val person = db.PersonDao().get(cardOwner)
-            bundle.putString("userId", person.uid.toString())
 
-            //TODO ADD PICTURE OF USER
-            bundle.putString("name", person.firstName + " " + person.lastName)
-            navController.navigate(
-                R.id.action_mainFragment_to_FirstFragment,
-                bundle
-            )
-        } catch (e: Exception) {
-            showDialog("Kartica nevažeća!", false)
+        val lastScanEvent = db.EventDao().getLastScanEvent()
+
+        if (!lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
+            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
+                .isBefore(LocalDateTime.now())
+        ) {
+            try {
+                val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
+                val person = db.PersonDao().get(cardOwner)
+                //TODO ADD PICTURE OF USER
+                bundle.putString("name", person.firstName + " " + person.lastName)
+                bundle.putString("userId", person.uid.toString())
+
+                val navHostFragment =
+                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+                val navController = navHostFragment.navController
+
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        navController.navigate(
+                            R.id.action_mainFragment_to_FirstFragment,
+                            bundle
+                        )
+                    }
+
+                    R.id.CheckoutFragment -> {
+                        navController.navigate(
+                            R.id.action_CheckoutFragment_to_FirstFragment,
+                            bundle
+                        )
+                    }
+
+                    R.id.SettingsFragment -> {
+                        showDialog(
+                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz :)",
+                            false
+                        )
+                    }
+                }
+            } catch (e: NullPointerException) {
+                showDialog("Kartica nevažeća!", false)
+            } catch (e : Exception) {
+                showDialog("Dogodila se greška! Molimo pokušajte ponovno.", false)
+            }
         }
+
+
     }
 
     fun getDateTime(): LocalDateTime? {

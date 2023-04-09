@@ -23,4 +23,7 @@ interface EventDao {
 
     @Query("SELECT * FROM Event WHERE event_code = :eventCode")
     fun getEventsByEventCode(eventCode: Int): List<Event>
+
+    @Query("SELECT * FROM Event ORDER BY date_time DESC LIMIT 1")
+    fun getLastScanEvent(): Event
 }

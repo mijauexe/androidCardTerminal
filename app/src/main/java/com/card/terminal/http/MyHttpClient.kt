@@ -143,8 +143,8 @@ object MyHttpClient {
             }
 
             Runtime.getRuntime().addShutdownHook(Thread {
-//                System.exit(1)
                 server.stop(0, 0)
+                Timber.d("Msg: Netty server stopped")
             })
             server.start(wait = true)
             Timber.d("Msg: Netty server started")

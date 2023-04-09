@@ -17,6 +17,7 @@ import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.util.*
@@ -73,7 +74,12 @@ class LarusFunctions(
 
                 val dataInfo =
                     MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
-                println(dataInfo)
+
+                println(LocalTime.now())
+                for (i in dataInfo) {
+                    print("$i ")
+                }
+                println()
 
                 lastRead =
                     MyHttpClient.byteArrayToInt(
@@ -174,8 +180,8 @@ class LarusFunctions(
                     )
                 }
             } catch (e: TimeoutCancellationException) {
-//                println("TimeoutCancellationException: ${e.message}")
-                Timber.d("Msg: TImeoutCancellationException %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                println("TimeoutCancellationException: ${e.message}")
+                Timber.d("Msg: TimeoutCancellationException %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             } catch (e: Exception) {
                 println ("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
