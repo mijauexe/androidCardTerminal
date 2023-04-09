@@ -42,7 +42,7 @@
                 android:layout_gravity="start"
                 android:text="@string/clock"
                 android:textColor="@color/black"
-                android:textSize="45sp" />
+                android:textSize="60sp" />
         </GridLayout>
 
         <ImageView
