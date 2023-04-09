@@ -364,7 +364,7 @@ class MainActivity : AppCompatActivity() {
                 if (dateText != null) {
                     dateText.text =
                         LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                            .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
                 }
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
@@ -391,9 +391,11 @@ class MainActivity : AppCompatActivity() {
             try {
                 val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
                 val person = db.PersonDao().get(cardOwner)
+
                 //TODO ADD PICTURE OF USER
                 bundle.putString("name", person.firstName + " " + person.lastName)
                 bundle.putString("userId", person.uid.toString())
+                bundle.putString("classType", person.classType)
 
                 val navHostFragment =
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment

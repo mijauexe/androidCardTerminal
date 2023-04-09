@@ -64,10 +64,10 @@
             android:src="@drawable/person_sample" />
 
         <ImageView
-            android:layout_width="150dp"
-            android:layout_height="100dp"
+            android:layout_width="250dp"
+            android:layout_height="150dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/hep_logo" />
+            android:src="@drawable/hep_proizvodnja" />
 
     </GridLayout>
 
@@ -118,6 +118,7 @@
             android:id="@+id/ib_work_trip"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
+            android:visibility="gone"
             android:layout_marginStart="80dp"
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
@@ -129,6 +130,7 @@
 
         <Button
             android:id="@+id/ib_work_trip_local"
+            android:visibility="gone"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
             android:layout_marginStart="80dp"
@@ -142,6 +144,7 @@
 
         <Button
             android:id="@+id/ib_work_trip_other"
+            android:visibility="gone"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
             android:layout_marginStart="80dp"
@@ -149,6 +152,34 @@
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_work"
             android:text="Ostalo "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="35dp" />
+
+        <Button
+            android:id="@+id/ib_contractor_1"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="start"
+            android:visibility="gone"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_work"
+            android:text="Izlazak po nalogu Naručitelja (HEP-a) "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="35dp" />
+
+        <Button
+            android:id="@+id/ib_contractor_2"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="start"
+            android:visibility="gone"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_work"
+            android:text="Izlazak po nalogu poslodavca "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="35dp" />
@@ -164,12 +195,13 @@
 
         <Button
             android:id="@+id/ib_private_w_permission"
+            android:visibility="gone"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
             android:layout_marginStart="80dp"
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_home"
+            android:drawableStart="@drawable/go_out"
             android:text="Uz dozvolu "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
@@ -178,13 +210,28 @@
 
         <Button
             android:id="@+id/ib_private_wout_permission"
+            android:visibility="gone"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_gravity="start"
             android:layout_marginStart="80dp"
             android:layout_marginBottom="25dp"
             android:background="@android:color/transparent"
-            android:drawableStart="@drawable/ic_work"
+            android:drawableStart="@drawable/emergency"
             android:text="Hitno "
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="35dp" />
+
+        <Button
+            android:id="@+id/ib_contractor_3"
+            android:visibility="gone"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_gravity="start"
+            android:layout_marginStart="80dp"
+            android:layout_marginBottom="25dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/go_out"
+            android:text="Privatni izlazak "
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="35dp" />

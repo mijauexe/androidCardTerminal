@@ -14,6 +14,7 @@ import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -32,7 +33,7 @@ class MainFragment : Fragment() {
         if (act.getDateTime() != null) {
             _binding?.tvDate?.text =
                 LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
             _binding?.tvClock?.text =
                 LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
                     .format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -40,10 +41,6 @@ class MainFragment : Fragment() {
         act.cardScannerActive = false
         return _binding?.root
     }
-
-//    override fun onStart() {
-//        super.onStart()
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

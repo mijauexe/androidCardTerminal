@@ -17,6 +17,7 @@ import com.card.terminal.databinding.FragmentSecondBinding
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 /**
@@ -41,7 +42,7 @@ class SecondFragment : Fragment() {
         val act = activity as MainActivity
         binding.tvDate.text =
             LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
         binding.tvClock.text =
             LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
                 .format(DateTimeFormatter.ofPattern("HH:mm"))

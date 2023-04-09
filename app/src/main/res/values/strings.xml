@@ -38,5 +38,6 @@
     <string name="admin_receiver_status_enabled">admin_enabled</string>
     <string name="admin_receiver_status_disable_warning">admin_disable_warning</string>
     <string name="admin_receiver_status_disabled">admin_disabled</string>
+    <string name="contractor_fragent_label">Contractor Fragment</string>
 
 </resources>
