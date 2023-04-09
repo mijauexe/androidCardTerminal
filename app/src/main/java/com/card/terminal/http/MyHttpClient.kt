@@ -3,8 +3,6 @@ package com.card.terminal.http
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.view.View
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Event
@@ -170,6 +168,7 @@ object MyHttpClient {
     fun posaljiOcitanje(cardResponse: Bundle) {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
+            eventToDatabase(cardResponse, false)
 
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
@@ -179,27 +178,34 @@ object MyHttpClient {
                 val response =
                     mySharedPreferences.getString(
                         "serverIP",
-                        "http://sucic.info/b0pass/b0pass_iftp2.php"
+                        ""
                     )
                         ?.let {
                             client?.post(it) {
                                 contentType(ContentType.Application.Json)
-                                setBody(MiroConverter().convertToPOSTFormat(cardResponse))
+                                setBody(MiroConverter().convertToNewEventsFormat(cardResponse))
                             }
                         }
                 if (response != null) {
                     println(response.bodyAsText())
+                    if (response.bodyAsText().contains("\"CODE\":\"0\""))
+                        eventToDatabase(cardResponse, true)
                 }
-                insertInDatabase(cardResponse, true)
                 Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, true)
             } catch (ce: ConnectException) {
-                insertInDatabase(cardResponse, false)
                 Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while publishing event(s) to server: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
             }
         }
     }
 
-    fun insertInDatabase(cardResponse: Bundle, b: Boolean) {
+    fun eventToDatabase(cardResponse: Bundle, update: Boolean) {
         val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
         val event = Event(
             eventCode = MiroConverter().convertECode(
@@ -207,10 +213,28 @@ object MyHttpClient {
             ),
             cardNumber = cardResponse.get("CardCode").toString().toInt(),
             dateTime = cardResponse.get("DateTime").toString(),
-            published = b,
+            published = update,
             uid = 0 //auto-generate
         )
-        db.EventDao().insert(event)
+        if (update) {
+            db.EventDao().update(event)
+        } else {
+            db.EventDao().insert(event)
+        }
+
+        val unpublishedEvents = db.EventDao().getUnpublishedEvents()
+
+        if (unpublishedEvents.size > 0) {
+            //try uploading unpublished events
+            publishToServer(unpublishedEvents)
+        }
+
+
+    }
+
+    fun publishToServer(list: List<Event>) {
+
+
     }
 
 

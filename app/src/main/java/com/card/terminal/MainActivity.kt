@@ -384,9 +384,9 @@ class MainActivity : AppCompatActivity() {
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
-        if (!lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
-            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
-                .isBefore(LocalDateTime.now())
+        if (lastScanEvent == null || !lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
+                    LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
+                        .isBefore(LocalDateTime.now())
         ) {
             try {
                 val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
@@ -425,7 +425,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: NullPointerException) {
                 showDialog("Kartica nevažeća!", false)
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 showDialog("Dogodila se greška! Molimo pokušajte ponovno.", false)
             }
         }

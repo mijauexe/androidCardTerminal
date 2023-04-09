@@ -1,11 +1,8 @@
 package com.card.terminal.db.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
+import com.card.terminal.db.entity.Card
 import com.card.terminal.db.entity.Event
-import com.card.terminal.db.entity.Person
 
 @Dao
 interface EventDao {
@@ -18,6 +15,15 @@ interface EventDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg event: Event)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertAll(events: List<Event>)
+
+    @Update
+    fun updateEvents(events: List<Event>)
+
+    @Update
+    fun update(vararg event: Event)
+
     @Query("SELECT * FROM Event WHERE card_number = :cardNumber")
     fun getEventsByCardNumber(cardNumber: Int): List<Event>
 
@@ -26,4 +32,7 @@ interface EventDao {
 
     @Query("SELECT * FROM Event ORDER BY date_time DESC LIMIT 1")
     fun getLastScanEvent(): Event
+
+    @Query("SELECT * FROM Event WHERE published = false")
+    fun getUnpublishedEvents(): List<Event>
 }

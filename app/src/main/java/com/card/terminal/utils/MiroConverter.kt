@@ -1,19 +1,13 @@
 package com.card.terminal.utils
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Card
+import com.card.terminal.db.entity.Event
 import com.card.terminal.db.entity.Person
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.google.gson.internal.LinkedTreeMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.putJsonArray
-import kotlinx.serialization.json.putJsonObject
+import kotlinx.coroutines.*
 import timber.log.Timber
 
 class MiroConverter {
@@ -37,110 +31,183 @@ class MiroConverter {
         val ACC_L_B0_ID: String
     )
 
-    data class addAllObject(
+    data class ifTermAddResponse(
+        val counter: Int,
+        val err: String,
+        val msg: String
+    )
+
+    data class CREAD(
+        val CN: String,
+        val GENT: String,
+        val ECODE: String,
+        val DEV_B0_ID: String
+    )
+
+    data class NewEventRequest( //saljem serveru evente
+        val ACT: String,
+        val IFTTERM2_B0_ID: String,
+        val CREAD: List<CREAD>
+    )
+
+    data class serverRequestObject(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("HOLDERS") val HOLDERS: ArrayList<HOLDERS>,
         @SerializedName("CARDS") val CARDS: ArrayList<CARDS>,
         @SerializedName("ACC_LEVELS") val ACC_LEVELS: ArrayList<ACC_LEVELS>
     )
 
-    fun convertFromAddAll(something: String) {
+    suspend fun convertFromServerRequest(something: String): String {
         val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
 
-            var counter = 0
-            val objectic = Gson().fromJson(something, addAllObject::class.java)
-
-            print(objectic)
-
-            val personList = mutableListOf<Person>()
-            for (person in objectic.HOLDERS) {
-                personList.add(
-                    Person(
-                        uid = person.B0_ID.toInt(),
-                        classType = person.B0_CLASS,
-                        firstName = person.FNAME,
-                        lastName = person.LNAME,
-                        image = person.IMAGE1
-                    )
-                )
+        if (something.contains("ADD_INIT1")) {
+            val scope1 = CoroutineScope(Dispatchers.IO)
+            val responseDeferred = scope1.async {
+                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+                db.clearAllTables()
             }
+            val response = responseDeferred.await()
+        }
 
-            try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-                db.PersonDao().insertAll(personList)
-                counter += personList.size
-            } catch (e: Exception) {
-                Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
-            }
+        val responseDeferred = scope.async {
+            val objectic = Gson().fromJson(something, serverRequestObject::class.java)
 
-            val acList = mutableListOf<Int>()
-            for (obj in objectic.ACC_LEVELS) {
-                acList.add(obj.ACC_L_B0_ID.toInt())
-            }
-
-            val cardList = mutableListOf<Card>()
-            var i = 0
-
-            for (obj in objectic.CARDS) {
-                cardList.add(
-                    Card(
-                        cardNumber = obj.CN,
-                        owner = obj.HOLDER_B0_ID.toInt(),
-                        expirationDate = "",
-                        accessLevel = acList.get(i)
-                    )
-                ) //TODO EXPIRATION DATE
-                i++
-            }
-
-            try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-                db.CardDao().insertAll(cardList)
-                counter += personList.size
-            } catch (e: Exception) {
-                Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
+            Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
+            when (objectic.ACT) {
+                "ADD_HCAL" -> {
+                    addHcal(objectic)
+                }
+                "ADD_INIT1" -> {
+                    addHcal(objectic)
+                }
+                else -> {
+                    // Handle other cases if needed
+                    ifTermAddResponse(0, "", "")
+                }
             }
         }
+
+        val response = responseDeferred.await()
+        return ifTermResponse(response as ifTermAddResponse)
     }
 
-fun convertToPOSTFormat(cardResponse: Bundle): String {
-    var eCode = -1
-    when (cardResponse.get("selection")) {
-        "BE-TO" -> eCode = 0
-        "Liječnik" -> eCode = 3
-        "Privatno" -> eCode = 4
-        "Pauza" -> eCode = 5
-        "Poslovno" -> eCode = 6
+    fun ifTermResponse(response: ifTermAddResponse): String {
+        return "{\"ACT\": \"IFTSRV2_RESPONSE\",\"NUM_CREAD\": \"${response.counter}\",\"ERROR\": {\"CODE\": \"${response.err}\",\"TEXT\": \"${response.msg}\"}}"
     }
 
-    val str = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1-sisak\"," +
-            "\"CREAD\":[" +
-            "{\"CN\":\"${cardResponse.get("CardCode")}\", \"GENT\":\"${
-                cardResponse.get(
-                    "DateTime"
+    fun addHcal(objectic: serverRequestObject): ifTermAddResponse {
+        var counter = 0
+        val personList = mutableListOf<Person>()
+        for (person in objectic.HOLDERS) {
+            personList.add(
+                Person(
+                    uid = person.B0_ID.toInt(),
+                    classType = person.B0_CLASS,
+                    firstName = person.FNAME,
+                    lastName = person.LNAME,
+                    image = person.IMAGE1
                 )
-            }\", \"ECODE\":\"${eCode}\", \"DEV_B0_ID\":\"${
-                cardResponse.get(
-                    "userId"
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.PersonDao().insertAll(personList)
+            counter += personList.size
+        } catch (e: Exception) {
+            Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
+        }
+
+        val acList = mutableListOf<Int>()
+        for (obj in objectic.ACC_LEVELS) {
+            acList.add(obj.ACC_L_B0_ID.toInt())
+        }
+
+        val cardList = mutableListOf<Card>()
+        var i = 0
+
+        for (obj in objectic.CARDS) {
+            cardList.add(
+                Card(
+                    cardNumber = obj.CN,
+                    owner = obj.HOLDER_B0_ID.toInt(),
+                    expirationDate = "",
+                    accessLevel = acList[i]
                 )
-            }\"}" +
-            "]" +
-            "}"
+            ) //TODO EXPIRATION DATE
+            i++
+        }
 
-    print(str)
-    return str
-}
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.CardDao().insertAll(cardList)
+            counter += cardList.size
+        } catch (e: Exception) {
+            Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
+        }
+        return ifTermAddResponse(counter = cardList.size, err = "0", msg = "Successful")
+    }
 
-fun convertECode(s: String): Int {
-    var eCode = -1
-    when (s) {
-        s -> eCode = 0
+    suspend fun convertToNewEventsFormat(cardResponse: Bundle): String {
+        var eCode = 0 //TODO HEP
+        when (cardResponse.get("selection")) {
+            "BE-TO" -> eCode = 0
+            "Liječnik" -> eCode = 3
+            "Privatno" -> eCode = 4
+            "Pauza" -> eCode = 5
+            "Poslovno" -> eCode = 6
+        }
+
+        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
+
+
+        val scope = CoroutineScope(Dispatchers.IO)
+        val responseDeferred = scope.async {
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            val unpublishedEvents = db.EventDao().getUnpublishedEvents()
+            for (ue in unpublishedEvents.indices) {
+                if (ue != unpublishedEvents.size - 1) {
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"},"
+                } else {
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"}]}"
+                }
+            }
+        }
+        val response = responseDeferred.await()
+        return strNew
+    }
+
+    suspend fun convertToNewEventsFormat(events: List<Event>): String {
+        var eCode = 0 //TODO HEP
+//        when (cardResponse.get("selection")) {
+//            "BE-TO" -> eCode = 0
 //            "Liječnik" -> eCode = 3
 //            "Privatno" -> eCode = 4
 //            "Pauza" -> eCode = 5
 //            "Poslovno" -> eCode = 6
+//        }
+
+        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
+
+        for (ue in events.indices) {
+            if (ue != events.size - 1) {
+                strNew += "{\"CN\":\"${events[ue].cardNumber}\", \"GENT\":\"${events[ue].dateTime}\", \"ECODE\":\"${events[ue].eventCode}\", \"DEV_B0_ID\":\"0\"},"
+            } else {
+                strNew += "{\"CN\":\"${events[ue].cardNumber}\", \"GENT\":\"${events[ue].dateTime}\", \"ECODE\":\"${events[ue].eventCode}\", \"DEV_B0_ID\":\"0\"}]}"
+            }
+        }
+        return strNew
     }
-    return eCode
-}
+
+    fun convertECode(s: String): Int {
+        var eCode = -1
+        when (s) {
+            s -> eCode = 0
+//            "Liječnik" -> eCode = 3
+//            "Privatno" -> eCode = 4
+//            "Pauza" -> eCode = 5
+//            "Poslovno" -> eCode = 6
+        }
+        return eCode
+    }
 }
