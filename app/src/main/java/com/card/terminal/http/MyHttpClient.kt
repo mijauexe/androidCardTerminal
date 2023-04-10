@@ -42,6 +42,7 @@ object MyHttpClient {
 
     private var larusFunctions: LarusFunctions? = null
 
+    lateinit var server: NettyApplicationEngine
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
         client = HttpClient() {
@@ -135,21 +136,24 @@ object MyHttpClient {
         scope.launch {
 
             database?.let { main(it) }
-            val server = embeddedServer(Netty, port = 6969) {
+            server = embeddedServer(Netty, port = 6969) {
                 configureSerialization()
                 configureRouting()
             }
-
             Runtime.getRuntime().addShutdownHook(Thread {
-                server.stop(0, 0)
+                server.stop(1_000, 2_000)
                 Timber.d("Msg: Netty server stopped")
             })
+//            server.stopServerOnCancellation()
             server.start(wait = true)
             Timber.d("Msg: Netty server started")
         }
     }
 
     fun stop() {
+        if (::server.isInitialized) {
+            server.stop(1_000, 2_000)
+        }
         try {
             if (this::scope.isInitialized && scope.isActive) {
                 scope.cancel()

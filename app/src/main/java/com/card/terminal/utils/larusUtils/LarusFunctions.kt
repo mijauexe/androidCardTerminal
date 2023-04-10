@@ -138,7 +138,8 @@ class LarusFunctions(
 
                     val door = event[11] //uvijek 1??
                     print(door)
-                    val dateTimeString = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
+                    val dateTimeString = LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
 
                     println(dateTimeString)
 
@@ -181,9 +182,14 @@ class LarusFunctions(
                 }
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
-                Timber.d("Msg: TimeoutCancellationException %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                Timber.d(
+                    "Msg: TimeoutCancellationException %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
             } catch (e: Exception) {
-                println ("Exception: ${e.message}")
+                println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
         }
@@ -251,7 +257,8 @@ class LarusFunctions(
             launch(Dispatchers.IO) {
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val larusEndpoint = getPortAndIP()
-                val socket = aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
+                val socket =
+                    aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
 
                 val receiveChannel = socket.openReadChannel()
                 val sendChannel = socket.openWriteChannel(autoFlush = true)
@@ -281,7 +288,8 @@ class LarusFunctions(
             launch(Dispatchers.IO) {
                 val selectorManager = SelectorManager(Dispatchers.IO)
                 val larusEndpoint = getPortAndIP()
-                val socket = aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
+                val socket =
+                    aSocket(selectorManager).tcp().connect(larusEndpoint.ip, larusEndpoint.port)
 
                 val receiveChannel = socket.openReadChannel()
                 val sendChannel = socket.openWriteChannel(autoFlush = true)
@@ -315,7 +323,13 @@ class LarusFunctions(
 //                println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
-                Timber.d("Msg: Set door time to %d %d %d %d", openDoorTime1, openDoorTime2, closeDoorTime1, closeDoorTime2)
+                Timber.d(
+                    "Msg: Set door time to %d %d %d %d",
+                    openDoorTime1,
+                    openDoorTime2,
+                    closeDoorTime1,
+                    closeDoorTime2
+                )
             }
 
         }

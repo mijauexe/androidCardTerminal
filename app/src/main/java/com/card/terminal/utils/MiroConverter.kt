@@ -81,8 +81,7 @@ class MiroConverter {
                     addHcal(objectic)
                 }
                 else -> {
-                    // Handle other cases if needed
-                    ifTermAddResponse(0, "", "")
+                    Timber.d("Msg: unknown request: %s", something)
                 }
             }
         }

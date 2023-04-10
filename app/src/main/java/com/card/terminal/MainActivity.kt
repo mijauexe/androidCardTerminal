@@ -385,8 +385,8 @@ class MainActivity : AppCompatActivity() {
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
         if (lastScanEvent == null || !lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
-                    LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
-                        .isBefore(LocalDateTime.now())
+            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
+                .isBefore(LocalDateTime.now())
         ) {
             try {
                 val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
@@ -438,16 +438,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
         MyHttpClient.stop()
         cardService?.releaseService()
+        super.onPause()
     }
 
     public override fun onStop() {
-        super.onStop()
         MyHttpClient.stop()
         OmniCard.release()
         stopTimber()
+        super.onStop()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -478,15 +478,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
-//        if (isAdmin) {
         setRestrictions(enable)
         enableStayOnWhilePluggedIn(enable)
         setUpdatePolicy(enable)
         setKeyGuardEnabled(enable)
-//        }
         setAsHomeApp(enable)
         setLockTask(enable, isAdmin)
         setImmersiveMode(enable)
+    }
+
+    override fun onDestroy() {
+        MyHttpClient.server.stop(0, 0)
+        super.onDestroy()
     }
 
     private fun setRestrictions(disallow: Boolean) {
