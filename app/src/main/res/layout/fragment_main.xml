@@ -17,43 +17,62 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp">
 
-        <GridLayout
-            android:layout_marginStart="50dp"
+        <androidx.cardview.widget.CardView
             android:id="@+id/gridLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:columnCount="1"
+            app:cardBackgroundColor="#D9D9D9"
+            app:cardCornerRadius="25dp"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true"
             app:layout_constraintStart_toStartOf="@+id/top"
             app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:id="@+id/tv_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/tv_date"
-                android:textColor="@color/black"
-                android:textSize="60sp" />
+            <GridLayout
 
-            <TextView
-                android:id="@+id/tv_clock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="@string/clock"
-                android:textColor="@color/black"
-                android:textSize="60sp" />
-        </GridLayout>
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:columnCount="1">
+
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:shadowColor="#BDBDBD"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:text="@string/tv_date"
+                    android:textColor="@color/black"
+                    android:textSize="60sp" />
+
+                <TextView
+                    android:id="@+id/tv_clock"
+                    android:shadowColor="#BDBDBD"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:text="@string/clock"
+                    android:textColor="@color/black"
+                    android:textSize="60sp" />
+            </GridLayout>
+        </androidx.cardview.widget.CardView>
 
         <ImageView
             android:id="@+id/imageView"
-            app:layout_constraintTop_toTopOf="parent"
             android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="50dp"
+            android:src="@drawable/hep_proizvodnja"
             app:layout_constraintEnd_toEndOf="parent"
-            android:src="@drawable/hep_proizvodnja" />
+            app:layout_constraintTop_toTopOf="parent" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -74,8 +93,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/please_scan_card"
+            android:shadowColor="#BDBDBD"
+            android:shadowDx="3"
+            android:shadowDy="3"
+            android:shadowRadius="4"
             android:textColor="@color/black"
+            android:text="@string/please_scan_card"
             android:textSize="@dimen/menu" />
 
         <ImageView
@@ -87,9 +110,9 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom"
-        android:columnCount="3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:columnCount="3"
         android:orientation="horizontal"
 
         app:layout_constraintBottom_toBottomOf="parent"
@@ -97,27 +120,26 @@
 
         <ImageView
             android:id="@+id/erv_hep_logo"
-            android:layout_marginStart="50dp"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="start"
+            android:layout_marginStart="50dp"
             android:src="@drawable/erv_hep"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-<!--        <ImageView-->
-<!--            android:id="@+id/hep_logo"-->
-<!--            android:layout_width="200dp"-->
-<!--            android:layout_height="200dp"-->
-<!--            android:layout_gravity="start"-->
-<!--            android:src="@drawable/hep_logo"-->
-<!--            -->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintEnd_toStartOf="@+id/ifsimus_logo"-->
-<!--            app:layout_constraintStart_toEndOf="@id/erv_hep_logo"-->
-<!--            app:layout_constraintTop_toTopOf="parent" />-->
+        <!--        <ImageView-->
+        <!--            android:id="@+id/hep_logo"-->
+        <!--            android:layout_width="200dp"-->
+        <!--            android:layout_height="200dp"-->
+        <!--            android:layout_gravity="start"-->
+        <!--            android:src="@drawable/hep_logo"-->
+        <!--            -->
+        <!--            app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--            app:layout_constraintEnd_toStartOf="@+id/ifsimus_logo"-->
+        <!--            app:layout_constraintStart_toEndOf="@id/erv_hep_logo"-->
+        <!--            app:layout_constraintTop_toTopOf="parent" />-->
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -130,43 +152,43 @@
 
             <Button
                 android:id="@+id/setKioskPolicies"
-                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Set Kiosk Policies"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
             <Button
                 android:id="@+id/removeKioskPolicies"
-                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Remove Kiosk Policies"
+                android:visibility="gone"
                 app:layout_constraintStart_toEndOf="@id/setKioskPolicies"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
             android:id="@+id/ifsimus_logo"
-            android:layout_marginEnd="50dp"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="start"
+            android:layout_marginEnd="50dp"
             android:src="@drawable/ifsimus_logo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <Button
         android:id="@+id/settingsButton"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:drawableEnd="@drawable/settings"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
