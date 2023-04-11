@@ -129,7 +129,7 @@
                 android:layout_gravity="start"
                 android:visibility="gone"
                 android:layout_marginStart="80dp"
-                android:layout_marginBottom="25dp"
+                android:layout_marginBottom="15dp"
                 android:background="@android:color/transparent"
                 android:drawableStart="@drawable/ic_work"
                 android:text="Službeno putovanje "

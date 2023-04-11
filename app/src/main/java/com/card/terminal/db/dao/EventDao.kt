@@ -33,6 +33,9 @@ interface EventDao {
     @Query("SELECT * FROM Event ORDER BY date_time DESC LIMIT 1")
     fun getLastScanEvent(): Event
 
+    @Query("SELECT * FROM Event WHERE card_number = :cardNumber ORDER BY date_time DESC LIMIT 1")
+    fun getLastScanEventWithCardNumber(cardNumber: Int): Event
+
     @Query("SELECT * FROM Event WHERE published = false")
     fun getUnpublishedEvents(): List<Event>
 }

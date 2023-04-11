@@ -137,8 +137,6 @@ class MainActivity : AppCompatActivity() {
 
         mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
 
-        val isAdmin = isAdmin()
-
         val btn1 = findViewById<Button>(R.id.setKioskPolicies)
         btn1.setOnClickListener {
             Timber.d("setKioskPolicies button clicked")
@@ -166,7 +164,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (isAdmin && prefs.getBoolean("kioskMode", false)) {
+        if (isAdmin() && prefs.getBoolean("kioskMode", false)) {
             setKioskPolicies(true, true)
         }
     }

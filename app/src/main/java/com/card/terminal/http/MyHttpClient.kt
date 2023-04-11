@@ -95,7 +95,7 @@ object MyHttpClient {
     fun pingy(bundle: Bundle) {
 //        larusFunctions?.setDoorTime(15000, 15000, 1000, 1000)
         larusFunctions?.openDoor(1)
-        posaljiOcitanje(bundle)
+        publishNewEvent(bundle)
     }
 
     suspend fun getSocketResponse(
@@ -132,7 +132,7 @@ object MyHttpClient {
 
     fun startNettyServer() {
         stop()
-        scope = CoroutineScope(Dispatchers.Default)
+        scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
 
             database?.let { main(it) }
@@ -169,10 +169,58 @@ object MyHttpClient {
         return client != null
     }
 
-    fun posaljiOcitanje(cardResponse: Bundle) {
+    fun publishNewEvent(cardResponse: Bundle) {
         scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
             eventToDatabase(cardResponse, false)
+            val body = MiroConverter().convertToNewEventFormat(cardResponse)
+            val mySharedPreferences =
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+            try {
+                val response =
+                    mySharedPreferences.getString(
+                        "serverIP",
+                        ""
+                    )
+                        ?.let {
+                            client?.post("gas") {
+                                contentType(ContentType.Application.Json)
+                                setBody(body)
+                            }
+                        }
+                if (response != null) {
+                    println(response.bodyAsText())
+                    if (response.bodyAsText().contains("\"CODE\":\"0\"")
+                        && response.bodyAsText()
+                            .contains("\"NUM_CREAD\":\"1\"")
+                    )
+                        eventToDatabase(cardResponse, true)
+                    Timber.d(
+                        "Msg: user %s scanned, response sent to server: %b",
+                        cardResponse,
+                        true
+                    )
+                }
+            } catch (ce: ConnectException) {
+                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while publishing event(s) to server: %s | %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message,
+                    body
+                )
+            }
+        }
+    }
+
+    suspend fun publishUnpublishedEvents() {
+        scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+        val esp = MiroConverter().getFormattedUnpublishedEvents()
 
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
@@ -187,59 +235,74 @@ object MyHttpClient {
                         ?.let {
                             client?.post(it) {
                                 contentType(ContentType.Application.Json)
-                                setBody(MiroConverter().convertToNewEventsFormat(cardResponse))
+                                setBody(esp.eventString)
                             }
                         }
                 if (response != null) {
-                    println(response.bodyAsText())
-                    if (response.bodyAsText().contains("\"CODE\":\"0\""))
-                        eventToDatabase(cardResponse, true)
+                    if (response.bodyAsText().contains("\"CODE\":\"0\"") && response.bodyAsText()
+                            .contains("\"NUM_CREAD\":\"${esp.eventList.size}\"")
+                    ) {
+                        updateEvents(esp.eventList)
+                        Timber.d(
+                            "Msg: Event list updated and published: %s", esp.eventList
+                        )
+                    }
                 }
-                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, true)
             } catch (ce: ConnectException) {
-                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
+                Timber.d("Msg: Event list not updated or published: %s", esp.eventList)
             } catch (e: Exception) {
                 Timber.d(
-                    "Exception while publishing event(s) to server: %s | %s | %s",
+                    "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
                     e.cause,
                     e.stackTraceToString(),
-                    e.message
+                    e.message,
+                    esp.eventString
                 )
             }
         }
     }
 
-    fun eventToDatabase(cardResponse: Bundle, update: Boolean) {
+    fun eventToDatabase(cardResponse: Bundle, published: Boolean) {
         val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-        val event = Event(
-            eventCode = MiroConverter().convertECode(
-                cardResponse.get("selection").toString()
-            ),
-            cardNumber = cardResponse.get("CardCode").toString().toInt(),
-            dateTime = cardResponse.get("DateTime").toString(),
-            published = update,
-            uid = 0 //auto-generate
-        )
-        if (update) {
-            db.EventDao().update(event)
+        if (published) {
+            val e = db.EventDao()
+                .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
+            val newE = Event(
+                uid = e.uid,
+                eventCode = e.eventCode,
+                cardNumber = e.cardNumber,
+                dateTime = e.dateTime,
+                published = true
+            )
+            db.EventDao().update(newE)
         } else {
+            val event = Event(
+                eventCode = MiroConverter().convertECode(
+                    cardResponse.get("selection").toString()
+                ),
+                cardNumber = cardResponse.get("CardCode").toString().toInt(),
+                dateTime = cardResponse.get("DateTime").toString(),
+                published = published,
+                uid = 0 //auto-generate
+            )
             db.EventDao().insert(event)
         }
+    }
 
-        val unpublishedEvents = db.EventDao().getUnpublishedEvents()
-
-        if (unpublishedEvents.size > 0) {
-            //try uploading unpublished events
-            publishToServer(unpublishedEvents)
+    fun updateEvents(list: List<Event>) {
+        val newEvents = mutableListOf<Event>()
+        for (e in list) {
+            newEvents.add(
+                Event(
+                    uid = e.uid,
+                    eventCode = e.eventCode,
+                    cardNumber = e.cardNumber,
+                    dateTime = e.dateTime,
+                    published = true
+                )
+            )
         }
-
-
+        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        db.EventDao().updateEvents(newEvents)
     }
-
-    fun publishToServer(list: List<Event>) {
-
-
-    }
-
-
 }

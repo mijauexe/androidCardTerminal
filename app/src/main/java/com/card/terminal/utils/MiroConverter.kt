@@ -25,10 +25,12 @@ class MiroConverter {
         val CN: String
     )
 
-    data class ACC_LEVELS(
+    data class ACC_LEVELS_DISTR(
         val B0_CLASS: String,
         val HOLDER_B0_ID: String,
-        val ACC_L_B0_ID: String
+        val ACC_L_B0_ID: String,
+        val EXPIRATION_DATE: String,
+        val ACTIVATION_DATE: String
     )
 
     data class ifTermAddResponse(
@@ -44,6 +46,11 @@ class MiroConverter {
         val DEV_B0_ID: String
     )
 
+    data class EventStringPair(
+        val eventList: List<Event>,
+        val eventString: String
+    )
+
     data class NewEventRequest( //saljem serveru evente
         val ACT: String,
         val IFTTERM2_B0_ID: String,
@@ -54,7 +61,7 @@ class MiroConverter {
         @SerializedName("ACT") val ACT: String,
         @SerializedName("HOLDERS") val HOLDERS: ArrayList<HOLDERS>,
         @SerializedName("CARDS") val CARDS: ArrayList<CARDS>,
-        @SerializedName("ACC_LEVELS") val ACC_LEVELS: ArrayList<ACC_LEVELS>
+        @SerializedName("ACC_LEVELS_DISTR") val ACC_LEVELS_DISTR: ArrayList<ACC_LEVELS_DISTR>
     )
 
     suspend fun convertFromServerRequest(something: String): String {
@@ -118,7 +125,7 @@ class MiroConverter {
         }
 
         val acList = mutableListOf<Int>()
-        for (obj in objectic.ACC_LEVELS) {
+        for (obj in objectic.ACC_LEVELS_DISTR) {
             acList.add(obj.ACC_L_B0_ID.toInt())
         }
 
@@ -129,6 +136,7 @@ class MiroConverter {
             cardList.add(
                 Card(
                     cardNumber = obj.CN,
+                    classType = obj.B0_CLASS,
                     owner = obj.HOLDER_B0_ID.toInt(),
                     expirationDate = "",
                     accessLevel = acList[i]
@@ -147,8 +155,8 @@ class MiroConverter {
         return ifTermAddResponse(counter = cardList.size, err = "0", msg = "Successful")
     }
 
-    suspend fun convertToNewEventsFormat(cardResponse: Bundle): String {
-        var eCode = 0 //TODO HEP
+    fun convertToNewEventFormat(cardResponse: Bundle): String {
+        var eCode = 0 //TODO ECODE
         when (cardResponse.get("selection")) {
             "BE-TO" -> eCode = 0
             "Liječnik" -> eCode = 3
@@ -158,44 +166,43 @@ class MiroConverter {
         }
 
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
+        strNew += "{\"CN\":\"${cardResponse.get("CardCode")}\", \"GENT\":\"${cardResponse.get("DateTime")}\", \"ECODE\":\"0\", \"DEV_B0_ID\":\"0\"}]}"
 
-
-        val scope = CoroutineScope(Dispatchers.IO)
-        val responseDeferred = scope.async {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
-            val unpublishedEvents = db.EventDao().getUnpublishedEvents()
-            for (ue in unpublishedEvents.indices) {
-                if (ue != unpublishedEvents.size - 1) {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"},"
-                } else {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"}]}"
-                }
-            }
-        }
-        val response = responseDeferred.await()
+//        val scope = CoroutineScope(Dispatchers.IO)
+//        val responseDeferred = scope.async {
+//            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+//            val unpublishedEvents = db.EventDao().getUnpublishedEvents()
+//            for (ue in unpublishedEvents.indices) {
+//                if (ue != unpublishedEvents.size - 1) {
+//                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"},"
+//                } else {
+//                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"$eCode\", \"DEV_B0_ID\":\"0\"}]}"
+//                }
+//            }
+//        }
+//        val response = responseDeferred.await()
         return strNew
     }
 
-    suspend fun convertToNewEventsFormat(events: List<Event>): String {
-        var eCode = 0 //TODO HEP
-//        when (cardResponse.get("selection")) {
-//            "BE-TO" -> eCode = 0
-//            "Liječnik" -> eCode = 3
-//            "Privatno" -> eCode = 4
-//            "Pauza" -> eCode = 5
-//            "Poslovno" -> eCode = 6
-//        }
-
+    suspend fun getFormattedUnpublishedEvents(): EventStringPair {
+        var eCode = 0 //TODO ECODE HEP
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
-
-        for (ue in events.indices) {
-            if (ue != events.size - 1) {
-                strNew += "{\"CN\":\"${events[ue].cardNumber}\", \"GENT\":\"${events[ue].dateTime}\", \"ECODE\":\"${events[ue].eventCode}\", \"DEV_B0_ID\":\"0\"},"
-            } else {
-                strNew += "{\"CN\":\"${events[ue].cardNumber}\", \"GENT\":\"${events[ue].dateTime}\", \"ECODE\":\"${events[ue].eventCode}\", \"DEV_B0_ID\":\"0\"}]}"
+        val unpublishedEvents = mutableListOf<Event>()
+        val scope = CoroutineScope(Dispatchers.IO)
+        //TODO ECODE
+        val responseDeferred = scope.async {
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            unpublishedEvents.addAll(db.EventDao().getUnpublishedEvents())
+            for (ue in unpublishedEvents.indices) {
+                if (ue != unpublishedEvents.size - 1) {
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"0\", \"DEV_B0_ID\":\"0\"},"
+                } else {
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\":\"0\", \"DEV_B0_ID\":\"0\"}]}"
+                }
             }
         }
-        return strNew
+        responseDeferred.await()
+        return EventStringPair(unpublishedEvents, strNew)
     }
 
     fun convertECode(s: String): Int {

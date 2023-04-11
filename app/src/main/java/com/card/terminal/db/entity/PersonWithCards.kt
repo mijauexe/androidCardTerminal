@@ -12,5 +12,11 @@ data class PersonWithCards(
         parentColumn = "uid",
         entityColumn = "owner"
     )
-    val cards: List<Card>
+    val cards: List<Card>,
+    @Serializable
+    @Relation(
+        parentColumn = "class_type",
+        entityColumn = "class_type"
+    )
+    val classTypeCards: List<Card>
 )

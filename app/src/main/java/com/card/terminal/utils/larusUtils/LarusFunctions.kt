@@ -182,12 +182,7 @@ class LarusFunctions(
                 }
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
-                Timber.d(
-                    "Msg: TimeoutCancellationException %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
+                Timber.d("Msg: TimeoutCancellationException to larus board")
             } catch (e: Exception) {
                 println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
@@ -245,8 +240,10 @@ class LarusFunctions(
                 }
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
+                Timber.d("Msg: TimeoutCancellationException to larus board")
             } catch (e: Exception) {
                 println("Exception: ${e.message}")
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
             Timber.d("Msg: Door $doorNum opened")
         }

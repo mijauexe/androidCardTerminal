@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
-import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -46,7 +45,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("MainFragment onViewCreated")
 
-        if(_binding != null) {
+        if (_binding != null) {
             var trackerSettingsIcon = IntArray(3)
 
             Handler().postDelayed({
@@ -77,7 +76,7 @@ class MainFragment : Fragment() {
             _binding?.ifsimusLogo?.setOnClickListener {
                 trackerKioskIcons[2]++
                 if (trackerKioskIcons[0] == 2 && trackerKioskIcons[1] == 3 && trackerKioskIcons[2] == 5) {
-                    if(_binding?.setKioskPolicies?.visibility == View.VISIBLE) {
+                    if (_binding?.setKioskPolicies?.visibility == View.VISIBLE) {
                         _binding?.setKioskPolicies?.visibility = View.GONE
                         _binding?.removeKioskPolicies?.visibility = View.GONE
                     } else {
@@ -100,7 +99,7 @@ class MainFragment : Fragment() {
                 trackerSettingsIcon[2]++
                 trackerKioskIcons[1]++
                 if (trackerSettingsIcon[0] == 1 && trackerSettingsIcon[1] == 2 && trackerSettingsIcon[2] == 3) {
-                    if(_binding?.settingsButton?.visibility == View.VISIBLE) {
+                    if (_binding?.settingsButton?.visibility == View.VISIBLE) {
                         _binding?.settingsButton?.visibility = View.GONE
                     } else {
                         _binding?.settingsButton?.visibility = View.VISIBLE
