@@ -13,6 +13,7 @@ import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
+import com.google.gson.Gson
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -132,9 +133,8 @@ object MyHttpClient {
 
     fun startNettyServer() {
         stop()
-        scope = CoroutineScope(Dispatchers.IO)
+        scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
-
             database?.let { main(it) }
             server = embeddedServer(Netty, port = 6969) {
                 configureSerialization()
@@ -144,7 +144,6 @@ object MyHttpClient {
                 server.stop(1_000, 2_000)
                 Timber.d("Msg: Netty server stopped")
             })
-//            server.stopServerOnCancellation()
             server.start(wait = true)
             Timber.d("Msg: Netty server started")
         }
@@ -157,21 +156,91 @@ object MyHttpClient {
         try {
             if (this::scope.isInitialized && scope.isActive) {
                 scope.cancel()
+                Timber.d("Msg: MyHttpClient stopped")
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
         stopLarusSocket()
-        Timber.d("Msg: MyHttpClient stopped")
     }
 
     fun isClientReady(): Boolean {
         return client != null
     }
 
-    fun publishNewEvent(cardResponse: Bundle) {
-        scope = CoroutineScope(Dispatchers.Default)
+    fun pingEndpoint() {
+        val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
+//            val larusEndpoint = getPortAndIP()
+            val response: HttpResponse = client!!.request("http://sucic.info/b0pass/b0pass_iftp2.php") {
+                method = HttpMethod.Get
+            }
+            println(response)
+//            mutableCode.postValue(mapOf("pingResponse" to response.toString()))
+        }
+    }
+
+    fun requestData(type: String) {
+        val scope1 = CoroutineScope(Dispatchers.IO)
+        println("usao")
+        scope1.launch {
+
+            if(type == "ADD_INIT1") {
+                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+                db.clearAllTables()
+            }
+
+            val mySharedPreferences =
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+            try {
+                val response =
+                    mySharedPreferences.getString(
+                        "serverIP",
+                        ""
+                    )
+                        ?.let {
+                            client?.post(it) {
+                                println("1")
+                                contentType(ContentType.Application.Json)
+                                println("2")
+                                setBody("{\"ACT\": \"$type\"}")
+                                println("3")
+                            }
+                        }
+                println(response)
+                if (response != null) {
+//                    val b = MiroConverter().addInit1Data(response.bodyAsText())
+                    MiroConverter().addHcal(Gson().fromJson(response.bodyAsText(), MiroConverter.serverRequestObject::class.java))
+                    println("gas")
+//                    if(b) {
+//
+//                    } else {
+//
+//                    }
+                }
+            } catch (ce: ConnectException) {
+                Timber.d(
+                    "Msg: Init1 data requested but cannot be reached: %s | %s | %s",
+                    ce.cause,
+                    ce.stackTraceToString(),
+                    ce.message
+                )
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+    }
+
+    fun publishNewEvent(cardResponse: Bundle) {
+        val scope1 = CoroutineScope(Dispatchers.Default)
+        scope1.launch {
             eventToDatabase(cardResponse, false)
             val body = MiroConverter().convertToNewEventFormat(cardResponse)
             val mySharedPreferences =
@@ -185,7 +254,7 @@ object MyHttpClient {
                         ""
                     )
                         ?.let {
-                            client?.post("gas") {
+                            client?.post(it) {
                                 contentType(ContentType.Application.Json)
                                 setBody(body)
                             }
@@ -218,9 +287,9 @@ object MyHttpClient {
     }
 
     suspend fun publishUnpublishedEvents() {
-        scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-        val esp = MiroConverter().getFormattedUnpublishedEvents()
+        val scope1 = CoroutineScope(Dispatchers.IO)
+        scope1.launch {
+            val esp = MiroConverter().getFormattedUnpublishedEvents()
 
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()

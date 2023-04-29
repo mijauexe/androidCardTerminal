@@ -1,5 +1,6 @@
 package com.card.terminal.fragments
 
+import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -10,13 +11,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSettingsBinding
+import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
+
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -53,31 +58,71 @@ class SettingsFragment : Fragment() {
 
         val larusIPEditText = binding.larusIP
         larusIPEditText.setText(
-            ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("larusIP", "")
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("larusIP", "")
         )
 
         val serverIPEditText = binding.ServerIP
         serverIPEditText.setText(
-            ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("serverIP", "")
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("serverIP", "")
         )
 
         val larusPortEditText = binding.larusPort
         larusPortEditText.setText(
             Integer.toString(
-                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("larusPort", 0)
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                    .getInt("larusPort", 0)
             )
         )
 
         val serverPortEditText = binding.ServerPort
         serverPortEditText.setText(
             Integer.toString(
-                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("serverPort", 0)
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                    .getInt("serverPort", 0)
             )
         )
 
+        binding.kioskToggle.setOnClickListener {
+            val mainActivity = activity as MainActivity?
+            val prefs = ContextProvider.getApplicationContext()
+                .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+            val sett = prefs.getBoolean("kioskMode", false)
+
+            if (mainActivity!!.isAdmin()) {
+                if (!sett) {
+
+                    mainActivity.setKioskPolicies(true, true)
+                    val editor = prefs.edit()
+                    editor.putBoolean("kioskMode", true)
+                    Timber.d("kiosk set to: " + true)
+                    editor.apply()
+
+                } else {
+                    mainActivity.setKioskPolicies(false, true)
+                    val editor = prefs.edit()
+                    editor.putBoolean("kioskMode", false)
+                    Timber.d("kiosk set to: " + false)
+                    editor.apply()
+                    val intent = Intent(
+                        ContextProvider.getApplicationContext(),
+                        MainActivity::class.java
+                    ).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    }
+                    intent.putExtra(MainActivity.LOCK_ACTIVITY_KEY, false)
+                    startActivity(intent)
+                }
+            }
+        }
+
         binding.saveSettingsButton.setOnClickListener {
             mySharedPreferences =
-                ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             // Set the value of a preference
             val editor = mySharedPreferences.edit()
             editor.putString("larusIP", larusIPEditText.text.toString())
@@ -148,7 +193,7 @@ class SettingsFragment : Fragment() {
         binding.enterDialButton.setOnClickListener {
             //TODO promjeni
 //            if (act.checkPin(binding.pinPreviewText.text)) {
-            if (binding.pinPreviewText.text == "46701950") {
+            if (binding.pinPreviewText.text == "0") {
                 binding.pinLayout.visibility = View.GONE
                 binding.glMain.visibility = View.VISIBLE
             } else {

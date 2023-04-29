@@ -115,13 +115,7 @@
                 android:textColor="@color/black"
                 android:textSize="30dp" />
 
-            <TextView
-                android:id="@+id/business_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Službeno"
-                android:textColor="@color/black"
-                android:textSize="30dp" />
+
 
             <Button
                 android:id="@+id/ib_work_trip"
@@ -130,13 +124,12 @@
                 android:visibility="gone"
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="15dp"
+                android:drawableStart="@drawable/sp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/ic_work"
-                android:text="Službeno putovanje "
+                android:text=" Službeno putovanje "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
-
             <Button
                 android:id="@+id/ib_work_trip_local"
                 android:visibility="gone"
@@ -145,8 +138,8 @@
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="15dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/ic_be_to"
-                android:text="Lokalno (BE-TO Sisak) "
+                android:drawableStart="@drawable/sb"
+                android:text=" Službeno BE-TO "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
@@ -158,9 +151,9 @@
                 android:layout_gravity="start"
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="15dp"
+                android:drawableStart="@drawable/so"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/ic_work"
-                android:text="Ostalo "
+                android:text=" Službeno ostalo "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
@@ -173,8 +166,8 @@
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="25dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/work_alternative"
-                android:text="Izlazak po nalogu Naručitelja (HEP-a) "
+                android:drawableStart="@drawable/pih"
+                android:text=" Poslovni izlaz nalog HEP "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
@@ -187,20 +180,14 @@
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="25dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/engineering"
-                android:text="Izlazak po nalogu poslodavca "
+                android:text=" Poslovni izlaz nalog tvrtka "
+                android:drawableStart="@drawable/pit"
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
 
 
-            <TextView
-                android:id="@+id/private_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Privatno "
-                android:textColor="@color/black"
-                android:textSize="30dp" />
+
 
             <Button
                 android:id="@+id/ib_private_w_permission"
@@ -210,8 +197,8 @@
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="15dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/go_out"
-                android:text="Uz dozvolu "
+                android:drawableStart="@drawable/pd"
+                android:text=" Privatno uz dozvolu "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
@@ -224,9 +211,9 @@
                 android:layout_gravity="start"
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="15dp"
+                android:drawableStart="@drawable/ph"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/emergency"
-                android:text="Hitno "
+                android:text=" Privatno hitno bez dozvole "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
@@ -239,8 +226,8 @@
                 android:layout_marginStart="80dp"
                 android:layout_marginBottom="25dp"
                 android:background="@android:color/transparent"
-                android:drawableStart="@drawable/go_out"
-                android:text="Privatni izlazak "
+                android:drawableStart="@drawable/piz"
+                android:text=" Privatni izlaz "
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />

@@ -65,52 +65,51 @@ class FirstFragment : Fragment() {
             binding.ibContractor2.visibility = View.VISIBLE
             binding.ibContractor3.visibility = View.VISIBLE
         }
-
         binding.ibContractor1.setOnClickListener {
-            binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Službeno")
+            binding.ibContractor1.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Poslovni izlaz nalog HEP")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibContractor2.setOnClickListener {
-            binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Službeno")
+            binding.ibContractor2.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Poslovni izlaz nalog tvrtka")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibContractor3.setOnClickListener {
-            binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno")
+            binding.ibContractor3.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("selection", "Privatni izlaz")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibWorkTrip.setOnClickListener {
             binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Putovanje")
+            existingBundle.putString("selection", "Službeno putovanje")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibWorkTripLocal.setOnClickListener {
             binding.ibWorkTripLocal.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "BE-TO Sisak")
+            existingBundle.putString("selection", "Službeno BE-TO")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibWorkTripOther.setOnClickListener {
             binding.ibWorkTripOther.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Ostalo")
+            existingBundle.putString("selection", "Službeno ostalo")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibPrivateWPermission.setOnClickListener {
             binding.ibPrivateWPermission.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno")
+            existingBundle.putString("selection", "Privatno uz dozvolu")
             goToCheckoutWithBundle(existingBundle)
         }
 
         binding.ibPrivateWoutPermission.setOnClickListener {
             binding.ibPrivateWoutPermission.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno")
+            existingBundle.putString("selection", "Privatno hitno bez dozvole")
             goToCheckoutWithBundle(existingBundle)
         }
 

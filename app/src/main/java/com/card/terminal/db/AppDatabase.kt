@@ -9,7 +9,7 @@ import com.card.terminal.db.dao.*
 import com.card.terminal.db.entity.*
 import timber.log.Timber
 
-@Database(entities = [Card::class, Event::class, Person::class], version = 2)
+@Database(entities = [Card::class, Event::class, Person::class], version = 3)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
@@ -24,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                 instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java, "AppDatabase"
-                ).allowMainThreadQueries()./*fallbackToDestructiveMigration().*/build()
+                ).allowMainThreadQueries()/*.fallbackToDestructiveMigration()*/.build()
             }
             Timber.d("Msg: Instantiating database")
             return instance as AppDatabase

@@ -10,6 +10,8 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
+import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.larusUtils.LarusFunctions
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -48,43 +50,11 @@ class MainFragment : Fragment() {
         if (_binding != null) {
             var trackerSettingsIcon = IntArray(3)
 
-            Handler().postDelayed({
-                trackerSettingsIcon = IntArray(3)
-                _binding?.settingsButton?.visibility = View.GONE
-            }, 10000)
-
-            var trackerKioskIcons = IntArray(3)
-
-            Handler().postDelayed({
-                trackerKioskIcons = IntArray(3)
-                _binding?.setKioskPolicies?.visibility = View.GONE
-                _binding?.removeKioskPolicies?.visibility = View.GONE
-            }, 10000)
-
-            _binding?.tvDate?.setOnClickListener {
-                trackerKioskIcons[0]++
-            }
-
             _binding?.pleaseScanCardText?.setOnClickListener {
-                trackerKioskIcons = IntArray(3)
                 trackerSettingsIcon = IntArray(3)
                 _binding?.setKioskPolicies?.visibility = View.GONE
                 _binding?.removeKioskPolicies?.visibility = View.GONE
                 _binding?.settingsButton?.visibility = View.GONE
-            }
-
-            _binding?.ifsimusLogo?.setOnClickListener {
-                trackerKioskIcons[2]++
-                if (trackerKioskIcons[0] == 2 && trackerKioskIcons[1] == 3 && trackerKioskIcons[2] == 5) {
-                    if (_binding?.setKioskPolicies?.visibility == View.VISIBLE) {
-                        _binding?.setKioskPolicies?.visibility = View.GONE
-                        _binding?.removeKioskPolicies?.visibility = View.GONE
-                    } else {
-                        _binding?.setKioskPolicies?.visibility = View.VISIBLE
-                        _binding?.removeKioskPolicies?.visibility = View.VISIBLE
-                    }
-                    trackerKioskIcons = IntArray(3)
-                }
             }
 
             _binding?.ervHepLogo?.setOnClickListener {
@@ -97,12 +67,15 @@ class MainFragment : Fragment() {
 
             _binding?.pleaseScanIcon?.setOnClickListener {
                 trackerSettingsIcon[2]++
-                trackerKioskIcons[1]++
                 if (trackerSettingsIcon[0] == 1 && trackerSettingsIcon[1] == 2 && trackerSettingsIcon[2] == 3) {
                     if (_binding?.settingsButton?.visibility == View.VISIBLE) {
                         _binding?.settingsButton?.visibility = View.GONE
                     } else {
                         _binding?.settingsButton?.visibility = View.VISIBLE
+                        Handler().postDelayed({
+                            trackerSettingsIcon = IntArray(3)
+                            _binding?.settingsButton?.visibility = View.GONE
+                        }, 5000)
                     }
                     trackerSettingsIcon = IntArray(3)
                 }

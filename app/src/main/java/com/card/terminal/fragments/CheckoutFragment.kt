@@ -11,6 +11,9 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * An example full-screen fragment that shows and hides the system UI (i.e.
@@ -35,6 +38,11 @@ class CheckoutFragment : Fragment() {
         Timber.d("CheckoutFragment onViewCreated")
         binding.firstAndLastName.text = arguments?.getString("name")
         binding.reasonValue.text = arguments?.getString("selection")
+
+        val dt = LocalDateTime.parse(arguments?.getString("time"), DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
+
+        binding.readoutValue.text = binding.readoutValue.text.toString() + dt
 
         binding.smile.setOnClickListener {
             findNavController().navigate(R.id.action_CheckoutFragment_to_MainFragment)

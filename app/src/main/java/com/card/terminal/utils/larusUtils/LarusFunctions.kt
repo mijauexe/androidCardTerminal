@@ -28,16 +28,7 @@ class LarusFunctions(
     val mutableCode: MutableLiveData<Map<String, String>>
 ) {
 
-    fun pingEndpoint() {
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-            val larusEndpoint = getPortAndIP()
-            val response: HttpResponse = client.request(larusEndpoint.ip) {
-                method = HttpMethod.Get
-            }
-            mutableCode.postValue(mapOf("pingResponse" to response.toString()))
-        }
-    }
+
 
     data class LarusEndpoint(var ip: String, var port: Int)
 
@@ -180,7 +171,11 @@ class LarusFunctions(
                         )
                     )
                 }
-            } catch (e: TimeoutCancellationException) {
+            } catch (e: ArrayIndexOutOfBoundsException) {
+                println("ArrayIndexOutOfBoundsException: ${e.message}")
+                Timber.d("Msg: ArrayIndexOutOfBoundsException to larus board")
+            }
+            catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
             } catch (e: Exception) {

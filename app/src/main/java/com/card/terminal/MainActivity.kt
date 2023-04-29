@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     var cardScannerActive = false
 
     private lateinit var mAdminComponentName: ComponentName
-    private lateinit var mDevicePolicyManager: DevicePolicyManager
+    lateinit var mDevicePolicyManager: DevicePolicyManager
 
     val PREFS_NAME = "MyPrefsFile"
     val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
@@ -79,6 +79,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ContextProvider.setApplicationContext(this)
+        mAdminComponentName = AdminReceiver.getComponentName(this)
+        mDevicePolicyManager =
+            getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         val permission = READ_EXTERNAL_STORAGE
         val requestCode = 123 // You can choose any integer value for the request code
@@ -100,7 +104,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
         Timber.d("Msg: setDefaultUncaughtExceptionHandler")
-        ContextProvider.setApplicationContext(this)
+
 
         db = AppDatabase.getInstance((this))
 //        db.clearAllTables()
@@ -130,39 +134,32 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         setContentView(binding.root)
+//        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
+//        btn1.setOnClickListener {
+//            Timber.d("setKioskPolicies button clicked")
+//            if (isAdmin()) {
+//                setKioskPolicies(true, true)
+//                val editor = prefs.edit()
+//                editor.putBoolean("kioskMode", true)
+//                editor.apply()
+//            }
+//        }
 
-        mAdminComponentName = AdminReceiver.getComponentName(this)
-        mDevicePolicyManager =
-            getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-
-        mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
-
-        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
-        btn1.setOnClickListener {
-            Timber.d("setKioskPolicies button clicked")
-            if (isAdmin()) {
-                setKioskPolicies(true, true)
-                val editor = prefs.edit()
-                editor.putBoolean("kioskMode", true)
-                editor.apply()
-            }
-        }
-
-        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
-        btn2.setOnClickListener {
-            Timber.d("removeKioskPolicies button clicked")
-            if (isAdmin()) {
-                setKioskPolicies(false, true)
-                val editor = prefs.edit()
-                editor.putBoolean("kioskMode", false)
-                editor.apply()
-                val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                }
-                intent.putExtra(LOCK_ACTIVITY_KEY, false)
-                startActivity(intent)
-            }
-        }
+//        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
+//        btn2.setOnClickListener {
+//            Timber.d("removeKioskPolicies button clicked")
+//            if (isAdmin()) {
+//                setKioskPolicies(false, true)
+//                val editor = prefs.edit()
+//                editor.putBoolean("kioskMode", false)
+//                editor.apply()
+//                val intent = Intent(applicationContext, MainActivity::class.java).apply {
+//                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//                }
+//                intent.putExtra(LOCK_ACTIVITY_KEY, false)
+//                startActivity(intent)
+//            }
+//        }
 
         if (isAdmin() && prefs.getBoolean("kioskMode", false)) {
             setKioskPolicies(true, true)
@@ -176,12 +173,12 @@ class MainActivity : AppCompatActivity() {
                 logFolder.mkdir()
             }
 
-            val t = FileLoggerTree.Builder()
+            val t = FileLoggerTree.Builder() //RollingFileTree
                 .withFileName("my_log_file.txt")
                 .withDir(logFolder)
                 .withFormatter(CustomLogFormatter())
                 .withFileLimit(1)
-                .withSizeLimit(5000000)
+                .withSizeLimit(50000000)
                 .withMinPriority(Log.DEBUG)
                 .appendToFile(true)
                 .build()
@@ -392,6 +389,7 @@ class MainActivity : AppCompatActivity() {
 
                 //TODO ADD PICTURE OF USER
                 bundle.putString("name", person.firstName + " " + person.lastName)
+                bundle.putString("time", it["DateTime"])
                 bundle.putString("userId", person.uid.toString())
                 bundle.putString("classType", person.classType)
 
@@ -469,13 +467,15 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
-    private fun isAdmin(): Boolean {
+    fun isAdmin(): Boolean {
+
+        mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
         val b = mDevicePolicyManager.isDeviceOwnerApp(packageName)
         Timber.d("isAdmin: %b", b)
         return b
     }
 
-    private fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
+    fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
         setRestrictions(enable)
         enableStayOnWhilePluggedIn(enable)
         setUpdatePolicy(enable)

@@ -16,7 +16,7 @@ class MiroConverter {
         val B0_ID: String,
         val LNAME: String,
         val FNAME: String,
-        val IMAGE1: ByteArray
+        val IMAGE1: String
     )
 
     data class CARDS(
@@ -51,7 +51,7 @@ class MiroConverter {
         val eventString: String
     )
 
-    data class NewEventRequest( //saljem serveru evente
+    data class NewEventRequest( //TODO saljem serveru evente, nije jos miro slozio
         val ACT: String,
         val IFTTERM2_B0_ID: String,
         val CREAD: List<CREAD>
@@ -73,7 +73,7 @@ class MiroConverter {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
                 db.clearAllTables()
             }
-            val response = responseDeferred.await()
+            responseDeferred.await()
         }
 
         val responseDeferred = scope.async {
@@ -111,7 +111,7 @@ class MiroConverter {
                     classType = person.B0_CLASS,
                     firstName = person.FNAME,
                     lastName = person.LNAME,
-                    image = person.IMAGE1
+                    image = ""
                 )
             )
         }
@@ -153,6 +153,13 @@ class MiroConverter {
             Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
         }
         return ifTermAddResponse(counter = cardList.size, err = "0", msg = "Successful")
+    }
+
+
+    fun addInit1Data(body: String) : Boolean {
+        val objectic = Gson().fromJson(body, serverRequestObject::class.java)
+        print(objectic)
+        return true
     }
 
     fun convertToNewEventFormat(cardResponse: Bundle): String {

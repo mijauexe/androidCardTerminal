@@ -76,11 +76,20 @@
                     tools:layout_editor_absoluteY="207dp" />
 
 
+
+
+                <Button
+                    android:id="@+id/kioskToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Toggle KIOSK MODE" />
+
                 <Button
                     android:id="@+id/saveSettingsButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="OK" />
+
             </GridLayout>
 
 
