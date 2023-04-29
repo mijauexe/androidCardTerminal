@@ -180,7 +180,7 @@ object MyHttpClient {
         }
     }
 
-    fun requestData(type: String) {
+    fun pushRequest(type: String) {
         val scope1 = CoroutineScope(Dispatchers.IO)
         println("usao")
         scope1.launch {
@@ -212,7 +212,7 @@ object MyHttpClient {
                 println(response)
                 if (response != null) {
 //                    val b = MiroConverter().addInit1Data(response.bodyAsText())
-                    MiroConverter().addHcal(Gson().fromJson(response.bodyAsText(), MiroConverter.serverRequestObject::class.java))
+                    MiroConverter().addHcal(Gson().fromJson(response.bodyAsText(), MiroConverter.customObject1::class.java))
                     println("gas")
 //                    if(b) {
 //
@@ -222,7 +222,7 @@ object MyHttpClient {
                 }
             } catch (ce: ConnectException) {
                 Timber.d(
-                    "Msg: Init1 data requested but cannot be reached: %s | %s | %s",
+                    "Msg: Init1 data requested but destination cannot be reached: %s | %s | %s",
                     ce.cause,
                     ce.stackTraceToString(),
                     ce.message
@@ -242,7 +242,7 @@ object MyHttpClient {
         val scope1 = CoroutineScope(Dispatchers.Default)
         scope1.launch {
             eventToDatabase(cardResponse, false)
-            val body = MiroConverter().convertToNewEventFormat(cardResponse)
+            val body = MiroConverter().pushEventFormat(cardResponse)
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)

@@ -1,6 +1,5 @@
 package com.card.terminal.fragments
 
-import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -12,13 +11,12 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentSettingsBinding
-import com.card.terminal.main
+import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
 
@@ -86,6 +84,15 @@ class SettingsFragment : Fragment() {
             )
         )
 
+        val iftTermIdEditText = binding.ifttermId
+        iftTermIdEditText.setText(
+            Integer.toString(
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                    .getInt("IFTTERM2_B0_ID", 0)
+            )
+        )
+
         binding.kioskToggle.setOnClickListener {
             val mainActivity = activity as MainActivity?
             val prefs = ContextProvider.getApplicationContext()
@@ -119,18 +126,32 @@ class SettingsFragment : Fragment() {
             }
         }
 
+
+        binding.hcal.setOnClickListener {
+            MyHttpClient.pushRequest("ADD_HCAL")
+        }
+
+        binding.init1.setOnClickListener {
+            MyHttpClient.pushRequest("ADD_INIT1")
+        }
+
         binding.saveSettingsButton.setOnClickListener {
             mySharedPreferences =
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
-            // Set the value of a preference
             val editor = mySharedPreferences.edit()
             editor.putString("larusIP", larusIPEditText.text.toString())
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
             editor.putString("serverIP", serverIPEditText.text.toString())
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
+            editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())
             editor.apply()
-            Timber.d("Msg: Preferences changed: %s", mySharedPreferences.toString())
+
+            Timber.d("larusIP is now %s", larusIPEditText.text.toString())
+            Timber.d("larusPort is now %s", larusPortEditText.text.toString())
+            Timber.d("serverIP is now %s", serverIPEditText.text.toString())
+            Timber.d("serverPort is now %s", serverPortEditText.text.toString())
+            Timber.d("IFTTERM2_B0_ID is now %s", iftTermIdEditText.text.toString())
         }
     }
 

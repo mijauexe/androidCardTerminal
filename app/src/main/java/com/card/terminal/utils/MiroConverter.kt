@@ -1,6 +1,8 @@
 package com.card.terminal.utils
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.card.terminal.MainActivity
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Card
 import com.card.terminal.db.entity.Event
@@ -57,17 +59,25 @@ class MiroConverter {
         val CREAD: List<CREAD>
     )
 
-    data class serverRequestObject(
+    data class customObject1(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("HOLDERS") val HOLDERS: ArrayList<HOLDERS>,
         @SerializedName("CARDS") val CARDS: ArrayList<CARDS>,
         @SerializedName("ACC_LEVELS_DISTR") val ACC_LEVELS_DISTR: ArrayList<ACC_LEVELS_DISTR>
     )
 
-    suspend fun convertFromServerRequest(something: String): String {
+    data class customObject2(
+        @SerializedName("ACT") val ACT: String,
+        @SerializedName("HOLDERS") val HOLDERS: ArrayList<HOLDERS>,
+        @SerializedName("CARDS") val CARDS: ArrayList<CARDS>,
+        @SerializedName("ACC_LEVELS_DISTR") val ACC_LEVELS_DISTR: ArrayList<ACC_LEVELS_DISTR>
+    )
+
+
+    suspend fun processRequest(operation: String): String {
         val scope = CoroutineScope(Dispatchers.IO)
 
-        if (something.contains("ADD_INIT1")) {
+        if (operation.contains("ADD_INIT1")) {
             val scope1 = CoroutineScope(Dispatchers.IO)
             val responseDeferred = scope1.async {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
@@ -77,7 +87,7 @@ class MiroConverter {
         }
 
         val responseDeferred = scope.async {
-            val objectic = Gson().fromJson(something, serverRequestObject::class.java)
+            val objectic = Gson().fromJson(operation, customObject1::class.java)
 
             Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
             when (objectic.ACT) {
@@ -87,8 +97,11 @@ class MiroConverter {
                 "ADD_INIT1" -> {
                     addHcal(objectic)
                 }
+                "IFTTERM2_INIT0" -> {
+                    //init0(objectic)
+                }
                 else -> {
-                    Timber.d("Msg: unknown request: %s", something)
+                    Timber.d("Msg: unknown request: %s", operation)
                 }
             }
         }
@@ -101,7 +114,7 @@ class MiroConverter {
         return "{\"ACT\": \"IFTSRV2_RESPONSE\",\"NUM_CREAD\": \"${response.counter}\",\"ERROR\": {\"CODE\": \"${response.err}\",\"TEXT\": \"${response.msg}\"}}"
     }
 
-    fun addHcal(objectic: serverRequestObject): ifTermAddResponse {
+    fun addHcal(objectic: customObject1): ifTermAddResponse {
         var counter = 0
         val personList = mutableListOf<Person>()
         for (person in objectic.HOLDERS) {
@@ -156,13 +169,13 @@ class MiroConverter {
     }
 
 
-    fun addInit1Data(body: String) : Boolean {
-        val objectic = Gson().fromJson(body, serverRequestObject::class.java)
+    fun addInit1Data(body: String): Boolean {
+        val objectic = Gson().fromJson(body, customObject1::class.java)
         print(objectic)
         return true
     }
 
-    fun convertToNewEventFormat(cardResponse: Bundle): String {
+    fun pushEventFormat(cardResponse: Bundle): String {
         var eCode = 0 //TODO ECODE
         when (cardResponse.get("selection")) {
             "BE-TO" -> eCode = 0
@@ -172,7 +185,11 @@ class MiroConverter {
             "Poslovno" -> eCode = 6
         }
 
-        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+        val id = prefs.getInt("IFTTERM2_B0_ID", 0)
+
+        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${id}\",\"CREAD\":["
         strNew += "{\"CN\":\"${cardResponse.get("CardCode")}\", \"GENT\":\"${cardResponse.get("DateTime")}\", \"ECODE\":\"0\", \"DEV_B0_ID\":\"0\"}]}"
 
 //        val scope = CoroutineScope(Dispatchers.IO)

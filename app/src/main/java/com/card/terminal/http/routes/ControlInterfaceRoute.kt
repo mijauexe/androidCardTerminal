@@ -11,7 +11,7 @@ fun Route.controlInterfaceRouting() {
     route("/interface") {
         post {
             try {
-                val response = MiroConverter().convertFromServerRequest(call.receive())
+                val response = MiroConverter().processRequest(call.receive())
                 call.respondText(response, status = HttpStatusCode.Created)
             } catch (e: Exception) {
                 call.respondText(

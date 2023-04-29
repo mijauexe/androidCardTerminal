@@ -126,40 +126,14 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
-//            editor.putString("lastScannedCardNumber", "")
-//            editor.putString("lastScannedCardTime", "")
+            editor.putInt("IFTTERM2_B0_ID", 0)
+            editor.putString("IFTTERM2_DESCR", "")
             editor.apply()
         }
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         setContentView(binding.root)
-//        val btn1 = findViewById<Button>(R.id.setKioskPolicies)
-//        btn1.setOnClickListener {
-//            Timber.d("setKioskPolicies button clicked")
-//            if (isAdmin()) {
-//                setKioskPolicies(true, true)
-//                val editor = prefs.edit()
-//                editor.putBoolean("kioskMode", true)
-//                editor.apply()
-//            }
-//        }
-
-//        val btn2 = findViewById<Button>(R.id.removeKioskPolicies)
-//        btn2.setOnClickListener {
-//            Timber.d("removeKioskPolicies button clicked")
-//            if (isAdmin()) {
-//                setKioskPolicies(false, true)
-//                val editor = prefs.edit()
-//                editor.putBoolean("kioskMode", false)
-//                editor.apply()
-//                val intent = Intent(applicationContext, MainActivity::class.java).apply {
-//                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-//                }
-//                intent.putExtra(LOCK_ACTIVITY_KEY, false)
-//                startActivity(intent)
-//            }
-//        }
 
         if (isAdmin() && prefs.getBoolean("kioskMode", false)) {
             setKioskPolicies(true, true)

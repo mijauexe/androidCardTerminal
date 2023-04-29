@@ -14,12 +14,12 @@
 
         <GridLayout
             android:id="@+id/glMain"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:columnCount="1"
             android:paddingHorizontal="20dp"
             android:useDefaultMargins="true"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -75,14 +75,16 @@
                     tools:layout_editor_absoluteX="104dp"
                     tools:layout_editor_absoluteY="207dp" />
 
-
-
-
-                <Button
-                    android:id="@+id/kioskToggle"
+                <TextView android:text="@string/iftterm_id" />
+                <EditText
+                    android:id="@+id/iftterm_id"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Toggle KIOSK MODE" />
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="0"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
 
                 <Button
                     android:id="@+id/saveSettingsButton"
@@ -90,8 +92,34 @@
                     android:layout_height="wrap_content"
                     android:text="OK" />
 
+
+
+
+
             </GridLayout>
 
+            <GridLayout
+                android:columnCount="1"
+                >
+                <Button
+                    android:id="@+id/kioskToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Toggle KIOSK MODE" />
+
+                <Button
+                    android:id="@+id/hcal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HCAL request" />
+
+                <Button
+                    android:id="@+id/init1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INIT1 request" />
+
+            </GridLayout>
 
         </GridLayout>
 
