@@ -93,6 +93,13 @@ class SettingsFragment : Fragment() {
             )
         )
 
+        val settingsPinEditText = binding.settingsPin
+        settingsPinEditText.setText(
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                .getString("settingsPin", "4670")
+        )
+
         binding.kioskToggle.setOnClickListener {
             val mainActivity = activity as MainActivity?
             val prefs = ContextProvider.getApplicationContext()
@@ -145,6 +152,7 @@ class SettingsFragment : Fragment() {
             editor.putString("serverIP", serverIPEditText.text.toString())
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())
+            editor.putString("settingsPin", settingsPinEditText.text.toString())
             editor.apply()
 
             Timber.d("larusIP is now %s", larusIPEditText.text.toString())
@@ -212,9 +220,12 @@ class SettingsFragment : Fragment() {
         }
 
         binding.enterDialButton.setOnClickListener {
-            //TODO promjeni
-//            if (act.checkPin(binding.pinPreviewText.text)) {
-            if (binding.pinPreviewText.text == "0") {
+            mySharedPreferences =
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+
+            if (binding.pinPreviewText.text == mySharedPreferences.getString("settingsPin", "0")) {
                 binding.pinLayout.visibility = View.GONE
                 binding.glMain.visibility = View.VISIBLE
             } else {

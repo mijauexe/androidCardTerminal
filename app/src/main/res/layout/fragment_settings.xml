@@ -86,6 +86,17 @@
                     tools:layout_editor_absoluteX="104dp"
                     tools:layout_editor_absoluteY="207dp" />
 
+                <TextView android:text="Settings menu PIN" />
+                <EditText
+                    android:id="@+id/settings_pin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="4670"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
                 <Button
                     android:id="@+id/saveSettingsButton"
                     android:layout_width="wrap_content"

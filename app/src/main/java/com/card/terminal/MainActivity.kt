@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("serverPort", 80)
             editor.putInt("IFTTERM2_B0_ID", 0)
             editor.putString("IFTTERM2_DESCR", "")
+            editor.putString("settingsPin", "4670")
             editor.apply()
         }
 
