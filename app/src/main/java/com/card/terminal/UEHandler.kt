@@ -30,7 +30,7 @@ class UEHandler(context: Context, restartActivityClass: Class<*>) :
         println(thread.stackTrace)
         println(ex.stackTrace)
         println(ex.message)
-        Timber.d("UncaughtException: %s | %s", ex.message, ex.cause)
+        Timber.d("UncaughtException %s | %s | %s", ex.cause, ex.stackTraceToString(), ex.message)
         System.exit(2)
     }
 }
