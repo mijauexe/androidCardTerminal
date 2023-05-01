@@ -272,12 +272,8 @@ class MainActivity : AppCompatActivity() {
             if(it["CardCode"] == "CONNECTION_RESTORED") {
                 val dateText = findViewById<TextView>(R.id.please_scan_card_text)
                 val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                Thread {
-                    runOnUiThread {
-                        dateText.text = "Molimo očitajte karticu."
-                        ddd.visibility = View.VISIBLE
-                    }
-                }
+                dateText.text = "Molimo očitajte karticu."
+                ddd.visibility = View.VISIBLE
             }
             else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
                 val navHostFragment =
@@ -300,12 +296,8 @@ class MainActivity : AppCompatActivity() {
             } else if (it["CardCode"] == "CONNECTION_LOST") {
                 val dateText = findViewById<TextView>(R.id.please_scan_card_text)
                 val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                Thread {
-                    runOnUiThread {
-                        dateText.text = "Dogodila se greška. Potreban servis."
-                        ddd.visibility = View.GONE
-                    }
-                }
+                dateText.text = "Dogodila se greška. Potreban servis."
+                ddd.visibility = View.GONE
             }
         }
 
