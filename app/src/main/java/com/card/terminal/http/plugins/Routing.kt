@@ -1,9 +1,6 @@
 package com.card.terminal.http.plugins
 
-import com.card.terminal.http.routes.cardRouting
-import com.card.terminal.http.routes.controlInterfaceRouting
-import com.card.terminal.http.routes.eventRouting
-import com.card.terminal.http.routes.personRouting
+import com.card.terminal.http.routes.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
@@ -12,6 +9,8 @@ fun Application.configureRouting() {
         cardRouting()
         personRouting()
         eventRouting()
+        calendarRouting()
+        accessLevelRouting()
         controlInterfaceRouting()
     }
 }

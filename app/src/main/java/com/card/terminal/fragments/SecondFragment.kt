@@ -130,7 +130,7 @@ class SecondFragment : Fragment() {
 //            if (act.checkPin(binding.pinPreviewText.text)) {
             if(binding.pinPreviewText.text == "0000"){
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
-                showDialog()
+//                showDialog()
             } else {
                 resetPin = true;
                 binding.pinPreviewText.setTextColor(Color.parseColor("#ff2424"))

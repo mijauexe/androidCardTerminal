@@ -21,16 +21,16 @@ fun Route.personRouting() {
             }
         }
 
-        get("/{id}") {
-            val id = call.parameters["id"]
-            Timber.d("Msg: GET request on /person/$id")
-            val person = id?.let { it1 -> database?.PersonDao()?.get(it1.toInt()) }
-            if (person != null) {
-                call.respond(person)
-            } else {
-                call.respondText("No person with id ${id}", status = HttpStatusCode.OK)
-            }
-        }
+//        get("/{id}") {
+//            val id = call.parameters["id"]
+//            Timber.d("Msg: GET request on /person/$id")
+//            val person = id?.let { it1 -> database?.PersonDao()?.get(it1.toInt()) }
+//            if (person != null) {
+//                call.respond(person)
+//            } else {
+//                call.respondText("No person with id ${id}", status = HttpStatusCode.OK)
+//            }
+//        }
 
         post {
             Timber.d("Msg: POST request on /person")
@@ -70,6 +70,16 @@ fun Route.personRouting() {
             }
         }
 
+        get("/accesslevels") {
+            Timber.d("Msg: GET request on /person/accesslevels")
+            val list = database?.PersonWithAccessLevelsDao()?.getAll()
+            if (list?.isNotEmpty() == true) {
+                call.respond(list)
+            } else {
+                call.respondText("Db empty.", status = HttpStatusCode.OK)
+            }
+        }
+
         delete("/list") {
             Timber.d("Msg: DELETE request on /person/list")
             val listOfIdsToBeDeleted = call.receive<Map<String, List<Int>>>()
@@ -95,7 +105,7 @@ fun Route.personRouting() {
                 }
                 if (unsuccessful.size != 0) {
                     call.respondText(
-                        "$deletedRow row(s) deleted. Values with ids ${unsuccessful} weren't deleted.",
+                        "$deletedRow row(s) deleted. Values with ids $unsuccessful weren't deleted.",
                         status = HttpStatusCode.Created
                     )
                 } else {

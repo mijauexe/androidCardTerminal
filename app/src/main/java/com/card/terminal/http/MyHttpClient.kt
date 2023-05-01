@@ -172,9 +172,10 @@ object MyHttpClient {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
 //            val larusEndpoint = getPortAndIP()
-            val response: HttpResponse = client!!.request("http://sucic.info/b0pass/b0pass_iftp2.php") {
-                method = HttpMethod.Get
-            }
+            val response: HttpResponse =
+                client!!.request("http://sucic.info/b0pass/b0pass_iftp2.php") {
+                    method = HttpMethod.Get
+                }
             println(response)
 //            mutableCode.postValue(mapOf("pingResponse" to response.toString()))
         }
@@ -185,7 +186,7 @@ object MyHttpClient {
         println("usao")
         scope1.launch {
 
-            if(type == "ADD_INIT1") {
+            if (type == "ADD_INIT1") {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
                 db.clearAllTables()
             }
@@ -202,17 +203,19 @@ object MyHttpClient {
                     )
                         ?.let {
                             client?.post(it) {
-                                println("1")
                                 contentType(ContentType.Application.Json)
-                                println("2")
-                                setBody("{\"ACT\": \"$type\"}")
-                                println("3")
+                                setBody("{\"ACT\": \"${type}\",\"IFTTERM2_B0_ID\": \"${mySharedPreferences.getString("IFTTERM2_B0_ID", "0")}\"}")
                             }
                         }
                 println(response)
                 if (response != null) {
 //                    val b = MiroConverter().addInit1Data(response.bodyAsText())
-                    MiroConverter().addHcal(Gson().fromJson(response.bodyAsText(), MiroConverter.customObject1::class.java))
+                    MiroConverter().addHcal(
+                        Gson().fromJson(
+                            response.bodyAsText(),
+                            MiroConverter.initHcalObject::class.java
+                        )
+                    )
                     println("gas")
 //                    if(b) {
 //
@@ -239,10 +242,12 @@ object MyHttpClient {
     }
 
     fun publishNewEvent(cardResponse: Bundle) {
-        val scope1 = CoroutineScope(Dispatchers.Default)
+        val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
             eventToDatabase(cardResponse, false)
-            val body = MiroConverter().pushEventFormat(cardResponse)
+            val body = withContext(Dispatchers.Main) {
+                MiroConverter().pushEventFormat(cardResponse)
+            }
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
@@ -339,6 +344,7 @@ object MyHttpClient {
             val newE = Event(
                 uid = e.uid,
                 eventCode = e.eventCode,
+                eventCode2 = e.eventCode2, //TODO EVENTCODE
                 cardNumber = e.cardNumber,
                 dateTime = e.dateTime,
                 published = true
@@ -349,6 +355,7 @@ object MyHttpClient {
                 eventCode = MiroConverter().convertECode(
                     cardResponse.get("selection").toString()
                 ),
+                eventCode2 = 0,
                 cardNumber = cardResponse.get("CardCode").toString().toInt(),
                 dateTime = cardResponse.get("DateTime").toString(),
                 published = published,
@@ -365,6 +372,7 @@ object MyHttpClient {
                 Event(
                     uid = e.uid,
                     eventCode = e.eventCode,
+                    eventCode2 = e.eventCode2,
                     cardNumber = e.cardNumber,
                     dateTime = e.dateTime,
                     published = true

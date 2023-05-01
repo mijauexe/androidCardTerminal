@@ -15,14 +15,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -41,7 +39,6 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.concurrent.thread
@@ -107,17 +104,31 @@ class MainActivity : AppCompatActivity() {
 
 
         db = AppDatabase.getInstance((this))
-//        db.clearAllTables()
+
+
+//        val scope3 = CoroutineScope(Dispatchers.IO)
+//        scope3.launch {
+//            try {
+//                db.clearAllTables()
+//            } catch (e: Exception) {
+//                Timber.d(
+//                    "Exception while clearing db: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            }
+//        }
 
         Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        val isFirstTime = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
+        val isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
         Timber.d("hello world")
 
-        if (isFirstTime) {
+        if (isFirstBoot) {
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
             // Set the preferences for first time app install...
@@ -258,11 +269,20 @@ class MainActivity : AppCompatActivity() {
     private fun setObservers() {
         mutableLarusCode.observe(this) {
 //            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-            if (!it["CardCode"].equals("0")) {
-
+            if(it["CardCode"] == "CONNECTION_RESTORED") {
+                val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+                val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                Thread {
+                    runOnUiThread {
+                        dateText.text = "Molimo očitajte karticu."
+                        ddd.visibility = View.VISIBLE
+                    }
+                }
+            }
+            else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
                 val navHostFragment =
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                val navController = navHostFragment.navController
+//                val navController = navHostFragment.navController
 
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
@@ -274,7 +294,16 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     R.id.SettingsFragment -> {
-                        showDialog("skenirana kartica ali nije inicijaliziran prolaz...", false)
+                        showDialog("skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...", false)
+                    }
+                }
+            } else if (it["CardCode"] == "CONNECTION_LOST") {
+                val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+                val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                Thread {
+                    runOnUiThread {
+                        dateText.text = "Dogodila se greška. Potreban servis."
+                        ddd.visibility = View.GONE
                     }
                 }
             }
@@ -359,14 +388,14 @@ class MainActivity : AppCompatActivity() {
                 .isBefore(LocalDateTime.now())
         ) {
             try {
-                val cardOwner = db.CardDao().get(it["CardCode"]!!.toInt()).owner
-                val person = db.PersonDao().get(cardOwner)
+                val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
+                val person = db.PersonDao().get(card.owner, card.classType)
 
                 //TODO ADD PICTURE OF USER
                 bundle.putString("name", person.firstName + " " + person.lastName)
                 bundle.putString("time", it["DateTime"])
                 bundle.putString("userId", person.uid.toString())
-                bundle.putString("classType", person.classType)
+                bundle.putString("classType", card.classType)
 
                 val navHostFragment =
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment

@@ -1,9 +1,6 @@
 package com.card.terminal.db.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.card.terminal.db.entity.Card
 
 @Dao
@@ -12,10 +9,13 @@ interface CardDao {
     fun getAll(): List<Card>
 
     @Query("SELECT * FROM Card WHERE card_number = :cardNumber")
-    fun get(vararg cardNumber: Int): Card
+    fun getByCardNumber(vararg cardNumber: Int): Card
 
     @Query("SELECT * FROM Card WHERE owner = :personId")
     fun getCardsByPersonId(personId: Int): List<Card>
+
+    @Query("SELECT * FROM Card WHERE owner = :uid AND class_type = :classType")
+    fun get(uid: Int, classType: String): Card
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg card: Card)
@@ -28,4 +28,7 @@ interface CardDao {
 
     @Query("DELETE FROM Card WHERE card_number = :cardNumber")
     fun deleteByCardNumber(vararg cardNumber: Int): Int
+
+    @Delete
+    fun deleteMany(list: List<Card>)
 }

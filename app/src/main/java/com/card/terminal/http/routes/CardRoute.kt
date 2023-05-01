@@ -20,16 +20,17 @@ fun Route.cardRouting() {
                 call.respondText("Card db is empty", status = HttpStatusCode.OK)
             }
         }
-        get("/{id?}") {
-            val id = call.parameters["id"]
-            Timber.d("Msg: GET request on /card/$id")
-            val card = id?.let { it1 -> database?.CardDao()?.get(it1.toInt()) }
-            if (card != null) {
-                call.respond(card)
-            } else {
-                call.respondText("No card with card number ${id}", status = HttpStatusCode.OK)
-            }
-        }
+//        get("/{id?}") {
+//            val id = call.parameters["id"]
+//            Timber.d("Msg: GET request on /card/$id")
+//            val card = id?.let { it1 -> database?.CardDao()?.get(it1.toInt()) }
+//            if (card != null) {
+//                call.respond(card)
+//            } else {
+//                call.respondText("No card with card number ${id}", status = HttpStatusCode.OK)
+//            }
+//        }
+
         get("/person/{id?}") {
             val id = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",

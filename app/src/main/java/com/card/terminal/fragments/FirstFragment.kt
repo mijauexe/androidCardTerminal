@@ -1,19 +1,16 @@
 package com.card.terminal.fragments
 
-import android.app.ProgressDialog
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.http.MyHttpClient
-import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -121,19 +118,22 @@ class FirstFragment : Fragment() {
                     )
                 }
             }
-        }, 10000)
+        }, 5000)
     }
 
     fun goToCheckoutWithBundle(bundle: Bundle) {
+        Handler().postDelayed({
         when (findNavController().currentDestination?.id) {
             R.id.FirstFragment -> {
                 findNavController().navigate(
                     R.id.action_FirstFragment_to_CheckoutFragment,
                     bundle
                 )
+                MyHttpClient.pingy(bundle)
             }
-        }
-        MyHttpClient.pingy(bundle)
+        }}, 500)
+
+
     }
 
     override fun onDestroyView() {

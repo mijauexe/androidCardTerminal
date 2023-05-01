@@ -5,29 +5,22 @@ import androidx.lifecycle.MutableLiveData
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.net.ConnectException
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatterBuilder
-import java.util.*
 
 
 class LarusFunctions(
     val client: HttpClient,
     val mutableCode: MutableLiveData<Map<String, String>>
 ) {
-
 
 
     data class LarusEndpoint(var ip: String, var port: Int)
@@ -55,6 +48,10 @@ class LarusFunctions(
                 withTimeout(2000) {
                     socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                 }
+
+                val sharedPreferences = ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
                 var receiveChannel = socket1!!.openReadChannel()
                 var sendChannel = socket1!!.openWriteChannel(autoFlush = true)
 
@@ -98,12 +95,51 @@ class LarusFunctions(
                     socket1!!.close()
                 }
 
-                if (lastRead < lastSave || full == 1) {
+                if (sharedPreferences.getBoolean("Connection", false) == false) {
+                    //ako je veza bila pukuta (false), a sad je socket uspio proc ->
+                    //treba stavit lastRead na lastSave i promijeniti connection u true
+
+                    withTimeout(2000) {
+                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                    }
+                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                    byteArray = "GVA<Dataread>".toByteArray()
+                    buffer = ByteBuffer.allocate(5 + byteArray.size)
+                    buffer.put(byteArray)
+
+                    byteArray = byteArrayOf(
+                        (lastSave shr 0).toByte(),
+                        (lastSave shr 8).toByte(),
+                        (lastSave shr 16).toByte(),
+                        (lastSave shr 24).toByte(),
+                        0
+                    )
+
+                    buffer.put(byteArray)
+                    buffer.position(0)
+
+                    sendChannel.writeAvailable(buffer)
+
+                    withContext(Dispatchers.IO) {
+                        socket1!!.close()
+                    }
+
+                    val editor = sharedPreferences.edit()
+                    editor.putBoolean("Connection", true)
+                    editor.commit()
+                    mutableCode.postValue(
+                        mapOf(
+                            "CardCode" to "CONNECTION_RESTORED"
+                        )
+                    )
+                } else if (lastRead < lastSave || full == 1) {
                     lastRead += 12
 
                     withTimeout(2000) {
                         socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                     }
+
                     receiveChannel = socket1!!.openReadChannel()
                     sendChannel = socket1!!.openWriteChannel(autoFlush = true)
 
@@ -141,7 +177,6 @@ class LarusFunctions(
                     withTimeout(2000) {
                         socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                     }
-                    receiveChannel = socket1!!.openReadChannel()
                     sendChannel = socket1!!.openWriteChannel(autoFlush = true)
 
                     byteArray = "GVA<Dataread>".toByteArray()
@@ -155,6 +190,7 @@ class LarusFunctions(
                         (lastRead shr 24).toByte(),
                         0
                     )
+
                     buffer.put(byteArray)
                     buffer.position(0)
 
@@ -171,15 +207,28 @@ class LarusFunctions(
                         )
                     )
                 }
-            } catch (e: ArrayIndexOutOfBoundsException) {
-                println("ArrayIndexOutOfBoundsException: ${e.message}")
-                Timber.d("Msg: ArrayIndexOutOfBoundsException to larus board")
-            }
-            catch (e: TimeoutCancellationException) {
-                println("TimeoutCancellationException: ${e.message}")
-                Timber.d("Msg: TimeoutCancellationException to larus board")
+            } catch (e: ConnectException) {
+
+                val sharedPreferences = ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+
+                if (sharedPreferences.getBoolean("Connection", false)) {
+                    Timber.d(
+                        "Msg: ConnectException %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
+                    val editor = sharedPreferences.edit()
+                    editor.putBoolean("Connection", false)
+                    editor.commit()
+                    mutableCode.postValue(
+                        mapOf(
+                            "CardCode" to "CONNECTION_LOST"
+                        )
+                    )
+                }
             } catch (e: Exception) {
-                println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
         }

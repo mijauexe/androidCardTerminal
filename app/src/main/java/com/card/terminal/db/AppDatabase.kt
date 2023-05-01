@@ -9,7 +9,10 @@ import com.card.terminal.db.dao.*
 import com.card.terminal.db.entity.*
 import timber.log.Timber
 
-@Database(entities = [Card::class, Event::class, Person::class], version = 3)
+@Database(
+    entities = [Card::class, Event::class, Person::class, Calendar::class, AccessLevel::class],
+    version = 10
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
@@ -17,14 +20,13 @@ abstract class AppDatabase : RoomDatabase() {
         private var instance: AppDatabase? = null
         fun getInstance(context: Context): AppDatabase {
             if (instance == null) {
-//                instance = Room.databaseBuilder(context,AppDatabase::class.java,"the_database.db")
-//                    .allowMainThreadQueries()
-//                    .build()
 
                 instance = Room.databaseBuilder(
                     context,
                     AppDatabase::class.java, "AppDatabase"
-                ).allowMainThreadQueries()/*.fallbackToDestructiveMigration()*/.build()
+                ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
+
+                //TODO MAKNI MAIN THREAD QUERIES...
             }
             Timber.d("Msg: Instantiating database")
             return instance as AppDatabase
@@ -36,4 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun PersonDao(): PersonDao
     abstract fun PersonWithCardsDao(): PersonWithCardsDao
     abstract fun CardWithEventsDao(): CardWithEventsDao
+    abstract fun CalendarDao(): CalendarDao
+    abstract fun AccessLevelDao(): AccessLevelDao
+    abstract fun PersonWithAccessLevelsDao(): PersonWithAccessLevelsDao
 }

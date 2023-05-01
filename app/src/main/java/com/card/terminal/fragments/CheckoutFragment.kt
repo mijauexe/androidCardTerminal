@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
@@ -34,8 +33,6 @@ class CheckoutFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        Timber.d("CheckoutFragment onViewCreated")
         binding.firstAndLastName.text = arguments?.getString("name")
         binding.reasonValue.text = arguments?.getString("selection")
 
@@ -44,9 +41,14 @@ class CheckoutFragment : Fragment() {
 
         binding.readoutValue.text = binding.readoutValue.text.toString() + dt
 
-        binding.smile.setOnClickListener {
-            findNavController().navigate(R.id.action_CheckoutFragment_to_MainFragment)
-        }
+        super.onViewCreated(view, savedInstanceState)
+        Timber.d("CheckoutFragment onViewCreated")
+
+
+
+//        binding.smile.setOnClickListener {
+//            findNavController().navigate(R.id.action_CheckoutFragment_to_MainFragment)
+//        }
 
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {
@@ -56,7 +58,7 @@ class CheckoutFragment : Fragment() {
                     )
                 }
             }
-        }, 10000)
+        }, 5000)
     }
 
     override fun onDestroyView() {
