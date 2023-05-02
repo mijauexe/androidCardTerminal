@@ -65,11 +65,11 @@
                 android:textSize="50sp" />
 
             <ImageView
-                android:id="@+id/person"
+                android:id="@+id/photo"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/person_sample" />
+                android:src="@drawable/ic_unknown_person" />
 
             <ImageView
                 android:layout_width="300dp"

@@ -1,5 +1,6 @@
 package com.card.terminal.fragments
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -47,9 +48,28 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("FirstFragment onViewCreated")
-        binding.firstAndLastName.text = arguments?.getString("name")
 
         val existingBundle = requireArguments()
+
+        if (existingBundle.containsKey("imageB64")) {
+            val imageBytesB64 = Base64.getDecoder().decode(existingBundle.getString("imageB64"))
+            val decodedImage = BitmapFactory.decodeByteArray(imageBytesB64, 0, imageBytesB64.size)
+            if (decodedImage.byteCount != 0) {
+                binding.photo.setImageBitmap(decodedImage)
+                existingBundle.putParcelable("imageB64", decodedImage)
+//        } else if (decodedImagePath.byteCount != 0) {
+//            binding.photo.setImageBitmap(decodedImagePath)
+//            existingBundle.putParcelable("imageB64", decodedImagePath)
+            }
+//        else {
+//            binding.photo.setImageResource(R.drawable.ic_unknown_person)
+//        }
+        }
+
+
+
+        binding.firstAndLastName.text = arguments?.getString("name")
+
         val ct = existingBundle.getString("classType")
         if (ct.equals("WORKER")) {
             binding.ibWorkTrip.visibility = View.VISIBLE
@@ -123,15 +143,16 @@ class FirstFragment : Fragment() {
 
     fun goToCheckoutWithBundle(bundle: Bundle) {
         Handler().postDelayed({
-        when (findNavController().currentDestination?.id) {
-            R.id.FirstFragment -> {
-                findNavController().navigate(
-                    R.id.action_FirstFragment_to_CheckoutFragment,
-                    bundle
-                )
-                MyHttpClient.pingy(bundle)
+            when (findNavController().currentDestination?.id) {
+                R.id.FirstFragment -> {
+                    findNavController().navigate(
+                        R.id.action_FirstFragment_to_CheckoutFragment,
+                        bundle
+                    )
+                    MyHttpClient.pingy(bundle)
+                }
             }
-        }}, 500)
+        }, 500)
 
 
     }

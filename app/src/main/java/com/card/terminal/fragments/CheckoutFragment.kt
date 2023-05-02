@@ -36,6 +36,12 @@ class CheckoutFragment : Fragment() {
         binding.firstAndLastName.text = arguments?.getString("name")
         binding.reasonValue.text = arguments?.getString("selection")
 
+        val existingBundle = requireArguments()
+
+        if(existingBundle.containsKey("imageB64")) {
+            binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
+        }
+
         val dt = LocalDateTime.parse(arguments?.getString("time"), DateTimeFormatter.ISO_DATE_TIME)
             .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
 

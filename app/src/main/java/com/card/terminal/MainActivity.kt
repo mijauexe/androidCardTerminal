@@ -149,6 +149,8 @@ class MainActivity : AppCompatActivity() {
 
         if (isAdmin() && prefs.getBoolean("kioskMode", false)) {
             setKioskPolicies(true, true)
+            val editor = prefs.edit()
+            editor.putBoolean("kioskMode", true)
         }
     }
 
@@ -269,13 +271,12 @@ class MainActivity : AppCompatActivity() {
     private fun setObservers() {
         mutableLarusCode.observe(this) {
 //            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-            if(it["CardCode"] == "CONNECTION_RESTORED") {
+            if (it["CardCode"] == "CONNECTION_RESTORED") {
                 val dateText = findViewById<TextView>(R.id.please_scan_card_text)
                 val ddd = findViewById<ImageView>(R.id.please_scan_icon)
                 dateText.text = "Molimo očitajte karticu."
                 ddd.visibility = View.VISIBLE
-            }
-            else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
+            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
                 val navHostFragment =
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 //                val navController = navHostFragment.navController
@@ -290,7 +291,10 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     R.id.SettingsFragment -> {
-                        showDialog("skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...", false)
+                        showDialog(
+                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+                            false
+                        )
                     }
                 }
             } else if (it["CardCode"] == "CONNECTION_LOST") {
@@ -388,6 +392,14 @@ class MainActivity : AppCompatActivity() {
                 bundle.putString("time", it["DateTime"])
                 bundle.putString("userId", person.uid.toString())
                 bundle.putString("classType", card.classType)
+
+                if (person.imageB64 != "") {
+                    bundle.putString("imageB64", person.imageB64)
+                }
+
+                if (person.imagePath != "") {
+                    bundle.putString("imagePath", person.imagePath)
+                }
 
                 val navHostFragment =
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment

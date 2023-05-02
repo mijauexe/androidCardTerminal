@@ -72,13 +72,13 @@ class MiroConverter {
         val CREAD: List<CREAD>
     )
 
-    data class DEVS (
+    data class DEVS(
         @SerializedName("B0_ID") val B0_ID: String,
         @SerializedName("LOCAL_ID") val LOCAL_ID: String,
         @SerializedName("DESCR") val DESCR: String
     )
 
-    data class EVENT_CODE2 (
+    data class EVENT_CODE2(
         @SerializedName("ID") val ID: String,
         @SerializedName("B0_DEV_E_CODE") val B0_DEV_E_CODE: String,
         @SerializedName("CLASESS") val CLASESS: String,
@@ -103,8 +103,15 @@ class MiroConverter {
         @SerializedName("ACT") val ACT: String,
         @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
         @SerializedName("IFTTERM2_DESCR") val IFTTERM2_DESCR: String,
-        @SerializedName("DEVS") val DEVS : ArrayList<DEVS>,
-        @SerializedName("EVENT_CODE2") val EVENT_CODE2 : ArrayList<EVENT_CODE2>
+        @SerializedName("DEVS") val DEVS: ArrayList<DEVS>,
+        @SerializedName("EVENT_CODE2") val EVENT_CODE2: ArrayList<EVENT_CODE2>
+    )
+
+    data class Photo(
+        @SerializedName("B0_CLASS") val B0_CLASS: String,
+        @SerializedName("B0_ID") val B0_ID: String,
+        @SerializedName("B0_HTTP_PATH") val B0_HTTP_PATH: String,
+        @SerializedName("IMG_B64") val IMG_B64: String,
     )
 
     data class Holiday(
@@ -114,6 +121,13 @@ class MiroConverter {
         @SerializedName("D") val D: String,
         @SerializedName("NO_WORK") val NO_WORK: Int,
         @SerializedName("DESCR") val DESCR: String,
+    )
+
+    data class PhotoObject(
+        @SerializedName("ACT") val ACT: String,
+        @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
+        @SerializedName("BASE64") val BASE64: String,
+        @SerializedName("PHOTOS") val PHOTOS: ArrayList<Photo>
     )
 
     data class holidayObject(
@@ -176,6 +190,16 @@ class MiroConverter {
                 return iftTermResponse(response)
             }
 
+            operation.contains("PHOTOS") -> {
+                val responseDeferred = scope.async {
+                    val objectic = Gson().fromJson(operation, PhotoObject::class.java)
+                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
+                    addPhotos(objectic)
+                }
+                val response = responseDeferred.await()
+                return iftTermResponse(response)
+            }
+
             else -> {
                 Timber.d("Msg: unknown request: %s", operation)
                 return iftTermResponse(
@@ -186,6 +210,49 @@ class MiroConverter {
                     )
                 )
             }
+        }
+    }
+
+    private fun addPhotos(objectic: PhotoObject): iftTermResponse {
+        var counter = 0
+        val personList = mutableListOf<Person>()
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+
+
+            for (person in objectic.PHOTOS) {
+                val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
+                val newP = Person(
+                    uid = p.uid,
+                    classType = p.classType,
+                    firstName = p.firstName,
+                    lastName = p.lastName,
+                    imageB64 = person.IMG_B64,
+                    imagePath = person.B0_HTTP_PATH
+                )
+                personList.add(newP)
+            }
+
+            db.PersonDao().insertAll(personList)
+            counter += personList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while putting photos in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        if ((personList.size == 0 && objectic.PHOTOS.size != 0)) {
+            return iftTermResponse(
+                counter = counter,
+                err = "1",
+                msg = "Not all entries were successfully added. Check log: ${LocalDateTime.now()}"
+            )
+        } else {
+            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
         }
     }
 
@@ -349,7 +416,7 @@ class MiroConverter {
                     cardNumber = cards.CN,
                     classType = cards.B0_CLASS,
                     owner = cards.HOLDER_B0_ID.toInt(),
-                    activationDate = ac.ACTIVATION_DATE, //TODO EXPIRATION DATE I ACTIVATION DATE
+                    activationDate = ac.ACTIVATION_DATE,
                     expirationDate = ac.EXPIRATION_DATE,
                 )
             )
@@ -361,7 +428,7 @@ class MiroConverter {
             db.CardDao().insertAll(cardList)
             counter += cardList.size
         } catch (e: Exception) {
-            Timber.d("Exception while putting persons in db: %s | %s", e.message, e.cause)
+            Timber.d("Exception while putting cards in db: %s | %s", e.message, e.cause)
         }
         if ((cardList.size == 0 && objectic.CARDS.size != 0) || (acList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
             return iftTermResponse(
