@@ -12,5 +12,6 @@ fun Application.configureRouting() {
         calendarRouting()
         accessLevelRouting()
         controlInterfaceRouting()
+        deviceRouting()
     }
 }
