@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class Event (
     @Serializable @PrimaryKey(autoGenerate = true) val uid: Int,
+    @Serializable @ColumnInfo(name = "device_id") val deviceId: Int,
     @Serializable @ColumnInfo(name = "event_code") val eventCode: Int,
     @Serializable @ColumnInfo(name = "event_code2") val eventCode2: Int,
     @Serializable @ColumnInfo(name = "card_number") val cardNumber: Int,
