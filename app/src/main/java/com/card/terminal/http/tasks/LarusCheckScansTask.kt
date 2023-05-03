@@ -17,19 +17,19 @@ class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     }
 
     fun startTask() {
-        started = true
-        Timber.d("Msg: LarusCheckScansTask started")
         timer = Timer()
         timer?.scheduleAtFixedRate(
             this,
             delay,
             period
         )
+        started = true
+        Timber.d("Msg: LarusCheckScansTask started")
     }
 
     fun stopTask() {
         started = false
-        Timber.d("Msg: LarusCheckScansTask stopped")
         timer?.cancel()
+        Timber.d("Msg: LarusCheckScansTask stopped")
     }
 }
