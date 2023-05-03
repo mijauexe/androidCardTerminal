@@ -40,9 +40,6 @@ class LarusFunctions(
         var full: Int
         val scope = CoroutineScope(Dispatchers.IO)
 
-//        System.gc()
-
-
         scope.launch {
             val sharedPreferences = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
@@ -71,7 +68,7 @@ class LarusFunctions(
 
 //                println(LocalTime.now())
 //                for (i in dataInfo) {
-//                    print("bla bla $i ")
+//                    print("$i ")
 //                }
 //                println()
 
@@ -100,8 +97,6 @@ class LarusFunctions(
                 withContext(Dispatchers.IO) {
                     socket1?.close()
                 }
-
-
 
                 if (sharedPreferences.getBoolean("Connection", false) == false && lastSave != 0) {
 
@@ -233,6 +228,7 @@ class LarusFunctions(
                         )
                     )
                 }
+
             } catch (e: Exception) {
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }

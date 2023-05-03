@@ -124,10 +124,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        val isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
+        var isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
         Timber.d("hello world")
-
+//        isFirstBoot = true //TODO MAKNI
         if (isFirstBoot) {
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
@@ -137,9 +137,10 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
-            editor.putInt("IFTTERM2_B0_ID", 0)
+            editor.putBoolean("Connection", false)
+            editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
-            editor.putString("settingsPin", "4670")
+            editor.putString("settingsPin", "0")
             editor.apply()
         }
 
@@ -300,7 +301,7 @@ class MainActivity : AppCompatActivity() {
             } else if (it["CardCode"] == "CONNECTION_LOST") {
                 val dateText = findViewById<TextView>(R.id.please_scan_card_text)
                 val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                dateText.text = "Dogodila se greška. Potreban servis."
+                dateText.text = "Izgubljena veza sa skenerom kartica"
                 ddd.visibility = View.GONE
             }
         }
@@ -387,7 +388,6 @@ class MainActivity : AppCompatActivity() {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
                 val person = db.PersonDao().get(card.owner, card.classType)
 
-                //TODO ADD PICTURE OF USER
                 bundle.putString("name", person.firstName + " " + person.lastName)
                 bundle.putString("time", it["DateTime"])
                 bundle.putString("userId", person.uid.toString())
@@ -428,7 +428,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: NullPointerException) {
-                showDialog("Kartica nevažeća!", false)
+                showDialog("Kartica nevažeća: ${it["CardCode"]}", false)
             } catch (e: Exception) {
                 showDialog("Dogodila se greška! Molimo pokušajte ponovno.", false)
             }
