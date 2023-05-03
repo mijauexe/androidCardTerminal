@@ -20,14 +20,11 @@ class MiroConverter {
     )
 
     data class CARDS(
-        val B0_CLASS: String,
-        val HOLDER_B0_ID: String,
-        val CN: String
+        val B0_CLASS: String, val HOLDER_B0_ID: String, val CN: String
     )
 
     data class DELETE_HOLDERS(
-        val B0_CLASS: String,
-        val B0_ID: String
+        val B0_CLASS: String, val B0_ID: String
     )
 
     data class DELETE_CARDS(
@@ -49,32 +46,26 @@ class MiroConverter {
     )
 
     data class iftTermResponse(
-        val counter: Int,
-        val err: String,
-        val msg: String
+        val counter: Int, val err: String, val msg: String
     )
 
     data class CREAD(
-        val CN: String,
-        val GENT: String,
-        val ECODE: String,
-        val DEV_B0_ID: String
+        val CN: String, val GENT: String, val ECODE: String, val DEV_B0_ID: String
     )
 
     data class EventStringPair(
-        val eventList: List<Event>,
-        val eventString: String
+        val eventList: List<Event>, val eventString: String
     )
 
     data class NewEventRequest( //TODO saljem serveru evente, nije jos miro slozio
-        val ACT: String,
-        val IFTTERM2_B0_ID: String,
-        val CREAD: List<CREAD>
+        val ACT: String, val IFTTERM2_B0_ID: String, val CREAD: List<CREAD>
     )
 
     data class DEVS(
         @SerializedName("B0_ID") val B0_ID: String,
         @SerializedName("LOCAL_ID") val LOCAL_ID: String,
+        @SerializedName("CONTROL_IN") val CONTROL_IN: String,
+        @SerializedName("CONTROL_OUT") val CONTROL_OUT: String,
         @SerializedName("DESCR") val DESCR: String
     )
 
@@ -99,10 +90,16 @@ class MiroConverter {
         @SerializedName("ACC_LEVELS_DISTR") val ACC_LEVELS_DISTR: ArrayList<DELETE_ACC_LEVELS_DISTR>
     )
 
+    data class B0_SERVER(
+        @SerializedName("IP") val IP: String,
+        @SerializedName("HTTP_PORT") val HTTP_PORT: String,
+    )
+
     data class init0Object(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
         @SerializedName("IFTTERM2_DESCR") val IFTTERM2_DESCR: String,
+        @SerializedName("B0_SERVER") val B0_SERVER: B0_SERVER,
         @SerializedName("DEVS") val DEVS: ArrayList<DEVS>,
         @SerializedName("EVENT_CODE2") val EVENT_CODE2: ArrayList<EVENT_CODE2>
     )
@@ -131,8 +128,7 @@ class MiroConverter {
     )
 
     data class holidayObject(
-        @SerializedName("ACT") val ACT: String,
-        @SerializedName("DAYS") val DAYS: ArrayList<Holiday>
+        @SerializedName("ACT") val ACT: String, @SerializedName("DAYS") val DAYS: ArrayList<Holiday>
     )
 
     suspend fun processRequest(operation: String): String {
@@ -143,6 +139,7 @@ class MiroConverter {
             val responseDeferred = scope1.async {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
                 db.clearAllTables()
+
             }
             responseDeferred.await()
         }
@@ -204,9 +201,7 @@ class MiroConverter {
                 Timber.d("Msg: unknown request: %s", operation)
                 return iftTermResponse(
                     iftTermResponse(
-                        0,
-                        "1",
-                        "Unknown request: ${operation.substring(50)}"
+                        0, "1", "Unknown request: ${operation.substring(50)}"
                     )
                 )
             }
@@ -256,14 +251,122 @@ class MiroConverter {
         }
     }
 
-    private fun init0(objectic: init0Object): iftTermResponse {
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
-        val editor = prefs.edit()
-        editor.putString("IFTTERM2_B0_ID", objectic.IFTTERM2_B0_ID)
-        editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
+    private suspend fun init0(objectic: init0Object): iftTermResponse {
+        var counter = 0
+        withContext(Dispatchers.Main) {
+            val prefs = ContextProvider.getApplicationContext()
+                .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+            val editor = prefs.edit()
+            editor.putInt("IFTTERM2_B0_ID", objectic.IFTTERM2_B0_ID.toInt())
+            editor.putInt(
+                "DEV_B0_ID",
+                objectic.DEVS[0].B0_ID.toInt()
+            ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
-        return MiroConverter.iftTermResponse(0, "0", "msg")
+            editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
+            editor.putString("serverIP", objectic.B0_SERVER.IP)
+            editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
+
+            counter += 4
+
+            editor.commit()
+        }
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.DeviceDao().insert(
+                Device(
+                    uid = objectic.DEVS[0].B0_ID.toInt(),
+                    localId = objectic.DEVS[0].LOCAL_ID.toInt(),
+                    controlIn = 0/*objectic.DEVS[0].CONTROL_IN.toInt()*/,
+                    controlOut = 0/*objectic.DEVS[0].CONTROL_OUT.toInt()*/,
+                    description = objectic.DEVS[0].DESCR
+                )
+            )
+            counter += 1
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while adding device in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        parseButtons(objectic.EVENT_CODE2)
+
+        if ((objectic.DEVS.size != 0 && counter == 0)) {
+            return iftTermResponse(
+                counter = 0,
+                err = "1",
+                msg = "Not all devices were successfully added. Check logs: ${LocalDateTime.now()}"
+            )
+        } else {
+            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
+        }
+    }
+
+    private suspend fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
+        //CONTRACTOR -> {poslovni izlaz, 22} npr.
+        //VEHICLE -> {privatni izlaz, 20} npr.
+        val buttonMap = mutableMapOf<String, MutableMap<String, Int>>()
+
+
+
+        for (btn in eventCode2) {
+
+            val categories = btn.CLASESS.split(",")
+
+            try {
+                for (i in categories.indices) {
+                    val c = buttonMap.containsKey(categories[i])
+
+                    if (c) {
+                        val oldMap = buttonMap[categories[i]]
+
+                        if (oldMap != null) {
+                            oldMap.put(btn.TITLE, btn.B0_DEV_E_CODE.toInt())
+                        }
+
+                        buttonMap.put(categories[i], oldMap!!)
+
+                    } else {
+                        buttonMap.put(
+                            categories[i], mutableMapOf(btn.TITLE to btn.B0_DEV_E_CODE.toInt())
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                println(e.message)
+            }
+
+
+        }
+        println(buttonMap)
+
+        withContext(Dispatchers.Main) {
+            val prefs = ContextProvider.getApplicationContext()
+                .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+            val editor = prefs.edit()
+
+
+            for (entry in buttonMap.entries) {
+                editor.putInt("${entry.key}_size", entry.value.size)
+
+                var i = 0
+
+                for (value in entry.value) {
+                    editor.putString("${entry.key}_" + i, "${value.key}_${value.value}")
+                    editor.commit()
+                    i += 1
+                }
+            }
+
+            editor.commit()
+
+        }
+
+
     }
 
     suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
@@ -486,43 +589,56 @@ class MiroConverter {
     }
 
     fun pushEventFormat(cardResponse: Bundle): String {
-        var eCode = 0 //TODO ECODE
-        when (cardResponse.get("selection")) {
-            "BE-TO" -> eCode = 0
-            "Liječnik" -> eCode = 3
-            "Privatno" -> eCode = 4
-            "Pauza" -> eCode = 5
-            "Poslovno" -> eCode = 6
+        val eCode = 2 //TODO POSLIJE KAD BUDE ULAZ I IZLAZ
+
+        //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
+        val deviceList = mutableListOf<Device>()
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            deviceList.addAll(db.DeviceDao().getAll())
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while getting device in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
         }
 
+        val title = cardResponse.getString("title")
+        println(title)
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
-//        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${id}\",\"CREAD\":["
-//        strNew += "{\"CN\":\"${cardResponse.get("CardCode")}\", \"GENT\":\"${cardResponse.get("DateTime")}\", \"ECODE\":\"0\", \"DEV_B0_ID\":\"0\"}]}"
+//        editor.putString("selection", title)
+//        editor.putInt("eCode2", eCode2)
+//        editor.commit()
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
             cardResponse.get(
                 "CardCode"
             )
-        }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"1\",\"ECODE2\": \"1\",\"DEV_B0_ID\": \"0\"}]}"
+        }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
+            prefs.getInt("eCode2", 696969)
+        }\",\"DEV_B0_ID\": \"${deviceList[0].uid}\"}]}"
     }
 
-    suspend fun getFormattedUnpublishedEvents(): EventStringPair {
-        var eCode = 0 //TODO ECODE HEP
-        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"hep1_sisak\",\"CREAD\":["
+    suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
+        var eCode = 2 //TODO ECODE HEP
+        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
         val unpublishedEvents = mutableListOf<Event>()
         val scope = CoroutineScope(Dispatchers.IO)
         //TODO ECODE
         val responseDeferred = scope.async {
             val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
             unpublishedEvents.addAll(db.EventDao().getUnpublishedEvents())
+            val dev_b0_id = db.DeviceDao().getAll()[0].uid //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
             for (ue in unpublishedEvents.indices) {
                 if (ue != unpublishedEvents.size - 1) {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"1\",\"ECODE2\": \"1\", \"DEV_B0_ID\":\"0\"},"
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
                 } else {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"1\",\"ECODE2\": \"1\", \"DEV_B0_ID\":\"0\"}]}"
+                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
                 }
             }
         }

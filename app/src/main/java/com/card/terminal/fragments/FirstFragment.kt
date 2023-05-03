@@ -1,21 +1,29 @@
 package com.card.terminal.fragments
 
+import android.content.SharedPreferences
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.GridLayout
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -29,8 +37,7 @@ class FirstFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
@@ -71,63 +78,17 @@ class FirstFragment : Fragment() {
         binding.firstAndLastName.text = arguments?.getString("name")
 
         val ct = existingBundle.getString("classType")
+
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+
+        val layout = binding.buttonsGrid
+        println(layout)
+
         if (ct.equals("WORKER")) {
-            binding.ibWorkTrip.visibility = View.VISIBLE
-            binding.ibWorkTripLocal.visibility = View.VISIBLE
-            binding.ibWorkTripOther.visibility = View.VISIBLE
-            binding.ibPrivateWPermission.visibility = View.VISIBLE
-            binding.ibPrivateWoutPermission.visibility = View.VISIBLE
+            ubijMe("WORKER", prefs, binding.buttonsGrid, existingBundle)
         } else if (ct.equals("CONTRACTOR")) {
-            binding.ibContractor1.visibility = View.VISIBLE
-            binding.ibContractor2.visibility = View.VISIBLE
-            binding.ibContractor3.visibility = View.VISIBLE
-        }
-        binding.ibContractor1.setOnClickListener {
-            binding.ibContractor1.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Poslovni izlaz nalog HEP")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibContractor2.setOnClickListener {
-            binding.ibContractor2.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Poslovni izlaz nalog tvrtka")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibContractor3.setOnClickListener {
-            binding.ibContractor3.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatni izlaz")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibWorkTrip.setOnClickListener {
-            binding.ibWorkTrip.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Službeno putovanje")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibWorkTripLocal.setOnClickListener {
-            binding.ibWorkTripLocal.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Službeno BE-TO")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibWorkTripOther.setOnClickListener {
-            binding.ibWorkTripOther.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Službeno ostalo")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibPrivateWPermission.setOnClickListener {
-            binding.ibPrivateWPermission.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno uz dozvolu")
-            goToCheckoutWithBundle(existingBundle)
-        }
-
-        binding.ibPrivateWoutPermission.setOnClickListener {
-            binding.ibPrivateWoutPermission.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putString("selection", "Privatno hitno bez dozvole")
-            goToCheckoutWithBundle(existingBundle)
+            ubijMe("CONTRACTOR", prefs, binding.buttonsGrid, existingBundle)
         }
 
         Handler().postDelayed({
@@ -146,8 +107,7 @@ class FirstFragment : Fragment() {
             when (findNavController().currentDestination?.id) {
                 R.id.FirstFragment -> {
                     findNavController().navigate(
-                        R.id.action_FirstFragment_to_CheckoutFragment,
-                        bundle
+                        R.id.action_FirstFragment_to_CheckoutFragment, bundle
                     )
                     MyHttpClient.pingy(bundle)
                 }
@@ -155,6 +115,33 @@ class FirstFragment : Fragment() {
         }, 500)
 
 
+    }
+
+    fun ubijMe(
+        str: String,
+        prefs: SharedPreferences,
+        layout: GridLayout,
+        bundle: Bundle
+    ) {
+        for (i in 0..prefs.getInt("${str}_size", 0) - 1) {
+            val btn = layout.get(i) as Button
+            var title = prefs.getString("WORKER_${i}", "?_0")
+
+            val eCode2 = title!!.substring(title.indexOf("_") + 1).toInt()
+            title = title.substring(0, title.indexOf("_"))
+            bundle.putInt(title, eCode2)
+            btn.setText(title)
+            btn.visibility = View.VISIBLE
+            btn.setOnClickListener {
+                val editor = prefs.edit()
+                editor.putString("selection", title)
+                editor.putInt("eCode2", eCode2)
+                editor.commit()
+                btn.setBackgroundResource(R.drawable.card_button_background)
+                btn.setBackgroundColor(Color.parseColor("#faa61a"))
+                goToCheckoutWithBundle(bundle)
+            }
+        }
     }
 
     override fun onDestroyView() {
