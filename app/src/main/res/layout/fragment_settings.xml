@@ -130,6 +130,25 @@
                     android:layout_height="wrap_content"
                     android:text="INIT1 request" />
 
+                <Button
+                    android:id="@+id/init0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INIT0 request" />
+
+                <Button
+                    android:id="@+id/calendar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="calendar request" />
+
+                <Button
+                    android:id="@+id/photos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="photos request" />
+
+
             </GridLayout>
 
         </GridLayout>

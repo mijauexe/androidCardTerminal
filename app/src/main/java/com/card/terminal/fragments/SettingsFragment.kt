@@ -142,6 +142,18 @@ class SettingsFragment : Fragment() {
             MyHttpClient.pushRequest("ADD_INIT1")
         }
 
+        binding.init0.setOnClickListener {
+            MyHttpClient.pushRequest("IFTTERM2_INIT0")
+        }
+
+        binding.calendar.setOnClickListener {
+            MyHttpClient.pushRequest("ADD_HOLIDAYS")
+        }
+
+        binding.photos.setOnClickListener {
+            MyHttpClient.pushRequest("PHOTOS_ALL")
+        }
+
         binding.saveSettingsButton.setOnClickListener {
             mySharedPreferences =
                 ContextProvider.getApplicationContext()
