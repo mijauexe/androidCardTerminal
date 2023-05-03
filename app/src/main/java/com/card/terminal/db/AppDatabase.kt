@@ -10,8 +10,8 @@ import com.card.terminal.db.entity.*
 import timber.log.Timber
 
 @Database(
-    entities = [Card::class, Event::class, Person::class, Calendar::class, AccessLevel::class],
-    version = 10
+    entities = [Card::class, Event::class, Person::class, Calendar::class, AccessLevel::class, Device::class],
+    version = 11
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -41,4 +41,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun CalendarDao(): CalendarDao
     abstract fun AccessLevelDao(): AccessLevelDao
     abstract fun PersonWithAccessLevelsDao(): PersonWithAccessLevelsDao
+    abstract fun DeviceDao(): DeviceDao
 }
