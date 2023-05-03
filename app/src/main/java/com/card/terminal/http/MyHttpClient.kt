@@ -9,6 +9,7 @@ import com.card.terminal.db.entity.Event
 import com.card.terminal.http.plugins.configureRouting
 import com.card.terminal.http.plugins.configureSerialization
 import com.card.terminal.http.tasks.LarusCheckScansTask
+import com.card.terminal.http.tasks.PublishEventsTask
 import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
@@ -28,6 +29,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.net.ConnectException
 import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.util.*
 
 object MyHttpClient {
@@ -40,6 +42,8 @@ object MyHttpClient {
     private lateinit var scope: CoroutineScope
 
     private var larusCheckScansTask: TimerTask? = null
+
+    private var publishEventsTask: TimerTask? = null
 
     private var larusFunctions: LarusFunctions? = null
 
@@ -69,12 +73,14 @@ object MyHttpClient {
 
         larusFunctions = LarusFunctions(client!!, mutableCode)
         larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+        publishEventsTask = PublishEventsTask()
 
         database = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
 
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
+        (publishEventsTask as PublishEventsTask).startTask()
 
 //        Handler().postDelayed({
 //            stopLarusSocket()
@@ -133,7 +139,7 @@ object MyHttpClient {
 
     fun startNettyServer() {
         stop()
-        scope = CoroutineScope(Dispatchers.Default)
+        scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             database?.let { main(it) }
             server = embeddedServer(Netty, port = 6969) {
@@ -173,7 +179,7 @@ object MyHttpClient {
         scope.launch {
 //            val larusEndpoint = getPortAndIP()
             val response: HttpResponse =
-                client!!.request("http://sucic.info/b0pass/b0pass_iftp2.php") {
+                client!!.request("192.168.88.219/b0pass/b0pass_iftp2.php") {
                     method = HttpMethod.Get
                 }
             println(response)
@@ -183,12 +189,11 @@ object MyHttpClient {
 
     fun pushRequest(type: String) {
         val scope1 = CoroutineScope(Dispatchers.IO)
-        println("usao")
         scope1.launch {
 
             if (type == "ADD_INIT1") {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
-                db.clearAllTables()
+                db.clearAllTables() //TODO RN
             }
 
             val mySharedPreferences =
@@ -204,24 +209,34 @@ object MyHttpClient {
                         ?.let {
                             client?.post(it) {
                                 contentType(ContentType.Application.Json)
-                                setBody("{\"ACT\": \"${type}\",\"IFTTERM2_B0_ID\": \"${mySharedPreferences.getString("IFTTERM2_B0_ID", "0")}\"}")
+                                if (type.contains("PHOTOS")) {
+                                    setBody(
+                                        "{ \n" +
+                                                "    \"ACT\": \"${type}\", \n" +
+                                                "    \"IFTTERM2_B0_ID\": \"${
+                                                    mySharedPreferences.getInt(
+                                                        "IFTTERM2_B0_ID",
+                                                        4
+                                                    )
+                                                }\",\n" +
+                                                "    \"BASE64\":\"ON\"\n" +
+                                                "}"
+                                    )
+                                } else {
+                                    setBody(
+                                        "{\"ACT\": \"${type}\",\"IFTTERM2_B0_ID\": \"${
+                                            mySharedPreferences.getInt(
+                                                "IFTTERM2_B0_ID",
+                                                4
+                                            )
+                                        }\"}"
+                                    )
+                                }
                             }
                         }
-                println(response)
                 if (response != null) {
-//                    val b = MiroConverter().addInit1Data(response.bodyAsText())
-                    MiroConverter().addHcal(
-                        Gson().fromJson(
-                            response.bodyAsText(),
-                            MiroConverter.initHcalObject::class.java
-                        )
-                    )
-                    println("gas")
-//                    if(b) {
-//
-//                    } else {
-//
-//                    }
+                    Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
+                    MiroConverter().processRequest(response.bodyAsText())
                 }
             } catch (ce: ConnectException) {
                 Timber.d(
@@ -251,7 +266,6 @@ object MyHttpClient {
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
-
             try {
                 val response =
                     mySharedPreferences.getString(
@@ -291,14 +305,22 @@ object MyHttpClient {
         }
     }
 
-    suspend fun publishUnpublishedEvents() {
-        val scope1 = CoroutineScope(Dispatchers.IO)
-        scope1.launch {
-            val esp = MiroConverter().getFormattedUnpublishedEvents()
+    fun publishUnpublishedEvents() {
+        val scopeSven = CoroutineScope(Dispatchers.IO)
+        scopeSven.launch {
 
-            val mySharedPreferences =
+            val mySharedPreferences = withContext(Dispatchers.Main) {
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+            }
+
+            val esp = MiroConverter().getFormattedUnpublishedEvents(
+                mySharedPreferences.getInt(
+                    "IFTTERM2_B0_ID",
+                    696969
+                ),
+                mySharedPreferences.getInt("eCode2", 696969)
+            )
 
             try {
                 val response =
@@ -318,12 +340,12 @@ object MyHttpClient {
                     ) {
                         updateEvents(esp.eventList)
                         Timber.d(
-                            "Msg: Event list updated and published: %s", esp.eventList
+                            "Msg: Event list updated and published: %s", esp.eventString
                         )
                     }
                 }
             } catch (ce: ConnectException) {
-                Timber.d("Msg: Event list not updated or published: %s", esp.eventList)
+                Timber.d("Msg: Event list not updated or published: %s", esp.eventString)
             } catch (e: Exception) {
                 Timber.d(
                     "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
@@ -337,32 +359,47 @@ object MyHttpClient {
     }
 
     fun eventToDatabase(cardResponse: Bundle, published: Boolean) {
-        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-        if (published) {
-            val e = db.EventDao()
-                .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
-            val newE = Event(
-                uid = e.uid,
-                eventCode = e.eventCode,
-                eventCode2 = e.eventCode2, //TODO EVENTCODE
-                cardNumber = e.cardNumber,
-                dateTime = e.dateTime,
-                published = true
-            )
-            db.EventDao().update(newE)
-        } else {
-            val event = Event(
-                eventCode = MiroConverter().convertECode(
-                    cardResponse.get("selection").toString()
-                ),
-                eventCode2 = 0,
-                cardNumber = cardResponse.get("CardCode").toString().toInt(),
-                dateTime = cardResponse.get("DateTime").toString(),
-                published = published,
-                uid = 0 //auto-generate
-            )
-            db.EventDao().insert(event)
+
+        val scope1 = CoroutineScope(Dispatchers.IO)
+        scope1.launch {
+
+            val mySharedPreferences = withContext(Dispatchers.Main) {
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+            }
+
+
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            if (published) {
+                val e = db.EventDao()
+                    .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
+                val newE = Event(
+                    uid = e.uid,
+                    eventCode = e.eventCode,
+                    eventCode2 = e.eventCode2,
+                    cardNumber = e.cardNumber,
+                    dateTime = e.dateTime,
+                    published = true,
+                    deviceId = e.deviceId
+                )
+                db.EventDao().update(newE)
+            } else {
+                val event = Event(
+                    eventCode = 2, //TODO
+                    eventCode2 = mySharedPreferences.getInt("eCode2", 696969),
+                    cardNumber = cardResponse.get("CardCode").toString().toInt(),
+                    dateTime = cardResponse.get("DateTime").toString(),
+                    published = published,
+                    uid = 0, //auto-generate
+                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969) //TODO
+                )
+                db.EventDao().insert(event)
+            }
+
+
         }
+
+
     }
 
     fun updateEvents(list: List<Event>) {
@@ -375,7 +412,8 @@ object MyHttpClient {
                     eventCode2 = e.eventCode2,
                     cardNumber = e.cardNumber,
                     dateTime = e.dateTime,
-                    published = true
+                    published = true,
+                    deviceId = 0 //TODO
                 )
             )
         }
