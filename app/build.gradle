@@ -50,6 +50,7 @@ android {
 
 
 dependencies {
+    implementation("io.coil-kt:coil:2.3.0")
     implementation("io.ktor:ktor-network:$ktor_version")
     implementation("io.ktor:ktor-network-tls:$ktor_version")
     implementation("io.ktor:ktor-server-core:$ktor_version")

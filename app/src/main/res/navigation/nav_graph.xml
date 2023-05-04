@@ -66,5 +66,8 @@
         <action
             android:id="@+id/action_mainFragment_to_SettingsFragment"
             app:destination="@id/SettingsFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_CheckoutFragment"
+            app:destination="@id/CheckoutFragment" />
     </fragment>
 </navigation>

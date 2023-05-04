@@ -1,15 +1,25 @@
 package com.card.terminal.fragments
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
+import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.ContextProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.net.HttpURLConnection
+import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -34,11 +44,51 @@ class CheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.firstAndLastName.text = arguments?.getString("name")
-        binding.reasonValue.text = arguments?.getString("selection")
+//        binding.reasonValue.text = arguments?.getString("selection")
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
         val existingBundle = requireArguments()
+        MyHttpClient.pingy(existingBundle)
+        var delay = 3000L
+        if (existingBundle.containsKey("noButtonClickNeededRregime")) {
+            binding.reasonKey.text = ""
+            delay = 2000L
 
-        if(existingBundle.containsKey("imageB64")) {
+            val scope = CoroutineScope(Dispatchers.IO)
+            scope.launch {
+                val url = URL(
+                    ("http://" + prefs.getString(
+                        "bareIP",
+                        "?"
+                    ) + existingBundle.get("imagePath"))
+                )
+                val connection = withContext(Dispatchers.IO) {
+                    url.openConnection()
+                } as HttpURLConnection
+                connection.doInput = true
+                withContext(Dispatchers.IO) {
+                    connection.connect()
+                }
+                val input = connection.inputStream
+                val bitmap = BitmapFactory.decodeStream(input)
+                withContext(Dispatchers.Main) {
+                    binding.photo.setImageBitmap(bitmap)
+                    existingBundle.putParcelable("imageB64", bitmap)
+                }
+            }
+
+            binding.reasonValue.text = "Slobodan prolaz"
+        } else {
+            binding.reasonValue.text =
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+                    .getString("selection", "?")
+        }
+
+
+
+        if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
 
@@ -49,7 +99,6 @@ class CheckoutFragment : Fragment() {
 
         super.onViewCreated(view, savedInstanceState)
         Timber.d("CheckoutFragment onViewCreated")
-
 
 
 //        binding.smile.setOnClickListener {
@@ -64,7 +113,7 @@ class CheckoutFragment : Fragment() {
                     )
                 }
             }
-        }, 5000)
+        }, delay)
     }
 
     override fun onDestroyView() {

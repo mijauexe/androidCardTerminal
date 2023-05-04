@@ -80,7 +80,7 @@ object MyHttpClient {
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
-        (publishEventsTask as PublishEventsTask).startTask()
+//        (publishEventsTask as PublishEventsTask).startTask()
 
 //        Handler().postDelayed({
 //            stopLarusSocket()
@@ -219,7 +219,7 @@ object MyHttpClient {
                                                         4
                                                     )
                                                 }\",\n" +
-                                                "    \"BASE64\":\"ON\"\n" +
+                                                "    \"BASE64\":\"OFF\"\n" +
                                                 "}"
                                     )
                                 } else {

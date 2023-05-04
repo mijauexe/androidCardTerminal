@@ -162,6 +162,7 @@ class SettingsFragment : Fragment() {
             editor.putString("larusIP", larusIPEditText.text.toString())
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
             editor.putString("serverIP", serverIPEditText.text.toString())
+
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())
             editor.putString("settingsPin", settingsPinEditText.text.toString())

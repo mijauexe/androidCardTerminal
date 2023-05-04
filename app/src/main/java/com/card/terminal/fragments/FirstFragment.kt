@@ -19,7 +19,13 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.net.HttpURLConnection
+import java.net.URL
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -57,20 +63,68 @@ class FirstFragment : Fragment() {
         Timber.d("FirstFragment onViewCreated")
 
         val existingBundle = requireArguments()
-
-        if (existingBundle.containsKey("imageB64")) {
-            val imageBytesB64 = Base64.getDecoder().decode(existingBundle.getString("imageB64"))
-            val decodedImage = BitmapFactory.decodeByteArray(imageBytesB64, 0, imageBytesB64.size)
-            if (decodedImage.byteCount != 0) {
-                binding.photo.setImageBitmap(decodedImage)
-                existingBundle.putParcelable("imageB64", decodedImage)
-//        } else if (decodedImagePath.byteCount != 0) {
-//            binding.photo.setImageBitmap(decodedImagePath)
-//            existingBundle.putParcelable("imageB64", decodedImagePath)
-            }
-//        else {
-//            binding.photo.setImageResource(R.drawable.ic_unknown_person)
+//        if (existingBundle.containsKey("imageB64")) {
+//            val imageBytesB64 = Base64.getDecoder().decode(existingBundle.getString("imageB64"))
+//            val decodedImage = BitmapFactory.decodeByteArray(imageBytesB64, 0, imageBytesB64.size)
+//            if (decodedImage.byteCount != 0) {
+//                binding.photo.setImageBitmap(decodedImage)
+//                existingBundle.putParcelable("imageB64", decodedImage)
 //        }
+
+
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+
+
+        if (existingBundle.containsKey("imagePath")) {
+
+            val scope = CoroutineScope(Dispatchers.IO)
+            scope.launch {
+                val url = URL(
+                    ("http://" + prefs.getString(
+                        "bareIP",
+                        "?"
+                    ) + existingBundle.get("imagePath"))
+                )
+                val connection = withContext(Dispatchers.IO) {
+                    url.openConnection()
+                } as HttpURLConnection
+                connection.doInput = true
+                withContext(Dispatchers.IO) {
+                    connection.connect()
+                }
+                val input = connection.inputStream
+                val bitmap = BitmapFactory.decodeStream(input)
+                withContext(Dispatchers.Main) {
+                    binding.photo.setImageBitmap(bitmap)
+                    existingBundle.putParcelable("imageB64", bitmap)
+                }
+            }
+
+//            val imgFile = File(
+//                (prefs.getString("bareIP", "?") + existingBundle.get("imagePath"))
+//            )
+//
+//            binding.photo.setImageBitmap(binding.photo.load(
+//                "http://" + prefs.getString(
+//                    "bareIP",
+//                    "?"
+//                ) + existingBundle.get("imagePath")
+//            ).)
+
+//            val is = getContentResolver().openInputStream(imgFile.getData())
+//
+//            val bitmap = BitmapFactory.decodeStream(`is`)
+//            val options = BitmapFactory.Options()
+//            options.outWidth /= 10
+//            options.outHeight /= 10
+//            options.inScaled = true
+//            if (imgFile.exists()) {
+//                val myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath(), options)
+//                //Drawable d = new BitmapDrawable(getResources(), myBitmap);
+//                binding.photo.setImageBitmap(imgFile.absolutePath)
+//                existingBundle.putParcelable("imageB64", myBitmap)
+//            }
         }
 
 
@@ -79,8 +133,6 @@ class FirstFragment : Fragment() {
 
         val ct = existingBundle.getString("classType")
 
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
         val layout = binding.buttonsGrid
         println(layout)
@@ -89,6 +141,10 @@ class FirstFragment : Fragment() {
             ubijMe("WORKER", prefs, binding.buttonsGrid, existingBundle)
         } else if (ct.equals("CONTRACTOR")) {
             ubijMe("CONTRACTOR", prefs, binding.buttonsGrid, existingBundle)
+        } else if (ct.equals("GUEST")) {
+            ubijMe("GUEST", prefs, binding.buttonsGrid, existingBundle)
+        } else if (ct.equals("VEHICLE")) {
+            ubijMe("VEHICLE", prefs, binding.buttonsGrid, existingBundle)
         }
 
         Handler().postDelayed({
@@ -113,8 +169,6 @@ class FirstFragment : Fragment() {
                 }
             }
         }, 500)
-
-
     }
 
     fun ubijMe(

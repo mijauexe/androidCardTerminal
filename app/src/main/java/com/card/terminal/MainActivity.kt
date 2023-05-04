@@ -39,6 +39,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.concurrent.thread
@@ -131,16 +132,22 @@ class MainActivity : AppCompatActivity() {
         if (isFirstBoot) {
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
-            // Set the preferences for first time app install...
+//             Set the preferences for first time app install...
             editor.putBoolean("kioskMode", false)
-            editor.putString("larusIP", "192.168.0.200")
+            editor.putString("larusIP", "10.54.3.242")
             editor.putInt("larusPort", 8005)
-            editor.putString("serverIP", "http://sucic.info/b0pass/b0pass_iftp2.php")
+            editor.putString("serverIP", "http://10.1.221.178/b0pass/b0pass_iftp2.php")
             editor.putInt("serverPort", 80)
             editor.putBoolean("Connection", false)
             editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
             editor.putString("settingsPin", "0")
+
+            //rezimi rada kad ne treba stistkat tipke
+            editor.putStringSet(
+                "noButtonClickNeededRregime", setOf("06:30__07:15", "14:30__15:15", "18:30__19:15")
+            )
+
             editor.apply()
         }
 
@@ -301,7 +308,7 @@ class MainActivity : AppCompatActivity() {
             } else if (it["CardCode"] == "CONNECTION_LOST") {
                 val dateText = findViewById<TextView>(R.id.please_scan_card_text)
                 val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                dateText.text = "Izgubljena veza sa skenerom kartica"
+                dateText.text = "Prekinuta LAN mreža."
                 ddd.visibility = View.GONE
             }
         }
@@ -394,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                 bundle.putString("classType", card.classType)
 
                 if (person.imageB64 != "") {
-                    bundle.putString("imageB64", person.imageB64)
+                    bundle.putString("imageB64", "person.imageB64")
                 }
 
                 if (person.imagePath != "") {
@@ -405,31 +412,93 @@ class MainActivity : AppCompatActivity() {
                     supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
                 val navController = navHostFragment.navController
 
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
+                val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
-                    R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
+                var currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+//                currentTime = LocalTime.parse(currentTime)
 
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz :)",
-                            false
-                        )
+                val checkTimes = mutableListOf<Boolean>()
+
+                val setic = prefs.getStringSet("noButtonClickNeededRregime", setOf())
+
+                for (times in setic!!) {
+                    val timeStart = LocalTime.parse(times.substring(0, times.indexOf("__")))
+                    val timeEnd = LocalTime.parse(times.substring(times.indexOf("__") + 2))
+                    println(timeStart)
+                    println(timeEnd)
+
+                    if (LocalTime.parse(currentTime).isBefore(timeEnd) && LocalTime.parse(
+                            currentTime
+                        ).isAfter(timeStart)
+                    ) {
+                        //ako smo unutar vremena, stavi true
+                        checkTimes.add(true)
+                    }
+                }
+
+                if (checkTimes.contains(true)) {
+                    //ako smo u vremenu kad ne treba stiskat tipke->
+                    bundle.putBoolean("noButtonClickNeededRregime", true)
+                    val editor = prefs.edit()
+                    editor.putInt("eCode2", 42069)
+                    editor.apply()
+                    when (navHostFragment.navController.currentDestination?.id) {
+
+
+                        //ako se tipke trebaju stisnut
+                        R.id.MainFragment -> {
+                            navController.navigate(
+                                R.id.action_mainFragment_to_CheckoutFragment,
+                                bundle
+                            )
+                        }
+
+                        R.id.CheckoutFragment -> {
+                            navController.navigate(
+                                R.id.action_CheckoutFragment_to_MainFragment,
+                                bundle
+                            )
+                        }
+
+                        R.id.SettingsFragment -> {
+                            showDialog(
+                                "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz :)",
+                                false
+                            )
+                        }
+                    }
+                } else {
+                    when (navHostFragment.navController.currentDestination?.id) {
+
+
+                        //ako se tipke trebaju stisnut
+                        R.id.MainFragment -> {
+                            navController.navigate(
+                                R.id.action_mainFragment_to_FirstFragment,
+                                bundle
+                            )
+                        }
+
+                        R.id.CheckoutFragment -> {
+                            navController.navigate(
+                                R.id.action_CheckoutFragment_to_FirstFragment,
+                                bundle
+                            )
+                        }
+
+                        R.id.SettingsFragment -> {
+                            showDialog(
+                                "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz :)",
+                                false
+                            )
+                        }
                     }
                 }
             } catch (e: NullPointerException) {
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                 showDialog("Kartica nevažeća: ${it["CardCode"]}", false)
             } catch (e: Exception) {
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                 showDialog("Dogodila se greška! Molimo pokušajte ponovno.", false)
             }
         }

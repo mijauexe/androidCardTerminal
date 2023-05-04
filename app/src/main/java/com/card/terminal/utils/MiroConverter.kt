@@ -20,7 +20,11 @@ class MiroConverter {
     )
 
     data class CARDS(
-        val B0_CLASS: String, val HOLDER_B0_ID: String, val CN: String
+        @SerializedName("B0_CLASS") val B0_CLASS: String,
+        @SerializedName("HOLDER_B0_ID") val HOLDER_B0_ID: String,
+        @SerializedName("CN") val CN: String,
+        @SerializedName("ACTIVATION_DATE") val ACTIVATION_DATE: String,
+        @SerializedName("EXPIRATION_DATE") val EXPIRATION_DATE: String
     )
 
     data class DELETE_HOLDERS(
@@ -139,7 +143,6 @@ class MiroConverter {
             val responseDeferred = scope1.async {
                 val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
                 db.clearAllTables()
-
             }
             responseDeferred.await()
         }
@@ -215,18 +218,23 @@ class MiroConverter {
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
 
-
             for (person in objectic.PHOTOS) {
-                val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
-                val newP = Person(
-                    uid = p.uid,
-                    classType = p.classType,
-                    firstName = p.firstName,
-                    lastName = p.lastName,
-                    imageB64 = person.IMG_B64,
-                    imagePath = person.B0_HTTP_PATH
-                )
-                personList.add(newP)
+                try {
+                    val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
+                    val newP = Person(
+                        uid = p.uid,
+                        classType = p.classType,
+                        firstName = p.firstName,
+                        lastName = p.lastName,
+                        imageB64 = person.IMG_B64,
+                        imagePath = person.B0_HTTP_PATH
+                    )
+                    personList.add(newP)
+                } catch (e: java.lang.Exception) {
+
+                } catch (e: Exception) {
+
+                }
             }
 
             db.PersonDao().insertAll(personList)
@@ -265,11 +273,12 @@ class MiroConverter {
 
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString("serverIP", objectic.B0_SERVER.IP)
+            editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
 
             counter += 4
 
-            editor.commit()
+            editor.apply()
         }
 
         try {
@@ -325,7 +334,7 @@ class MiroConverter {
                         val oldMap = buttonMap[categories[i]]
 
                         if (oldMap != null) {
-                            oldMap.put(btn.TITLE, btn.B0_DEV_E_CODE.toInt())
+                            oldMap.put(btn.TITLE, btn.ID.toInt())
                         }
 
                         buttonMap.put(categories[i], oldMap!!)
@@ -513,18 +522,20 @@ class MiroConverter {
         val cardList = mutableListOf<Card>()
         var i = 0
 
-        for ((cards, ac) in objectic.CARDS.zip(objectic.ACC_LEVELS_DISTR)) {
+        for (cards in objectic.CARDS) {
             cardList.add(
                 Card(
                     cardNumber = cards.CN,
                     classType = cards.B0_CLASS,
                     owner = cards.HOLDER_B0_ID.toInt(),
-                    activationDate = ac.ACTIVATION_DATE,
-                    expirationDate = ac.EXPIRATION_DATE,
+                    activationDate = cards.ACTIVATION_DATE,
+                    expirationDate = cards.EXPIRATION_DATE
                 )
             )
             i++
         }
+
+        println(cardList)
 
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
@@ -592,18 +603,18 @@ class MiroConverter {
         val eCode = 2 //TODO POSLIJE KAD BUDE ULAZ I IZLAZ
 
         //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
-        val deviceList = mutableListOf<Device>()
-        try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-            deviceList.addAll(db.DeviceDao().getAll())
-        } catch (e: Exception) {
-            Timber.d(
-                "Exception while getting device in db: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
+//        val deviceList = mutableListOf<Device>()
+//        try {
+//            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+//            deviceList.addAll(db.DeviceDao().getAll())
+//        } catch (e: Exception) {
+//            Timber.d(
+//                "Exception while getting device in db: %s | %s | %s",
+//                e.cause,
+//                e.stackTraceToString(),
+//                e.message
+//            )
+//        }
 
         val title = cardResponse.getString("title")
         println(title)
@@ -611,9 +622,35 @@ class MiroConverter {
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
+
 //        editor.putString("selection", title)
 //        editor.putInt("eCode2", eCode2)
 //        editor.commit()
+
+//        if (deviceList.size == 0) {
+//            print("ecode2 je " + prefs.getInt("eCode2", 696969))
+//
+//            return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
+//                cardResponse.get(
+//                    "CardCode"
+//                )
+//            }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
+//                prefs.getInt("eCode2", 696969)
+//            }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID")}\"}]}"
+//        } else {
+//            print("ecode2 je " + prefs.getInt("eCode2", 696969))
+//
+//            return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
+//                cardResponse.get(
+//                    "CardCode"
+//                )
+//            }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
+//                prefs.getInt("eCode2", 696969)
+//            }\",\"DEV_B0_ID\": \"${deviceList[0].uid}\"}]}"
+//        }
+
+        print("ecode2 je " + prefs.getInt("eCode2", 696969))
+
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
             cardResponse.get(
@@ -621,7 +658,9 @@ class MiroConverter {
             )
         }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
             prefs.getInt("eCode2", 696969)
-        }\",\"DEV_B0_ID\": \"${deviceList[0].uid}\"}]}"
+        }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
+
+
     }
 
     suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
@@ -633,7 +672,20 @@ class MiroConverter {
         val responseDeferred = scope.async {
             val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
             unpublishedEvents.addAll(db.EventDao().getUnpublishedEvents())
-            val dev_b0_id = db.DeviceDao().getAll()[0].uid //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
+            var dev_b0_id = 0
+            try {
+                dev_b0_id = db.DeviceDao()
+                    .getAll()[0].uid //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
+
+            } catch (e: java.lang.IndexOutOfBoundsException) {
+                //ako nema uredaja, samo salji 0
+            } catch (e: Exception) {
+                //ako nema uredaja, samo salji 0
+
+            } catch (e: java.lang.Exception) {
+                //ako nema uredaja, samo salji 0
+            }
+
             for (ue in unpublishedEvents.indices) {
                 if (ue != unpublishedEvents.size - 1) {
                     strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
@@ -641,6 +693,7 @@ class MiroConverter {
                     strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
                 }
             }
+
         }
         responseDeferred.await()
         return EventStringPair(unpublishedEvents, strNew)
