@@ -161,7 +161,11 @@ class SettingsFragment : Fragment() {
             val editor = mySharedPreferences.edit()
             editor.putString("larusIP", larusIPEditText.text.toString())
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
-            editor.putString("serverIP", serverIPEditText.text.toString())
+            editor.putString(
+                "serverIP",
+                "http://" + serverIPEditText.text.toString() + R.string.server_constant
+            )
+            editor.putString("bareIP", serverIPEditText.text.toString())
 
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())

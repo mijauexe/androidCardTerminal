@@ -3,6 +3,7 @@ package com.card.terminal.utils
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.card.terminal.MainActivity
+import com.card.terminal.R
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.*
 import com.google.gson.Gson
@@ -99,10 +100,30 @@ class MiroConverter {
         @SerializedName("HTTP_PORT") val HTTP_PORT: String,
     )
 
+    data class DEFINITIONS(
+        @SerializedName("ID") val ID: String,
+        @SerializedName("DESCR") val DESCR: String
+    )
+
+    data class SCHEDULE(
+        @SerializedName("DAY_DESCR") val DAY_DESCR: String,
+        @SerializedName("MODE_ID") val MODE_ID: String,
+        @SerializedName("TIME_FROM") val TIME_FROM: String,
+        @SerializedName("TIME_TO") val TIME_TO: String
+    )
+
+    data class OPERATION_MODE(
+        @SerializedName("DEFINITIONS") val DEFINITIONS: ArrayList<DEFINITIONS>,
+        @SerializedName("SCHEDULE") val SCHEDULE: ArrayList<SCHEDULE>
+    )
+
+
     data class init0Object(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
         @SerializedName("IFTTERM2_DESCR") val IFTTERM2_DESCR: String,
+        @SerializedName("OPERATION_MODE") val OPERATION_MODE: OPERATION_MODE,
+
         @SerializedName("B0_SERVER") val B0_SERVER: B0_SERVER,
         @SerializedName("DEVS") val DEVS: ArrayList<DEVS>,
         @SerializedName("EVENT_CODE2") val EVENT_CODE2: ArrayList<EVENT_CODE2>
@@ -272,7 +293,10 @@ class MiroConverter {
             ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
-            editor.putString("serverIP", objectic.B0_SERVER.IP)
+            editor.putString(
+                "serverIP",
+                "http://" + objectic.B0_SERVER.IP + R.string.server_constant
+            )
             editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
 
@@ -280,6 +304,43 @@ class MiroConverter {
 
             editor.apply()
         }
+
+        val operationModeList = mutableListOf<OperationMode>()
+
+        for (def in objectic.OPERATION_MODE.DEFINITIONS) {
+            operationModeList.add(OperationMode(uid = def.ID.toInt(), description = def.DESCR))
+        }
+
+        val operationScheduleList = mutableListOf<OperationSchedule>()
+
+        for (sch in objectic.OPERATION_MODE.SCHEDULE) {
+            operationScheduleList.add(
+                OperationSchedule(
+                    uid = sch.MODE_ID.toInt(),
+                    description = sch.DAY_DESCR,
+                    timeFrom = sch.TIME_FROM,
+                    timeTo = sch.TIME_TO
+                )
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.OperationModeDao().insertAll(operationModeList)
+            counter += operationModeList.size
+
+            db.OperationScheduleDao().insertAll(operationScheduleList)
+            counter += operationScheduleList.size
+
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while adding operations in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
 
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
@@ -301,6 +362,9 @@ class MiroConverter {
                 e.message
             )
         }
+
+
+
 
         parseButtons(objectic.EVENT_CODE2)
 

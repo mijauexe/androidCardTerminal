@@ -81,10 +81,7 @@ class FirstFragment : Fragment() {
             val scope = CoroutineScope(Dispatchers.IO)
             scope.launch {
                 val url = URL(
-                    ("http://" + prefs.getString(
-                        "bareIP",
-                        "?"
-                    ) + existingBundle.get("imagePath"))
+                    (prefs.getString("bareIP", "?") + existingBundle.get("imagePath"))
                 )
                 val connection = withContext(Dispatchers.IO) {
                     url.openConnection()

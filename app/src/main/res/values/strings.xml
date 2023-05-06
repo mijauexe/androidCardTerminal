@@ -25,6 +25,7 @@
     <string name="larusport">8005</string>
     <string name="serverip">http://sucic.info/b0pass/b0pass_iftp2.php</string>
     <string name="serverport">80</string>
+    <string name="server_constant">/b0pass/b0pass_iftp2.php</string>
     <string name="larus_ip_adresa">Larus IP adresa</string>
     <string name="larus_port">Larus port</string>
     <string name="server_ip_adresa">Server IP adresa</string>
