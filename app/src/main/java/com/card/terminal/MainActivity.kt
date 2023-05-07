@@ -38,6 +38,7 @@ import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -128,11 +129,11 @@ class MainActivity : AppCompatActivity() {
         var isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
         Timber.d("hello world")
-//        isFirstBoot = true //TODO MAKNI
-        if (isFirstBoot) {
+//        isFirstBoot = true
+        if (isFirstBoot) { //Set the preferences for first time app install...
+
             val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
-//             Set the preferences for first time app install...
             editor.putBoolean("kioskMode", false)
             editor.putString("larusIP", "192.168.0.200")
             editor.putInt("larusPort", 8005)
@@ -332,9 +333,11 @@ class MainActivity : AppCompatActivity() {
 
                         val dataList = allowedAccessDao.getAll()
 
-                        for (r in dataList) {
-                            if (r.cardNumber.equals(it["CardNumber"])) {
-                                accessGranted = true
+                        if (dataList != null) {
+                            for (r in dataList) {
+                                if (r.cardNumber.equals(it["CardNumber"])) {
+                                    accessGranted = true
+                                }
                             }
                         }
 
@@ -388,137 +391,175 @@ class MainActivity : AppCompatActivity() {
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
         if (lastScanEvent == null || !lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
-            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(15)
+            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
                 .isBefore(LocalDateTime.now())
         ) {
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
-                val person = db.PersonDao().get(card.owner, card.classType)
+                val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
 
+                if (person != null && card != null) {
+                    bundle.putString("firstName", person.firstName)
+                    bundle.putString("lastName", person.lastName)
+                    bundle.putString("userId", person.uid.toString())
+                    bundle.putString("classType", card.classType)
 
-
-                bundle.putString("name", person.firstName + " " + person.lastName)
-                bundle.putString("time", it["DateTime"])
-                bundle.putString("userId", person.uid.toString())
-                bundle.putString("classType", card.classType)
-
-                if (person.imageB64 != "") {
-                    bundle.putString("imageB64", "person.imageB64")
-                }
-
-                if (person.imagePath != "") {
-                    bundle.putString("imagePath", person.imagePath)
-                }
-
-                val navHostFragment =
-                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-                val navController = navHostFragment.navController
-
-                val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-
-                var currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                var currentDayNum = LocalDateTime.now().dayOfWeek.value
-                var currentDayString = ""
-
-                when {
-                    currentDayNum == 1 -> {
-                        currentDayString = "MONDAY"
+                    if (person.imageB64 != "") {
+                        bundle.putString("imageB64", "person.imageB64")
                     }
-                    currentDayNum == 2 -> {
-                        currentDayString = "TUESDAY"
+                    if (person.imagePath != "") {
+                        bundle.putString("imagePath", person.imagePath)
                     }
-                    currentDayNum == 3 -> {
-                        currentDayString = "WEDNESDAY"
-                    }
-                    currentDayNum == 4 -> {
-                        currentDayString = "THURSDAY"
-                    }
-                    currentDayNum == 5 -> {
-                        currentDayString = "FRIDAY"
-                    }
-                    currentDayNum == 6 -> {
-                        currentDayString = "SATURDAY"
-                    }
-                    currentDayNum == 7 -> {
-                        currentDayString = "SUNDAY"
-                    }
-                }
 
-                try {
-                    val dbSchedule1 = db.OperationScheduleDao().getAll()
-                } catch (e: java.lang.NullPointerException) {
+                    val navHostFragment =
+                        supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+                    navHostFragment.navController
 
-                    //nema nis, pustaj slobodno
-                    bundle.putBoolean("noButtonClickNeededRregime", true)
-                    val editor = prefs.edit()
-                    editor.putInt("eCode2", 42069)
-                    editor.apply()
+                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
-                    pass(true, it["CardCode"]!!, bundle)
+                    val currentTime =
+                        LocalTime.parse(
+                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        )
 
-                } catch (e: java.lang.Exception) {
-                    Timber.d(
-                        "Msg: Exception %s | %s | %s",
-                        e.cause,
-                        e.stackTraceToString(),
-                        e.message
+                    val currentDateString =
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+                    val currentDateDate = LocalDate.parse(currentDateString)
+
+                    val currentDayNum = LocalDateTime.now().dayOfWeek.value
+                    var currentDayString = ""
+
+                    when {
+                        currentDayNum == 1 -> {
+                            currentDayString = "MONDAY"
+                        }
+                        currentDayNum == 2 -> {
+                            currentDayString = "TUESDAY"
+                        }
+                        currentDayNum == 3 -> {
+                            currentDayString = "WEDNESDAY"
+                        }
+                        currentDayNum == 4 -> {
+                            currentDayString = "THURSDAY"
+                        }
+                        currentDayNum == 5 -> {
+                            currentDayString = "FRIDAY"
+                        }
+                        currentDayNum == 6 -> {
+                            currentDayString = "SATURDAY"
+                        }
+                        currentDayNum == 7 -> {
+                            currentDayString = "SUNDAY"
+                        }
+                    }
+
+                    try {
+                        val dbSchedule1 = db.OperationScheduleDao().getAll()
+                        var conforms = -1 //doesnt conform to anything before checking
+                        var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
+                        var IfNotScheduleMode = 0
+                        var isTodayHoliday = false
+
+                        val d1 = db.CalendarDao().getByDate(
+                            currentDateDate.dayOfWeek.value,
+                            currentDateDate.monthValue,
+                            currentDateDate.year
+                        )
+
+                        val d2 = db.CalendarDao()
+                            .getByDate(
+                                currentDateDate.dayOfWeek.value,
+                                currentDateDate.monthValue,
+                                0
+                            )
+
+                        if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
+                            isTodayHoliday = true
+                        }
+
+                        if (dbSchedule1 != null) {
+                            for (sch in dbSchedule1) {
+                                val timeConforms =
+                                    currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
+                                        LocalTime.parse(sch.timeTo)
+                                    )
+
+
+                                if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
+                                    containsIfNotSchedule = true
+                                    IfNotScheduleMode = sch.modeId
+                                } else if (sch.description.contains("SPECIFIC_DAY") && currentDateString.equals(
+                                        sch.description.substring(sch.description.indexOf(":") + 1)
+                                    ) && timeConforms
+                                ) {
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    break
+                                } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    break
+                                } else if (sch.description.contains(currentDayString) && timeConforms) {
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    break
+                                } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    break
+                                }
+                            }
+
+                            if (conforms == -1 && containsIfNotSchedule) {
+                                passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
+                            } else {
+                                passageControl(
+                                    db.OperationScheduleDao().getById(conforms)?.modeId!!,
+                                    it["CardCode"]!!,
+                                    bundle
+                                )
+                            }
+                        } else {
+                            showDialog("Nemam raspored kontrole! Kartica ${it["CardCode"]}", false)
+                        }
+                    } catch (e: java.lang.Exception) {
+                        Timber.d(
+                            "Msg: Exception %s | %s | %s",
+                            e.cause,
+                            e.stackTraceToString(),
+                            e.message
+                        )
+                        showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
+                    }
+
+                } else {
+                    showDialog(
+                        "Greška u bazi podataka! Kartica ${it["CardCode"]}",
+                        false
                     )
                 }
-
-                pass(false, it["CardCode"]!!, bundle)
-            } catch (e : java.lang.NullPointerException) {
-
-            } catch(e : java.lang.Exception) {
-
+            } catch (e: java.lang.Exception) {
+                Timber.d(
+                    "Msg: Exception %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+                showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
+//                passageControl(2, it["CardCode"]!!, bundle)
             }
-
-//                val checkTimes = mutableListOf<Boolean>()
-//
-//                val setic = prefs.getStringSet("noButtonClickNeededRregime", setOf())
-//
-//                for (times in setic!!) {
-//                    val timeStart = LocalTime.parse(times.substring(0, times.indexOf("__")))
-//                    val timeEnd = LocalTime.parse(times.substring(times.indexOf("__") + 2))
-//                    println(timeStart)
-//                    println(timeEnd)
-//
-//                    if (LocalTime.parse(currentTime).isBefore(timeEnd) && LocalTime.parse(
-//                            currentTime
-//                        ).isAfter(timeStart)
-//                    ) {
-//                        //ako smo unutar vremena, stavi true
-//                        checkTimes.add(true)
-//                    }
-//                }
-//
-//                if (checkTimes.contains(true)) {
-//                    //ako smo u vremenu kad ne treba stiskat tipke->
-//
-//                }
-//            } catch (e: NullPointerException) {
-//                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-//                showDialog("Kartica nevažeća: ${it["CardCode"]}", false)
-//            } catch (e: Exception) {
-//                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-//                showDialog("Dogodila se greška! Molimo pokušajte ponovno.", false)
-//            }
         }
-
-
     }
 
     fun getDateTime(): LocalDateTime? {
         return mutableDateTime.value
     }
 
-    fun pass(free: Boolean, cardCode: String, bundle: Bundle) {
+    fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
 
-        if (free) {
-
+        if (free == 2) {
+            bundle.putBoolean("noButtonClickNeededRegime", true)
             when (navHostFragment.navController.currentDestination?.id) {
                 R.id.MainFragment -> {
                     navController.navigate(
@@ -539,7 +580,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-        } else {
+        } else if (free == 3) {
             when (navHostFragment.navController.currentDestination?.id) {
 
                 //ako se tipke trebaju stisnut
@@ -564,6 +605,11 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
+        } else {
+            showDialog(
+                "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz",
+                false
+            )
         }
     }
 
@@ -638,7 +684,7 @@ class MainActivity : AppCompatActivity() {
     } else {
         mDevicePolicyManager.clearUserRestriction(mAdminComponentName, restriction)
     }
-    // endregion
+// endregion
 
     private fun enableStayOnWhilePluggedIn(active: Boolean) = if (active) {
         mDevicePolicyManager.setGlobalSetting(

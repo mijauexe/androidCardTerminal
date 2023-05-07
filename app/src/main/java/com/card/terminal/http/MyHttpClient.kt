@@ -373,16 +373,20 @@ object MyHttpClient {
             if (published) {
                 val e = db.EventDao()
                     .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
-                val newE = Event(
-                    uid = e.uid,
-                    eventCode = e.eventCode,
-                    eventCode2 = e.eventCode2,
-                    cardNumber = e.cardNumber,
-                    dateTime = e.dateTime,
-                    published = true,
-                    deviceId = e.deviceId
-                )
-                db.EventDao().update(newE)
+                val newE = e?.let {
+                    Event(
+                        uid = it.uid,
+                        eventCode = it.eventCode,
+                        eventCode2 = it.eventCode2,
+                        cardNumber = it.cardNumber,
+                        dateTime = it.dateTime,
+                        published = true,
+                        deviceId = it.deviceId
+                    )
+                }
+                if (newE != null) {
+                    db.EventDao().update(newE)
+                }
             } else {
                 val event = Event(
                     eventCode = 2, //TODO

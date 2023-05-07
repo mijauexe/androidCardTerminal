@@ -9,15 +9,17 @@ import com.card.terminal.db.entity.*
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.*
+import org.jetbrains.annotations.Nullable
 import timber.log.Timber
 import java.time.LocalDateTime
 
 class MiroConverter {
     data class HOLDERS(
-        val B0_CLASS: String,
-        val B0_ID: String,
-        val LNAME: String,
-        val FNAME: String,
+        @SerializedName("B0_CLASS") val B0_CLASS: String,
+        @SerializedName("B0_ID") val B0_ID: String,
+        @SerializedName("LNAME") val LNAME: String,
+        @SerializedName("FNAME") val FNAME: String,
+        @SerializedName("PHOTO_B0_HTTP_PATH") val PHOTO_B0_HTTP_PATH: String,
     )
 
     data class CARDS(
@@ -78,6 +80,7 @@ class MiroConverter {
         @SerializedName("ID") val ID: String,
         @SerializedName("B0_DEV_E_CODE") val B0_DEV_E_CODE: String,
         @SerializedName("CLASESS") val CLASESS: String,
+        @SerializedName("LABEL") val LABEL: String,
         @SerializedName("TITLE") val TITLE: String
     )
 
@@ -242,15 +245,19 @@ class MiroConverter {
             for (person in objectic.PHOTOS) {
                 try {
                     val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
-                    val newP = Person(
-                        uid = p.uid,
-                        classType = p.classType,
-                        firstName = p.firstName,
-                        lastName = p.lastName,
-                        imageB64 = person.IMG_B64,
-                        imagePath = person.B0_HTTP_PATH
-                    )
-                    personList.add(newP)
+                    val newP = p?.let {
+                        Person(
+                            uid = it.uid,
+                            classType = p.classType,
+                            firstName = p.firstName,
+                            lastName = p.lastName,
+                            imageB64 = person.IMG_B64,
+                            imagePath = person.B0_HTTP_PATH
+                        )
+                    }
+                    if (newP != null) {
+                        personList.add(newP)
+                    }
                 } catch (e: java.lang.Exception) {
 
                 } catch (e: Exception) {
@@ -282,6 +289,43 @@ class MiroConverter {
 
     private suspend fun init0(objectic: init0Object): iftTermResponse {
         var counter = 0
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.OperationModeDao().deleteAll()
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while deleting operations in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.OperationScheduleDao().deleteAll()
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while deleting schedules in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.DeviceDao().deleteAll()
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while deleting devices in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
         withContext(Dispatchers.Main) {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
@@ -295,7 +339,7 @@ class MiroConverter {
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString(
                 "serverIP",
-                "http://" + objectic.B0_SERVER.IP + R.string.server_constant
+                "http://" + objectic.B0_SERVER.IP + ContextProvider.getApplicationContext().resources.getString(R.string.server_constant)
             )
             editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
@@ -316,10 +360,11 @@ class MiroConverter {
         for (sch in objectic.OPERATION_MODE.SCHEDULE) {
             operationScheduleList.add(
                 OperationSchedule(
-                    uid = sch.MODE_ID.toInt(),
+                    uid = 0, //auto-generate
                     description = sch.DAY_DESCR,
                     timeFrom = sch.TIME_FROM,
-                    timeTo = sch.TIME_TO
+                    timeTo = sch.TIME_TO,
+                    modeId = sch.MODE_ID.toInt()
                 )
             )
         }
@@ -328,10 +373,6 @@ class MiroConverter {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
             db.OperationModeDao().insertAll(operationModeList)
             counter += operationModeList.size
-
-            db.OperationScheduleDao().insertAll(operationScheduleList)
-            counter += operationScheduleList.size
-
         } catch (e: Exception) {
             Timber.d(
                 "Exception while adding operations in db: %s | %s | %s",
@@ -341,6 +382,18 @@ class MiroConverter {
             )
         }
 
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.OperationScheduleDao().insertAll(operationScheduleList)
+            counter += operationScheduleList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while adding operations in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
 
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
@@ -363,9 +416,6 @@ class MiroConverter {
             )
         }
 
-
-
-
         parseButtons(objectic.EVENT_CODE2)
 
         if ((objectic.DEVS.size != 0 && counter == 0)) {
@@ -384,8 +434,6 @@ class MiroConverter {
         //VEHICLE -> {privatni izlaz, 20} npr.
         val buttonMap = mutableMapOf<String, MutableMap<String, Int>>()
 
-
-
         for (btn in eventCode2) {
 
             val categories = btn.CLASESS.split(",")
@@ -398,22 +446,19 @@ class MiroConverter {
                         val oldMap = buttonMap[categories[i]]
 
                         if (oldMap != null) {
-                            oldMap.put(btn.TITLE, btn.ID.toInt())
+                            oldMap[btn.TITLE] = btn.ID.toInt()
                         }
 
-                        buttonMap.put(categories[i], oldMap!!)
+                        buttonMap[categories[i]] = oldMap!!
 
                     } else {
-                        buttonMap.put(
-                            categories[i], mutableMapOf(btn.TITLE to btn.B0_DEV_E_CODE.toInt())
-                        )
+                        buttonMap[categories[i]] =
+                            mutableMapOf(btn.TITLE to btn.B0_DEV_E_CODE.toInt())
                     }
                 }
             } catch (e: Exception) {
                 println(e.message)
             }
-
-
         }
         println(buttonMap)
 
@@ -421,7 +466,6 @@ class MiroConverter {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
             val editor = prefs.edit()
-
 
             for (entry in buttonMap.entries) {
                 editor.putInt("${entry.key}_size", entry.value.size)
@@ -436,10 +480,7 @@ class MiroConverter {
             }
 
             editor.commit()
-
         }
-
-
     }
 
     suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
@@ -453,7 +494,7 @@ class MiroConverter {
             try {
                 val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
                 for (card in objectic.CARDS) {
-                    cardList.add(db.CardDao().get(card.B0_ID.toInt(), card.B0_CLASS))
+                    db.CardDao().get(card.B0_ID.toInt(), card.B0_CLASS)?.let { cardList.add(it) }
                 }
                 db.CardDao().deleteMany(cardList)
                 deletionCounter += cardList.size
@@ -464,11 +505,6 @@ class MiroConverter {
                     e.stackTraceToString(),
                     e.message
                 )
-//                return@async iftTermResponse(
-//                    counter = 0,
-//                    err = "1",
-//                    msg = "Exception while deleting cards in db: ${e.cause} | ${e.stackTraceToString()} | ${e.message}"
-//                )
             }
         }
         responseDeferred1.await()
@@ -479,7 +515,7 @@ class MiroConverter {
             try {
                 val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
                 for (ac in objectic.ACC_LEVELS_DISTR) {
-                    accessLevelList.add(db.AccessLevelDao().get(ac.B0_ID.toInt()))
+                    db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
                 }
                 db.AccessLevelDao().deleteMany(accessLevelList)
                 deletionCounter += accessLevelList.size
@@ -501,7 +537,8 @@ class MiroConverter {
             try {
                 val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
                 for (person in objectic.HOLDERS) {
-                    personList.add(db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS))
+                    db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
+                        ?.let { personList.add(it) }
                 }
                 db.PersonDao().deleteMany(personList)
                 deletionCounter += personList.size
@@ -541,7 +578,7 @@ class MiroConverter {
                     firstName = person.FNAME,
                     lastName = person.LNAME,
                     imageB64 = "",
-                    imagePath = ""
+                    imagePath = person.PHOTO_B0_HTTP_PATH
                 )
             )
         }
@@ -598,8 +635,6 @@ class MiroConverter {
             )
             i++
         }
-
-        println(cardList)
 
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
@@ -686,35 +721,7 @@ class MiroConverter {
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
-
-//        editor.putString("selection", title)
-//        editor.putInt("eCode2", eCode2)
-//        editor.commit()
-
-//        if (deviceList.size == 0) {
-//            print("ecode2 je " + prefs.getInt("eCode2", 696969))
-//
-//            return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
-//                cardResponse.get(
-//                    "CardCode"
-//                )
-//            }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
-//                prefs.getInt("eCode2", 696969)
-//            }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID")}\"}]}"
-//        } else {
-//            print("ecode2 je " + prefs.getInt("eCode2", 696969))
-//
-//            return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
-//                cardResponse.get(
-//                    "CardCode"
-//                )
-//            }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
-//                prefs.getInt("eCode2", 696969)
-//            }\",\"DEV_B0_ID\": \"${deviceList[0].uid}\"}]}"
-//        }
-
         print("ecode2 je " + prefs.getInt("eCode2", 696969))
-
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
             cardResponse.get(
@@ -723,23 +730,22 @@ class MiroConverter {
         }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
             prefs.getInt("eCode2", 696969)
         }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
-
-
     }
 
     suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
-        var eCode = 2 //TODO ECODE HEP
+        val eCode = 2 //TODO ECODE HEP
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
         val unpublishedEvents = mutableListOf<Event>()
         val scope = CoroutineScope(Dispatchers.IO)
         //TODO ECODE
         val responseDeferred = scope.async {
             val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
-            unpublishedEvents.addAll(db.EventDao().getUnpublishedEvents())
+            db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
             var dev_b0_id = 0
             try {
-                dev_b0_id = db.DeviceDao()
-                    .getAll()[0].uid //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
+                dev_b0_id =
+                    db.DeviceDao().getAll()
+                        ?.get(0)?.uid!!  //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
 
             } catch (e: java.lang.IndexOutOfBoundsException) {
                 //ako nema uredaja, samo salji 0
