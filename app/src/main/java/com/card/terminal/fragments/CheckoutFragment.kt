@@ -19,7 +19,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.HttpURLConnection
+import java.net.NoRouteToHostException
 import java.net.URL
+import java.net.UnknownHostException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -55,27 +57,45 @@ class CheckoutFragment : Fragment() {
         if (existingBundle.getBoolean("noButtonClickNeededRegime")) {
             delay = 2000L
 
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
-                val url = URL(
-                    ("http://" + prefs.getString(
-                        "bareIP",
-                        "?"
-                    ) + existingBundle.get("imagePath"))
+            try {
+                val scope = CoroutineScope(Dispatchers.IO)
+                scope.launch {
+                    if(existingBundle.containsKey("imagePath")) {
+                        val url = URL(
+                            ("http://" + prefs.getString(
+                                "bareIP",
+                                "?"
+                            ) + existingBundle.get("imagePath"))
+                        )
+                        val connection = withContext(Dispatchers.IO) {
+                            url.openConnection()
+                        } as HttpURLConnection
+                        connection.doInput = true
+                        withContext(Dispatchers.IO) {
+                            connection.connect()
+                        }
+                        val input = connection.inputStream
+                        val bitmap = BitmapFactory.decodeStream(input)
+                        withContext(Dispatchers.Main) {
+                            binding.photo.setImageBitmap(bitmap)
+                            existingBundle.putParcelable("imageB64", bitmap)
+                        }
+                    }
+                }
+            } catch (e: NoRouteToHostException) {
+                Timber.d(
+                    "Msg: No route to host while getting photo: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
                 )
-                val connection = withContext(Dispatchers.IO) {
-                    url.openConnection()
-                } as HttpURLConnection
-                connection.doInput = true
-                withContext(Dispatchers.IO) {
-                    connection.connect()
-                }
-                val input = connection.inputStream
-                val bitmap = BitmapFactory.decodeStream(input)
-                withContext(Dispatchers.Main) {
-                    binding.photo.setImageBitmap(bitmap)
-                    existingBundle.putParcelable("imageB64", bitmap)
-                }
+            } catch (e: UnknownHostException) {
+                Timber.d(
+                    "Msg: Unknown host while getting photo: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
             }
 
             binding.reasonValue.text = "Slobodan prolaz"
@@ -86,24 +106,18 @@ class CheckoutFragment : Fragment() {
                     .getString("selection", "?")
         }
 
-
-
         if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
 
-        val dt = LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
+        val dt =
+            LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
 
 //        binding.readoutValue.text = binding.readoutValue.text.toString() + dt
 
         super.onViewCreated(view, savedInstanceState)
         Timber.d("CheckoutFragment onViewCreated")
-
-
-//        binding.smile.setOnClickListener {
-//            findNavController().navigate(R.id.action_CheckoutFragment_to_MainFragment)
-//        }
 
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {

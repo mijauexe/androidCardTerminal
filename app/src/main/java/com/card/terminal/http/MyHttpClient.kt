@@ -28,6 +28,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.net.ConnectException
+import java.net.NoRouteToHostException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.util.*
@@ -238,9 +239,16 @@ object MyHttpClient {
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
                     MiroConverter().processRequest(response.bodyAsText())
                 }
+            } catch (e: NoRouteToHostException) {
+                Timber.d(
+                    "Msg: No route to host: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
             } catch (ce: ConnectException) {
                 Timber.d(
-                    "Msg: Init1 data requested but destination cannot be reached: %s | %s | %s",
+                    "Msg: Destination cannot be reached: %s | %s | %s",
                     ce.cause,
                     ce.stackTraceToString(),
                     ce.message

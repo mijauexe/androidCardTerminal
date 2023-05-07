@@ -25,7 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.HttpURLConnection
+import java.net.NoRouteToHostException
 import java.net.URL
+import java.net.UnknownHostException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -78,24 +80,46 @@ class FirstFragment : Fragment() {
 
         if (existingBundle.containsKey("imagePath")) {
 
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
-                val url = URL(
-                    (prefs.getString("bareIP", "?") + existingBundle.get("imagePath"))
+            try {
+                val scope = CoroutineScope(Dispatchers.IO)
+                scope.launch {
+                    if (existingBundle.containsKey("imagePath")) {
+
+                        val url = URL(
+                            ("http://" + prefs.getString(
+                                "bareIP",
+                                "?"
+                            ) + existingBundle.get("imagePath"))
+                        )
+                        val connection = withContext(Dispatchers.IO) {
+                            url.openConnection()
+                        } as HttpURLConnection
+                        connection.doInput = true
+                        withContext(Dispatchers.IO) {
+                            connection.connect()
+                        }
+                        val input = connection.inputStream
+                        val bitmap = BitmapFactory.decodeStream(input)
+                        withContext(Dispatchers.Main) {
+                            binding.photo.setImageBitmap(bitmap)
+                            existingBundle.putParcelable("imageB64", bitmap)
+                        }
+                    }
+                }
+            } catch (e: NoRouteToHostException) {
+                Timber.d(
+                    "Msg: No route to host while getting photo: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
                 )
-                val connection = withContext(Dispatchers.IO) {
-                    url.openConnection()
-                } as HttpURLConnection
-                connection.doInput = true
-                withContext(Dispatchers.IO) {
-                    connection.connect()
-                }
-                val input = connection.inputStream
-                val bitmap = BitmapFactory.decodeStream(input)
-                withContext(Dispatchers.Main) {
-                    binding.photo.setImageBitmap(bitmap)
-                    existingBundle.putParcelable("imageB64", bitmap)
-                }
+            } catch (e: UnknownHostException) {
+                Timber.d(
+                    "Msg: Unknown host while getting photo: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
             }
         }
 

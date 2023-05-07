@@ -339,7 +339,7 @@ class MiroConverter {
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString(
                 "serverIP",
-                "http://" + objectic.B0_SERVER.IP + ContextProvider.getApplicationContext().resources.getString(R.string.server_constant)
+                "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
             editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())

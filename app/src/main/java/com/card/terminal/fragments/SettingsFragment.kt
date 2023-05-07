@@ -163,7 +163,7 @@ class SettingsFragment : Fragment() {
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
             editor.putString(
                 "serverIP",
-                "http://" + serverIPEditText.text.toString() + R.string.server_constant
+                "http://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
             )
             editor.putString("bareIP", serverIPEditText.text.toString())
 

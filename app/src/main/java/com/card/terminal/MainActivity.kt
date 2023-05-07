@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
             editor.putBoolean("kioskMode", false)
             editor.putString("larusIP", "192.168.0.200")
             editor.putInt("larusPort", 8005)
-            editor.putString("serverIP", "10.1.221.178")
+            editor.putString("serverIP", "")
             editor.putInt("serverPort", 80)
             editor.putBoolean("Connection", false)
             editor.putInt("IFTTERM2_B0_ID", 4)
