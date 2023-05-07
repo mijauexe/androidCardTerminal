@@ -49,7 +49,15 @@ class FirstFragment : Fragment() {
         val act = activity as MainActivity
         binding.tvDateClock.text =
             LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr"))) + LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(
+                    DateTimeFormatter.ofPattern(
+                        "d. MMMM yyyy.",
+                        Locale("hr")
+                    )
+                ) + LocalDateTime.parse(
+                act.getDateTime().toString(),
+                DateTimeFormatter.ISO_DATE_TIME
+            )
                 .format(DateTimeFormatter.ofPattern("HH:mm"))
 //        binding.tvClock.text =
 //            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
@@ -64,18 +72,9 @@ class FirstFragment : Fragment() {
         Timber.d("FirstFragment onViewCreated")
 
         val existingBundle = requireArguments()
-//        if (existingBundle.containsKey("imageB64")) {
-//            val imageBytesB64 = Base64.getDecoder().decode(existingBundle.getString("imageB64"))
-//            val decodedImage = BitmapFactory.decodeByteArray(imageBytesB64, 0, imageBytesB64.size)
-//            if (decodedImage.byteCount != 0) {
-//                binding.photo.setImageBitmap(decodedImage)
-//                existingBundle.putParcelable("imageB64", decodedImage)
-//        }
-
 
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-
 
         if (existingBundle.containsKey("imagePath")) {
 
@@ -100,13 +99,10 @@ class FirstFragment : Fragment() {
             }
         }
 
-
-
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
         val ct = existingBundle.getString("classType")
-
 
         val layout = binding.buttonsGrid
         println(layout)
@@ -163,7 +159,13 @@ class FirstFragment : Fragment() {
             btn.setOnClickListener {
                 val editor = prefs.edit()
                 editor.putString("selection", title)
-                editor.putInt("eCode2", eCode2)
+
+                if (bundle.getBoolean("noButtonClickNeededRegime")) {
+                    editor.putInt("eCode2", 0)
+                } else {
+                    editor.putInt("eCode2", eCode2)
+                }
+
                 editor.commit()
                 btn.setBackgroundResource(R.drawable.card_button_background)
                 btn.setBackgroundColor(Color.parseColor("#faa61a"))

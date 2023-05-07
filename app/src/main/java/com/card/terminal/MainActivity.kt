@@ -480,11 +480,11 @@ class MainActivity : AppCompatActivity() {
 
                         if (dbSchedule1 != null) {
                             for (sch in dbSchedule1) {
+
                                 val timeConforms =
                                     currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
                                         LocalTime.parse(sch.timeTo)
                                     )
-
 
                                 if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
                                     containsIfNotSchedule = true
@@ -495,13 +495,13 @@ class MainActivity : AppCompatActivity() {
                                 ) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
+                                } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    break
-                                } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 }
@@ -581,6 +581,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         } else if (free == 3) {
+            bundle.putBoolean("noButtonClickNeededRegime", false)
             when (navHostFragment.navController.currentDestination?.id) {
 
                 //ako se tipke trebaju stisnut
