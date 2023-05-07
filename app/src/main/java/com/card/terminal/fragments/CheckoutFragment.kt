@@ -43,7 +43,8 @@ class CheckoutFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.firstAndLastName.text = arguments?.getString("name")
+        binding.firstName.text = arguments?.getString("firstName")
+        binding.lastName.text = arguments?.getString("lastName")
 //        binding.reasonValue.text = arguments?.getString("selection")
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
@@ -51,8 +52,7 @@ class CheckoutFragment : Fragment() {
         val existingBundle = requireArguments()
         MyHttpClient.pingy(existingBundle)
         var delay = 3000L
-        if (existingBundle.containsKey("noButtonClickNeededRregime")) {
-            binding.reasonKey.text = ""
+        if (existingBundle.getBoolean("noButtonClickNeededRegime")) {
             delay = 2000L
 
             val scope = CoroutineScope(Dispatchers.IO)
@@ -92,10 +92,10 @@ class CheckoutFragment : Fragment() {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
 
-        val dt = LocalDateTime.parse(arguments?.getString("time"), DateTimeFormatter.ISO_DATE_TIME)
+        val dt = LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
             .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
 
-        binding.readoutValue.text = binding.readoutValue.text.toString() + dt
+//        binding.readoutValue.text = binding.readoutValue.text.toString() + dt
 
         super.onViewCreated(view, savedInstanceState)
         Timber.d("CheckoutFragment onViewCreated")

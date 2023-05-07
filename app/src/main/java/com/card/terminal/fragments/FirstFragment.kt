@@ -47,12 +47,13 @@ class FirstFragment : Fragment() {
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        binding.tvDate.text =
+        binding.tvDateClock.text =
             LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
-        binding.tvClock.text =
-            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr"))) + LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
                 .format(DateTimeFormatter.ofPattern("HH:mm"))
+//        binding.tvClock.text =
+//            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+//                .format(DateTimeFormatter.ofPattern("HH:mm"))
         Timber.d("FirstFragment onCreateView")
         act.cardScannerActive = true
         return binding.root
@@ -97,36 +98,12 @@ class FirstFragment : Fragment() {
                     existingBundle.putParcelable("imageB64", bitmap)
                 }
             }
-
-//            val imgFile = File(
-//                (prefs.getString("bareIP", "?") + existingBundle.get("imagePath"))
-//            )
-//
-//            binding.photo.setImageBitmap(binding.photo.load(
-//                "http://" + prefs.getString(
-//                    "bareIP",
-//                    "?"
-//                ) + existingBundle.get("imagePath")
-//            ).)
-
-//            val is = getContentResolver().openInputStream(imgFile.getData())
-//
-//            val bitmap = BitmapFactory.decodeStream(`is`)
-//            val options = BitmapFactory.Options()
-//            options.outWidth /= 10
-//            options.outHeight /= 10
-//            options.inScaled = true
-//            if (imgFile.exists()) {
-//                val myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath(), options)
-//                //Drawable d = new BitmapDrawable(getResources(), myBitmap);
-//                binding.photo.setImageBitmap(imgFile.absolutePath)
-//                existingBundle.putParcelable("imageB64", myBitmap)
-//            }
         }
 
 
 
-        binding.firstAndLastName.text = arguments?.getString("name")
+        binding.firstName.text = arguments?.getString("firstName")
+        binding.lastName.text = arguments?.getString("lastName")
 
         val ct = existingBundle.getString("classType")
 
@@ -181,7 +158,7 @@ class FirstFragment : Fragment() {
             val eCode2 = title!!.substring(title.indexOf("_") + 1).toInt()
             title = title.substring(0, title.indexOf("_"))
             bundle.putInt(title, eCode2)
-            btn.setText(title)
+            btn.setText("   " + title)
             btn.visibility = View.VISIBLE
             btn.setOnClickListener {
                 val editor = prefs.edit()

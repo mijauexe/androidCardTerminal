@@ -22,43 +22,53 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
             android:src="@drawable/erv_hep" />
 
 
         <TextView
-            android:id="@+id/tv_date"
+            android:id="@+id/tv_date_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/tv_date"
             android:textColor="@color/black"
+            android:textSize="40sp" />
+
+<!--        <TextView-->
+<!--            android:id="@+id/tv_clock"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:text="@string/clock"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textSize="45sp" />-->
+
+        <TextView
+            android:id="@+id/first_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Đuro"
+            android:textColor="@color/black"
             android:textSize="50sp" />
 
         <TextView
-            android:id="@+id/tv_clock"
+            android:id="@+id/last_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/clock"
-            android:textColor="@color/black"
-            android:textSize="45sp" />
-
-        <TextView
-            android:id="@+id/first_and_last_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="50dp"
-            android:text="Đuro Đurić"
+            android:text="Đurić"
+            android:layout_marginBottom="50dp"
             android:textColor="@color/black"
             android:textSize="50sp" />
 
         <ImageView
             android:id="@+id/photo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_unknown_person" />
 
@@ -84,7 +94,7 @@
 
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="700dp"
         android:id="@+id/glRight"
         android:layout_below="@+id/glMain"
         android:layout_toStartOf="@+id/glMain"
@@ -93,12 +103,12 @@
         app:layout_constraintStart_toEndOf="@+id/glMain"
         app:layout_constraintTop_toTopOf="parent"
         app:cardCornerRadius="25dp"
+
         app:cardBackgroundColor="#D9D9D9"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true"
         >
         <GridLayout
-            android:layout_margin="10dp"
             android:layout_width="700dp"
             android:layout_height="wrap_content"
             android:columnCount="1"
@@ -112,19 +122,21 @@
                 android:layout_gravity="center"
                 android:text="Molimo unesite razlog izlaska:"
                 android:textColor="@color/black"
+                android:layout_marginTop="-10dp"
+
                 android:layout_marginBottom="50dp"
                 android:textSize="30dp" />
 
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="500dp"
+                android:layout_height="600dp"
                 >
 
                 <GridLayout
                     android:id="@+id/buttonsGrid"
                     android:columnCount="1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="500dp">
 
                     <Button
                         android:id="@+id/contractor_1"
@@ -132,7 +144,7 @@
                         android:layout_gravity="start"
                         android:visibility="gone"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
+                        android:layout_marginBottom="45dp"
                         android:background="@android:color/transparent"
                         android:drawableStart="@drawable/pih"
                         android:text=" Contractor 1 "
@@ -146,8 +158,7 @@
                         android:layout_gravity="start"
                         android:visibility="gone"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:text=" Contractor 2 "
                         android:drawableStart="@drawable/pit"
                         android:textAllCaps="false"
@@ -160,8 +171,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 3 "
                         android:textAllCaps="false"
@@ -174,8 +184,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 4 "
                         android:textAllCaps="false"
@@ -188,8 +197,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 5 "
                         android:textAllCaps="false"
@@ -202,8 +210,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 6 "
                         android:textAllCaps="false"
@@ -216,8 +223,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 7 "
                         android:textAllCaps="false"
@@ -230,8 +236,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 8 "
                         android:textAllCaps="false"
@@ -244,8 +249,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 9 "
                         android:textAllCaps="false"
@@ -258,8 +262,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="25dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Contractor 10 "
                         android:textAllCaps="false"
@@ -273,8 +276,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
-                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/pd"
                         android:text=" Worker 1 "
                         android:textAllCaps="false"
@@ -288,7 +290,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/ph"
                         android:background="@android:color/transparent"
                         android:text=" Worker 2 "
@@ -302,8 +304,8 @@
                         android:layout_gravity="start"
                         android:visibility="gone"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
-                        android:drawableStart="@drawable/sp"
+                        android:layout_marginBottom="45dp"
+                        android:drawableStart="@drawable/sb"
                         android:background="@android:color/transparent"
                         android:text=" Worker 3 "
                         android:textAllCaps="false"
@@ -315,9 +317,9 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/sb"
+                        android:drawableStart="@drawable/sp"
                         android:text=" Worker 4 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
@@ -329,7 +331,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 5 "
@@ -343,7 +345,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 6 "
@@ -357,7 +359,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 7 "
@@ -371,7 +373,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 8 "
@@ -385,7 +387,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 9 "
@@ -399,7 +401,7 @@
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="15dp"
+                        android:layout_marginBottom="45dp"
                         android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
                         android:text=" Worker 10 "
