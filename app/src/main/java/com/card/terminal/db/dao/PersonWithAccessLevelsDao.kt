@@ -9,5 +9,5 @@ import com.card.terminal.db.entity.PersonWithAccessLevels
 interface PersonWithAccessLevelsDao {
     @Transaction
     @Query("SELECT * FROM Person")
-    fun getAll(): List<PersonWithAccessLevels>
+    fun getAll(): List<PersonWithAccessLevels>?
 }

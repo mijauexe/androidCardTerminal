@@ -9,7 +9,7 @@ import com.card.terminal.db.entity.PersonWithCards
 interface PersonWithCardsDao {
     @Transaction
     @Query("SELECT * FROM Person")
-    fun getAll(): List<PersonWithCards>
+    fun getAll(): List<PersonWithCards>?
 
 //    @Transaction
 //    @Query("SELECT * FROM PersonWithCards where owner = :ownerId")
@@ -17,5 +17,5 @@ interface PersonWithCardsDao {
 
     @Transaction
     @Query("DELETE FROM Card WHERE owner = :uid")
-    fun deleteCard(vararg uid: Int): Int
+    fun deleteCard(vararg uid: Int): Int?
 }

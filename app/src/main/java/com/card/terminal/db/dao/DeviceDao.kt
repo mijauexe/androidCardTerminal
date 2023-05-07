@@ -6,10 +6,10 @@ import com.card.terminal.db.entity.Device
 @Dao
 interface DeviceDao {
     @Query("SELECT * FROM Device")
-    fun getAll(): List<Device>
+    fun getAll(): List<Device>?
 
     @Query("SELECT * FROM Device WHERE uid = :uid")
-    fun get(uid: Int): Device
+    fun get(uid: Int): Device?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg devices: Device)
@@ -19,6 +19,9 @@ interface DeviceDao {
 
     @Delete
     fun delete(vararg devices: Device)
+
+    @Query("DELETE FROM Device")
+    suspend fun deleteAll()
 
     @Delete
     fun deleteMany(list: List<Device>)

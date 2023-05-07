@@ -9,5 +9,5 @@ import com.card.terminal.db.entity.CardWithEvents
 interface CardWithEventsDao {
     @Transaction
     @Query("SELECT * FROM Card")
-    fun getAll(): List<CardWithEvents>
+    fun getAll(): List<CardWithEvents>?
 }

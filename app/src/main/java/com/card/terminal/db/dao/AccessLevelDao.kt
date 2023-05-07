@@ -6,7 +6,7 @@ import com.card.terminal.db.entity.AccessLevel
 @Dao
 interface AccessLevelDao {
     @Query("SELECT * FROM AccessLevel WHERE uid = :uid")
-    fun get(uid: Int): AccessLevel
+    fun get(uid: Int): AccessLevel?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg accessLevels: AccessLevel)

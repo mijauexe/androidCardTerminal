@@ -7,10 +7,10 @@ import com.card.terminal.db.entity.Event
 @Dao
 interface EventDao {
     @Query("SELECT * FROM Event")
-    fun getAll(): List<Event>
+    fun getAll(): List<Event>?
 
     @Query("SELECT * FROM Event WHERE uid = :uid")
-    fun get(uid: Int): Event
+    fun get(uid: Int): Event?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg event: Event)
@@ -25,17 +25,17 @@ interface EventDao {
     fun update(vararg event: Event)
 
     @Query("SELECT * FROM Event WHERE card_number = :cardNumber")
-    fun getEventsByCardNumber(cardNumber: Int): List<Event>
+    fun getEventsByCardNumber(cardNumber: Int): List<Event>?
 
     @Query("SELECT * FROM Event WHERE event_code = :eventCode")
-    fun getEventsByEventCode(eventCode: Int): List<Event>
+    fun getEventsByEventCode(eventCode: Int): List<Event>?
 
     @Query("SELECT * FROM Event ORDER BY date_time DESC LIMIT 1")
-    fun getLastScanEvent(): Event
+    fun getLastScanEvent(): Event?
 
     @Query("SELECT * FROM Event WHERE card_number = :cardNumber ORDER BY date_time DESC LIMIT 1")
-    fun getLastScanEventWithCardNumber(cardNumber: Int): Event
+    fun getLastScanEventWithCardNumber(cardNumber: Int): Event?
 
     @Query("SELECT * FROM Event WHERE published = false")
-    fun getUnpublishedEvents(): List<Event>
+    fun getUnpublishedEvents(): List<Event>?
 }
