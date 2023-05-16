@@ -107,7 +107,6 @@ class MainActivity : AppCompatActivity() {
 
         db = AppDatabase.getInstance((this))
 
-
 //        val scope3 = CoroutineScope(Dispatchers.IO)
 //        scope3.launch {
 //            try {
@@ -280,16 +279,19 @@ class MainActivity : AppCompatActivity() {
     private fun setObservers() {
         mutableLarusCode.observe(this) {
 //            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
             if (it["CardCode"] == "CONNECTION_RESTORED") {
-                val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                dateText.text = "Molimo očitajte karticu."
-                ddd.visibility = View.VISIBLE
-            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
-                val navHostFragment =
-                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
-//                val navController = navHostFragment.navController
 
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                        dateText.text = "Molimo očitajte karticu."
+                        ddd.visibility = View.VISIBLE
+                    }
+                }
+            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
                         handleCardScan(it)
@@ -307,10 +309,14 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } else if (it["CardCode"] == "CONNECTION_LOST") {
-                val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                dateText.text = "Prekinuta LAN mreža."
-                ddd.visibility = View.GONE
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                        dateText.text = "Prekinuta LAN mreža."
+                        ddd.visibility = View.GONE
+                    }
+                }
             }
         }
 
@@ -403,6 +409,10 @@ class MainActivity : AppCompatActivity() {
                     bundle.putString("lastName", person.lastName)
                     bundle.putString("userId", person.uid.toString())
                     bundle.putString("classType", card.classType)
+
+                    if (person.companyName != "") {
+                        bundle.putString("companyName", person.companyName)
+                    }
 
                     if (person.imageB64 != "") {
                         bundle.putString("imageB64", "person.imageB64")
