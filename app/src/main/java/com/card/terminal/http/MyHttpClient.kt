@@ -81,7 +81,7 @@ object MyHttpClient {
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
-//        (publishEventsTask as PublishEventsTask).startTask()
+        (publishEventsTask as PublishEventsTask).startTask()
 
 //        Handler().postDelayed({
 //            stopLarusSocket()
@@ -191,12 +191,6 @@ object MyHttpClient {
     fun pushRequest(type: String) {
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
-
-            if (type == "ADD_INIT1") {
-                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
-                db.clearAllTables() //TODO RN
-            }
-
             val mySharedPreferences =
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
@@ -330,38 +324,41 @@ object MyHttpClient {
                 mySharedPreferences.getInt("eCode2", 696969)
             )
 
-            try {
-                val response =
-                    mySharedPreferences.getString(
-                        "serverIP",
-                        ""
-                    )
-                        ?.let {
-                            client?.post(it) {
-                                contentType(ContentType.Application.Json)
-                                setBody(esp.eventString)
-                            }
-                        }
-                if (response != null) {
-                    if (response.bodyAsText().contains("\"CODE\":\"0\"") && response.bodyAsText()
-                            .contains("\"NUM_CREAD\":\"${esp.eventList.size}\"")
-                    ) {
-                        updateEvents(esp.eventList)
-                        Timber.d(
-                            "Msg: Event list updated and published: %s", esp.eventString
+            if (esp.eventList.isNotEmpty()) {
+                try {
+                    val response =
+                        mySharedPreferences.getString(
+                            "serverIP",
+                            ""
                         )
+                            ?.let {
+                                client?.post(it) {
+                                    contentType(ContentType.Application.Json)
+                                    setBody(esp.eventString)
+                                }
+                            }
+                    if (response != null) {
+                        if (response.bodyAsText()
+                                .contains("\"CODE\":\"0\"") && response.bodyAsText()
+                                .contains("\"NUM_CREAD\":\"${esp.eventList.size}\"")
+                        ) {
+                            updateEvents(esp.eventList)
+                            Timber.d(
+                                "Msg: Event list updated and published: %s", esp.eventString
+                            )
+                        }
                     }
+                } catch (ce: ConnectException) {
+                    Timber.d("Msg: Event list not updated or published: %s", esp.eventString)
+                } catch (e: Exception) {
+                    Timber.d(
+                        "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message,
+                        esp.eventString
+                    )
                 }
-            } catch (ce: ConnectException) {
-                Timber.d("Msg: Event list not updated or published: %s", esp.eventString)
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message,
-                    esp.eventString
-                )
             }
         }
     }

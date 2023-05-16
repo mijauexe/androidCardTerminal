@@ -3,13 +3,11 @@ package com.card.terminal.utils
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.card.terminal.MainActivity
-import com.card.terminal.R
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.*
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.*
-import org.jetbrains.annotations.Nullable
 import timber.log.Timber
 import java.time.LocalDateTime
 
@@ -20,6 +18,7 @@ class MiroConverter {
         @SerializedName("LNAME") val LNAME: String,
         @SerializedName("FNAME") val FNAME: String,
         @SerializedName("PHOTO_B0_HTTP_PATH") val PHOTO_B0_HTTP_PATH: String,
+        @SerializedName("COMP_SHORT_NAME") val COMP_SHORT_NAME: String,
     )
 
     data class CARDS(
@@ -32,11 +31,6 @@ class MiroConverter {
 
     data class DELETE_HOLDERS(
         val B0_CLASS: String, val B0_ID: String
-    )
-
-    data class DELETE_CARDS(
-        val B0_CLASS: String,
-        val B0_ID: String,
     )
 
     data class DELETE_ACC_LEVELS_DISTR(
@@ -62,10 +56,6 @@ class MiroConverter {
 
     data class EventStringPair(
         val eventList: List<Event>, val eventString: String
-    )
-
-    data class NewEventRequest( //TODO saljem serveru evente, nije jos miro slozio
-        val ACT: String, val IFTTERM2_B0_ID: String, val CREAD: List<CREAD>
     )
 
     data class DEVS(
@@ -94,7 +84,8 @@ class MiroConverter {
     data class deleteHcalObject(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("HOLDERS") val HOLDERS: ArrayList<DELETE_HOLDERS>,
-        @SerializedName("CARDS") val CARDS: ArrayList<DELETE_CARDS>,
+//        @SerializedName("CARDS") val CARDS: ArrayList<DELETE_CARDS>,
+        @SerializedName("CARDS") val CARDS: ArrayList<String>,
         @SerializedName("ACC_LEVELS_DISTR") val ACC_LEVELS_DISTR: ArrayList<DELETE_ACC_LEVELS_DISTR>
     )
 
@@ -104,8 +95,7 @@ class MiroConverter {
     )
 
     data class DEFINITIONS(
-        @SerializedName("ID") val ID: String,
-        @SerializedName("DESCR") val DESCR: String
+        @SerializedName("ID") val ID: String, @SerializedName("DESCR") val DESCR: String
     )
 
     data class SCHEDULE(
@@ -161,21 +151,20 @@ class MiroConverter {
 
     suspend fun processRequest(operation: String): String {
         val scope = CoroutineScope(Dispatchers.IO)
-
+        Timber.d("Got server request: $operation")
         if (operation.contains("ADD_INIT1")) {
-            val scope1 = CoroutineScope(Dispatchers.IO)
-            val responseDeferred = scope1.async {
-                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
-                db.clearAllTables()
-            }
-            responseDeferred.await()
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            db.CardDao().deleteAll()
+            db.AccessLevelDao().deleteAll()
+            db.PersonDao().deleteAll()
         }
 
         when {
-            (operation.contains("ADD_INIT1") || operation.contains("ADD_HCAL")) -> {
+            (operation.contains("ADD_HCAL") || operation.contains("ADD_INIT1")) -> {
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, initHcalObject::class.java)
-                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
+//                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
+                    println(objectic.toString())
                     addHcal(objectic)
                 }
                 val response = responseDeferred.await()
@@ -183,21 +172,17 @@ class MiroConverter {
             }
 
             operation.contains("IFTTERM2_INIT0") -> {
-                //TODO not yet implemented
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, init0Object::class.java)
-                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
                     init0(objectic)
                 }
                 val response = responseDeferred.await()
                 return iftTermResponse(response)
-                return iftTermResponse(0, "1", "Not yet implemented").toString()
             }
 
             operation.contains("DELETE_HCAL") -> {
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, deleteHcalObject::class.java)
-                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
                     deleteHcal(objectic)
                 }
                 val response = responseDeferred.await()
@@ -207,7 +192,6 @@ class MiroConverter {
             operation.contains("ADD_HOLIDAYS") -> {
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, holidayObject::class.java)
-                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
                     addHoliday(objectic)
                 }
                 val response = responseDeferred.await()
@@ -217,7 +201,6 @@ class MiroConverter {
             operation.contains("PHOTOS") -> {
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, PhotoObject::class.java)
-                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
                     addPhotos(objectic)
                 }
                 val response = responseDeferred.await()
@@ -252,7 +235,8 @@ class MiroConverter {
                             firstName = p.firstName,
                             lastName = p.lastName,
                             imageB64 = person.IMG_B64,
-                            imagePath = person.B0_HTTP_PATH
+                            imagePath = person.B0_HTTP_PATH,
+                            companyName = p.companyName
                         )
                     }
                     if (newP != null) {
@@ -332,14 +316,12 @@ class MiroConverter {
             val editor = prefs.edit()
             editor.putInt("IFTTERM2_B0_ID", objectic.IFTTERM2_B0_ID.toInt())
             editor.putInt(
-                "DEV_B0_ID",
-                objectic.DEVS[0].B0_ID.toInt()
+                "DEV_B0_ID", objectic.DEVS[0].B0_ID.toInt()
             ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString(
-                "serverIP",
-                "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
+                "serverIP", "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
             editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
@@ -432,6 +414,7 @@ class MiroConverter {
     private suspend fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
         //CONTRACTOR -> {poslovni izlaz, 22} npr.
         //VEHICLE -> {privatni izlaz, 20} npr.
+
         val buttonMap = mutableMapOf<String, MutableMap<String, Int>>()
 
         for (btn in eventCode2) {
@@ -452,8 +435,7 @@ class MiroConverter {
                         buttonMap[categories[i]] = oldMap!!
 
                     } else {
-                        buttonMap[categories[i]] =
-                            mutableMapOf(btn.TITLE to btn.B0_DEV_E_CODE.toInt())
+                        buttonMap[categories[i]] = mutableMapOf(btn.TITLE to btn.ID.toInt())
                     }
                 }
             } catch (e: Exception) {
@@ -467,6 +449,14 @@ class MiroConverter {
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
             val editor = prefs.edit()
 
+            for(key in buttonMap.keys) {
+                for (btnKey in prefs.all.keys) {
+                    if (btnKey.contains("_size") || btnKey.contains(key)) {
+                        editor.remove(btnKey)
+                    }
+                }
+                editor.commit()
+            }
             for (entry in buttonMap.entries) {
                 editor.putInt("${entry.key}_size", entry.value.size)
 
@@ -491,20 +481,20 @@ class MiroConverter {
 
         val scope1 = CoroutineScope(Dispatchers.IO)
         val responseDeferred1 = scope1.async {
-            try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-                for (card in objectic.CARDS) {
-                    db.CardDao().get(card.B0_ID.toInt(), card.B0_CLASS)?.let { cardList.add(it) }
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+
+            for (card in objectic.CARDS) {
+                try {
+                    db.CardDao().deleteByCardNumber(card.toInt())
+                    deletionCounter += 1
+                } catch (e: Exception) {
+                    Timber.d(
+                        "Exception while deleting cards in db: %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
                 }
-                db.CardDao().deleteMany(cardList)
-                deletionCounter += cardList.size
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while deleting cards in db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
             }
         }
         responseDeferred1.await()
@@ -578,7 +568,8 @@ class MiroConverter {
                     firstName = person.FNAME,
                     lastName = person.LNAME,
                     imageB64 = "",
-                    imagePath = person.PHOTO_B0_HTTP_PATH
+                    imagePath = person.PHOTO_B0_HTTP_PATH,
+                    companyName = person.COMP_SHORT_NAME
                 )
             )
         }
@@ -626,7 +617,7 @@ class MiroConverter {
         for (cards in objectic.CARDS) {
             cardList.add(
                 Card(
-                    cardNumber = cards.CN,
+                    cardNumber = cards.CN.toInt(),
                     classType = cards.B0_CLASS,
                     owner = cards.HOLDER_B0_ID.toInt(),
                     activationDate = cards.ACTIVATION_DATE,
@@ -721,6 +712,11 @@ class MiroConverter {
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
+        var eCode2 = prefs.getInt("eCode2", 696969)
+        if (cardResponse.getBoolean("NoOptionPressed")) {
+            eCode2 = 0
+        }
+
         print("ecode2 je " + prefs.getInt("eCode2", 696969))
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
@@ -728,12 +724,11 @@ class MiroConverter {
                 "CardCode"
             )
         }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
-            prefs.getInt("eCode2", 696969)
+            eCode2
         }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
     }
 
     suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
-        val eCode = 2 //TODO ECODE HEP
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
         val unpublishedEvents = mutableListOf<Event>()
         val scope = CoroutineScope(Dispatchers.IO)
@@ -743,9 +738,8 @@ class MiroConverter {
             db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
             var dev_b0_id = 0
             try {
-                dev_b0_id =
-                    db.DeviceDao().getAll()
-                        ?.get(0)?.uid!!  //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
+                dev_b0_id = db.DeviceDao().getAll()
+                    ?.get(0)?.uid!!  //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
 
             } catch (e: java.lang.IndexOutOfBoundsException) {
                 //ako nema uredaja, samo salji 0
@@ -756,11 +750,13 @@ class MiroConverter {
                 //ako nema uredaja, samo salji 0
             }
 
-            for (ue in unpublishedEvents.indices) {
-                if (ue != unpublishedEvents.size - 1) {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
-                } else {
-                    strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${eCode}\",\"ECODE2\": \"${eCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
+            if (unpublishedEvents.size != 0) {
+                for (ue in unpublishedEvents.indices) {
+                    if (ue != unpublishedEvents.size - 1) {
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
+                    } else {
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
+                    }
                 }
             }
 
