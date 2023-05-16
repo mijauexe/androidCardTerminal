@@ -14,4 +14,5 @@ class Person(
     @Serializable @ColumnInfo(name = "last_name") val lastName: String,
     @Serializable @ColumnInfo(name = "image_b64") val imageB64: String,
     @Serializable @ColumnInfo(name = "image_path") val imagePath: String,
+    @Serializable @ColumnInfo(name = "company_name") val companyName: String
 )

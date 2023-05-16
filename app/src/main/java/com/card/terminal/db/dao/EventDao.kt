@@ -38,4 +38,7 @@ interface EventDao {
 
     @Query("SELECT * FROM Event WHERE published = false")
     fun getUnpublishedEvents(): List<Event>?
+
+    @Query("DELETE FROM Event")
+    fun deleteAll()
 }

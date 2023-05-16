@@ -19,4 +19,7 @@ interface AccessLevelDao {
 
     @Delete
     fun deleteMany(list: List<AccessLevel>)
+
+    @Query("DELETE FROM AccessLevel")
+    fun deleteAll()
 }

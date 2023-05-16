@@ -21,7 +21,7 @@ interface DeviceDao {
     fun delete(vararg devices: Device)
 
     @Query("DELETE FROM Device")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Delete
     fun deleteMany(list: List<Device>)

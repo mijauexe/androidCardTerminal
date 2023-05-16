@@ -22,4 +22,7 @@ interface PersonDao {
 
     @Delete
     fun deleteMany(list: List<Person>)
+
+    @Query("DELETE FROM Person")
+    fun deleteAll()
 }

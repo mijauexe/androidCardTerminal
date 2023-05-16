@@ -28,4 +28,7 @@ interface CalendarDao {
 
     @Delete
     fun delete(calendar: Calendar)
+
+    @Query("DELETE FROM Calendar")
+    fun deleteAll()
 }
