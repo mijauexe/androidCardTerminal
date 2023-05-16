@@ -18,6 +18,7 @@
         app:layout_constraintEnd_toStartOf="@id/glRight"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
         <ImageView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
@@ -31,10 +32,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
             android:text="@string/tv_date"
             android:textColor="@color/black"
-            android:textSize="30sp" />
+            android:textSize="30sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/first_name"
@@ -61,9 +62,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Firma"
-            android:visibility="gone"
             android:textColor="@color/black"
-            android:textSize="40sp" />
+            android:textSize="40sp"
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/photo"
@@ -92,55 +93,52 @@
     </GridLayout>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/glRight"
         android:layout_width="wrap_content"
         android:layout_height="700dp"
-        android:id="@+id/glRight"
         android:layout_below="@+id/glMain"
         android:layout_toStartOf="@+id/glMain"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/glMain"
-        app:layout_constraintTop_toTopOf="parent"
-        app:cardCornerRadius="25dp"
-
         app:cardBackgroundColor="#D9D9D9"
+        app:cardCornerRadius="25dp"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true"
-        >
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/glMain"
+        app:layout_constraintTop_toTopOf="parent">
+
         <GridLayout
             android:layout_width="700dp"
             android:layout_height="wrap_content"
             android:columnCount="1"
-            android:useDefaultMargins="true"
-            >
+            android:useDefaultMargins="true">
 
             <TextView
                 android:id="@+id/reason_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Molimo unesite razlog izlaska:"
-                android:textColor="@color/black"
-
                 android:layout_marginBottom="50dp"
+                android:text="Molimo unesite razlog izlaska:"
+
+                android:textColor="@color/black"
                 android:textSize="30dp" />
 
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="600dp"
-                >
+                android:layout_height="600dp">
 
                 <GridLayout
                     android:id="@+id/buttonsGrid"
-                    android:columnCount="1"
                     android:layout_width="match_parent"
-                    android:layout_height="500dp">
+                    android:layout_height="500dp"
+                    android:columnCount="1">
 
                     <Button
                         android:id="@+id/contractor_1"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
-                        android:visibility="gone"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
                         android:background="@android:color/transparent"
@@ -148,274 +146,280 @@
                         android:text=" Poslovni izlaz nalog HEP "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_2"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
-                        android:visibility="gone"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:text=" Poslovni izlaz nalog tvrtka "
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/pit"
+                        android:text=" Poslovni izlaz nalog tvrtka "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_3"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/piz"
                         android:text=" Privatni izlaz "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_4"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 4 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_5"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 5 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_6"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 6 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_7"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 7 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_8"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 8 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_9"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 9 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/contractor_10"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
-                        android:drawableStart="@drawable/piz"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 10 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
 
                     <Button
                         android:id="@+id/worker_1"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
                         android:drawableStart="@drawable/pd"
                         android:text=" Privatno uz dozvolu "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
 
                     <Button
                         android:id="@+id/worker_2"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/ph"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/ph"
                         android:text=" Privatno hitno bez dozvole "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_3"
-                        style="@style/Widget.AppCompat.Button.Colored"
-                        android:layout_gravity="start"
-                        android:visibility="gone"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/sb"
-                        android:background="@android:color/transparent"
-                        android:text=" Službeno putovanje "
-                        android:textAllCaps="false"
-                        android:textColor="@android:color/black"
-                        android:textSize="35dp" />
-                    <Button
-                        android:id="@+id/worker_4"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
                         android:background="@android:color/transparent"
                         android:drawableStart="@drawable/sp"
+                        android:text=" Službeno putovanje "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/worker_4"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="80dp"
+                        android:layout_marginBottom="45dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/sb"
                         android:text=" Službeno BETO "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_5"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/so"
                         android:text=" Službeno ostalo "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_6"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 6 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_7"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 7 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_8"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 8 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_9"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 9 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                     <Button
                         android:id="@+id/worker_10"
-                        android:visibility="gone"
                         style="@style/Widget.AppCompat.Button.Colored"
                         android:layout_gravity="start"
                         android:layout_marginStart="80dp"
                         android:layout_marginBottom="45dp"
-                        android:drawableStart="@drawable/so"
                         android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 10 "
                         android:textAllCaps="false"
                         android:textColor="@android:color/black"
-                        android:textSize="35dp" />
+                        android:textSize="35dp"
+                        android:visibility="gone" />
 
                 </GridLayout>
 
             </ScrollView>
-
-
-
-
-
-
 
 
         </GridLayout>

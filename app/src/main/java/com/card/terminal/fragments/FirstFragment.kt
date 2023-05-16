@@ -3,7 +3,6 @@ package com.card.terminal.fragments
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -15,9 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.amulyakhare.textdrawable.TextDrawable
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
+import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import kotlinx.coroutines.CoroutineScope
@@ -189,29 +190,43 @@ class FirstFragment : Fragment() {
         layout: GridLayout,
         bundle: Bundle
     ) {
-        for (i in 0 until prefs.getInt("${str}_size", 0)) {
-            val btn = layout.get(i) as Button
-            var title = prefs.getString("${str}_${i}", "?_0")
 
-            val eCode2 = title!!.substring(title.indexOf("_") + 1).toInt()
-            title = title.substring(0, title.indexOf("_"))
-            bundle.putInt(title, eCode2)
-            btn.setText("   " + title)
-            btn.visibility = View.VISIBLE
-            btn.setOnClickListener {
-                val editor = prefs.edit()
-                editor.putString("selection", title)
+        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        val btnList = db.ButtonDao().getAllByClassType(str)
 
-                if (bundle.getBoolean("noButtonClickNeededRegime")) {
-                    editor.putInt("eCode2", 0)
-                } else {
-                    editor.putInt("eCode2", eCode2)
+        if (btnList != null) {
+            for (i in btnList.indices) {
+                val btn = layout[i] as Button
+                bundle.putInt(btnList[i].title, btnList[i].eCode2)
+                btn.setText("   " + btnList[i].title)
+                btn.visibility = View.VISIBLE
+
+                val drawable = TextDrawable.builder()
+                    .beginConfig()
+                    .width(70).height(70)
+                    .withBorder(2) /* thickness in px */
+                    .textColor(Color.BLACK)
+                    .endConfig()
+                    .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
+
+                btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+                btn.setOnClickListener {
+                    val editor = prefs.edit()
+                    editor.putString("selection", btnList[i].title)
+
+                    if (bundle.getBoolean("noButtonClickNeededRegime")) {
+                        editor.putInt("eCode2", 0)
+                    } else {
+                        editor.putInt("eCode2", btnList[i].eCode2)
+                    }
+
+                    editor.commit()
+                    btn.setBackgroundResource(R.drawable.card_button_background)
+                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
+                    goToCheckoutWithBundle(bundle)
                 }
 
-                editor.commit()
-                btn.setBackgroundResource(R.drawable.card_button_background)
-                btn.setBackgroundColor(Color.parseColor("#faa61a"))
-                goToCheckoutWithBundle(bundle)
+
             }
         }
     }

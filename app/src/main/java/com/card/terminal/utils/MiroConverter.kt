@@ -411,65 +411,34 @@ class MiroConverter {
         }
     }
 
-    private suspend fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
-        //CONTRACTOR -> {poslovni izlaz, 22} npr.
-        //VEHICLE -> {privatni izlaz, 20} npr.
-
-        val buttonMap = mutableMapOf<String, MutableMap<String, Int>>()
+    private fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
+        val mut = mutableListOf<Button>()
+        var counter = 0
 
         for (btn in eventCode2) {
-
-            val categories = btn.CLASESS.split(",")
-
-            try {
-                for (i in categories.indices) {
-                    val c = buttonMap.containsKey(categories[i])
-
-                    if (c) {
-                        val oldMap = buttonMap[categories[i]]
-
-                        if (oldMap != null) {
-                            oldMap[btn.TITLE] = btn.ID.toInt()
-                        }
-
-                        buttonMap[categories[i]] = oldMap!!
-
-                    } else {
-                        buttonMap[categories[i]] = mutableMapOf(btn.TITLE to btn.ID.toInt())
-                    }
-                }
-            } catch (e: Exception) {
-                println(e.message)
-            }
+            mut.add(
+                Button(
+                    uid = 0,
+                    classType = btn.CLASESS,
+                    label = btn.LABEL,
+                    title = btn.TITLE,
+                    eCode2 = btn.ID.toInt(),
+                    eCode = btn.B0_DEV_E_CODE.toInt()
+                )
+            )
         }
-        println(buttonMap)
-
-        withContext(Dispatchers.Main) {
-            val prefs = ContextProvider.getApplicationContext()
-                .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
-            val editor = prefs.edit()
-
-            for(key in buttonMap.keys) {
-                for (btnKey in prefs.all.keys) {
-                    if (btnKey.contains("_size") || btnKey.contains(key)) {
-                        editor.remove(btnKey)
-                    }
-                }
-                editor.commit()
-            }
-            for (entry in buttonMap.entries) {
-                editor.putInt("${entry.key}_size", entry.value.size)
-
-                var i = 0
-
-                for (value in entry.value) {
-                    editor.putString("${entry.key}_" + i, "${value.key}_${value.value}")
-                    editor.commit()
-                    i += 1
-                }
-            }
-
-            editor.commit()
+        try {
+            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            db.ButtonDao().deleteAll()
+            db.ButtonDao().insertAll(mut)
+            counter += mut.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while adding buttons in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
         }
     }
 
