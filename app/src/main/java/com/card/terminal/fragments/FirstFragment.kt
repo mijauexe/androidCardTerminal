@@ -3,6 +3,7 @@ package com.card.terminal.fragments
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -84,25 +85,34 @@ class FirstFragment : Fragment() {
                 val scope = CoroutineScope(Dispatchers.IO)
                 scope.launch {
                     if (existingBundle.containsKey("imagePath")) {
-
-                        val url = URL(
-                            ("http://" + prefs.getString(
-                                "bareIP",
-                                "?"
-                            ) + existingBundle.get("imagePath"))
-                        )
-                        val connection = withContext(Dispatchers.IO) {
-                            url.openConnection()
-                        } as HttpURLConnection
-                        connection.doInput = true
-                        withContext(Dispatchers.IO) {
-                            connection.connect()
-                        }
-                        val input = connection.inputStream
-                        val bitmap = BitmapFactory.decodeStream(input)
-                        withContext(Dispatchers.Main) {
-                            binding.photo.setImageBitmap(bitmap)
-                            existingBundle.putParcelable("imageB64", bitmap)
+                        try {
+                            val url = URL(
+                                ("http://" + prefs.getString(
+                                    "bareIP",
+                                    "?"
+                                ) + existingBundle.get("imagePath"))
+                            )
+                            val connection = withContext(Dispatchers.IO) {
+                                url.openConnection()
+                            } as HttpURLConnection
+                            connection.doInput = true
+                            withContext(Dispatchers.IO) {
+                                connection.connect()
+                            }
+                            val input = connection.inputStream
+                            val bitmap = BitmapFactory.decodeStream(input)
+                            withContext(Dispatchers.Main) {
+                                binding.photo.setImageBitmap(bitmap)
+                                existingBundle.putParcelable("imageB64", bitmap)
+                            }
+                            connection.disconnect()
+                        } catch (e: java.lang.Exception) {
+                            Timber.d(
+                                "Msg: Exception %s | %s | %s",
+                                e.cause,
+                                e.stackTraceToString(),
+                                e.message
+                            )
                         }
                     }
                 }
@@ -126,6 +136,11 @@ class FirstFragment : Fragment() {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
+        if (arguments?.containsKey("companyName") == true) {
+            binding.companyName.visibility = View.VISIBLE
+            binding.companyName.text = arguments?.getString("companyName")
+        }
+
         val ct = existingBundle.getString("classType")
 
         val layout = binding.buttonsGrid
@@ -144,12 +159,15 @@ class FirstFragment : Fragment() {
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {
                 R.id.FirstFragment -> {
+                    existingBundle.putBoolean("NoOptionPressed", true)
+//                    goToCheckoutWithBundle(existingBundle)
+                    MyHttpClient.pingy(existingBundle)
                     findNavController().navigate(
                         R.id.action_FirstFragment_to_mainFragment
                     )
                 }
             }
-        }, 5000)
+        }, 15000)
     }
 
     fun goToCheckoutWithBundle(bundle: Bundle) {
@@ -171,9 +189,9 @@ class FirstFragment : Fragment() {
         layout: GridLayout,
         bundle: Bundle
     ) {
-        for (i in 0..prefs.getInt("${str}_size", 0) - 1) {
+        for (i in 0 until prefs.getInt("${str}_size", 0)) {
             val btn = layout.get(i) as Button
-            var title = prefs.getString("WORKER_${i}", "?_0")
+            var title = prefs.getString("${str}_${i}", "?_0")
 
             val eCode2 = title!!.substring(title.indexOf("_") + 1).toInt()
             title = title.substring(0, title.indexOf("_"))

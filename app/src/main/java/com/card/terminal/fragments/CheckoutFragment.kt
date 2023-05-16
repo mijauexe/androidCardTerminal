@@ -47,7 +47,12 @@ class CheckoutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
-//        binding.reasonValue.text = arguments?.getString("selection")
+
+        if (arguments?.containsKey("companyName") == true) {
+            binding.companyName.visibility = View.VISIBLE
+            binding.companyName.text = arguments?.getString("companyName")
+        }
+
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
@@ -60,25 +65,35 @@ class CheckoutFragment : Fragment() {
             try {
                 val scope = CoroutineScope(Dispatchers.IO)
                 scope.launch {
-                    if(existingBundle.containsKey("imagePath")) {
-                        val url = URL(
-                            ("http://" + prefs.getString(
-                                "bareIP",
-                                "?"
-                            ) + existingBundle.get("imagePath"))
-                        )
-                        val connection = withContext(Dispatchers.IO) {
-                            url.openConnection()
-                        } as HttpURLConnection
-                        connection.doInput = true
-                        withContext(Dispatchers.IO) {
-                            connection.connect()
-                        }
-                        val input = connection.inputStream
-                        val bitmap = BitmapFactory.decodeStream(input)
-                        withContext(Dispatchers.Main) {
-                            binding.photo.setImageBitmap(bitmap)
-                            existingBundle.putParcelable("imageB64", bitmap)
+                    if (existingBundle.containsKey("imagePath")) {
+                        try {
+                            val url = URL(
+                                ("http://" + prefs.getString(
+                                    "bareIP",
+                                    "?"
+                                ) + existingBundle.get("imagePath"))
+                            )
+                            val connection = withContext(Dispatchers.IO) {
+                                url.openConnection()
+                            } as HttpURLConnection
+                            connection.doInput = true
+                            withContext(Dispatchers.IO) {
+                                connection.connect()
+                            }
+                            val input = connection.inputStream
+                            val bitmap = BitmapFactory.decodeStream(input)
+                            withContext(Dispatchers.Main) {
+                                binding.photo.setImageBitmap(bitmap)
+                                existingBundle.putParcelable("imageB64", bitmap)
+                            }
+                            connection.disconnect()
+                        } catch (e: java.lang.Exception) {
+                            Timber.d(
+                                "Msg: Exception %s | %s | %s",
+                                e.cause,
+                                e.stackTraceToString(),
+                                e.message
+                            )
                         }
                     }
                 }
@@ -110,11 +125,14 @@ class CheckoutFragment : Fragment() {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
 
-        val dt =
-            LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
+//        val dt =
+//            LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
+//                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
 
-//        binding.readoutValue.text = binding.readoutValue.text.toString() + dt
+        if (prefs.contains("IFTTERM2_DESCR")) {
+            binding.readoutValue.text =
+                binding.readoutValue.text.toString() + ": " + prefs.getString("IFTTERM2_DESCR", "")
+        }
 
         super.onViewCreated(view, savedInstanceState)
         Timber.d("CheckoutFragment onViewCreated")
