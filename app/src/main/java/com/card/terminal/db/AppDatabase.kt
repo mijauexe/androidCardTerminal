@@ -11,7 +11,7 @@ import timber.log.Timber
 
 @Database(
     entities = [Card::class, Event::class, Person::class, Calendar::class, AccessLevel::class, Device::class, OperationSchedule::class, OperationMode::class],
-    version = 13
+    version = 14
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
