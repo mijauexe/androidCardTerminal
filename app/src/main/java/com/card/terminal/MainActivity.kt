@@ -1,15 +1,17 @@
 package com.card.terminal
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.*
 import android.provider.Settings
+import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
+import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
 import android.view.Menu
@@ -17,6 +19,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,7 +35,7 @@ import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
-import com.card.terminal.utils.cardUtils.OmniCard
+import com.card.terminal.utils.omniCardUtils.OmniCard
 import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
@@ -43,20 +46,22 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
-    private var cardService: ICardService? = null
-
     private var mutableCardCode = MutableLiveData<Map<String, String>>()
+
+    private var cardService: ICardService? = null
     var mutableLarusCode = MutableLiveData<Map<String, String>>()
+
     private var mutableDateTime = MutableLiveData<LocalDateTime>()
+
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var db: AppDatabase
+
     private var workBtnClicked = false
     private var privateBtnClicked = false
     private var coffeeBtnClicked = false
@@ -64,7 +69,11 @@ class MainActivity : AppCompatActivity() {
     private var extraBtnClicked = false
     private var enterBtnClicked = false
     private var exitBtnClicked = false
-    var cardScannerActive = false
+    var cardScannerActive = true
+
+    private var mediaPlayer: MediaPlayer? = null
+
+
 
     private lateinit var mAdminComponentName: ComponentName
     lateinit var mDevicePolicyManager: DevicePolicyManager
@@ -160,6 +169,11 @@ class MainActivity : AppCompatActivity() {
             val editor = prefs.edit()
             editor.putBoolean("kioskMode", true)
         }
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.scan_success);
+        mediaPlayer!!.setOnCompletionListener { mediaPlayer -> // Release the MediaPlayer resources
+            mediaPlayer.release()
+        }
     }
 
     private fun startLogger() {
@@ -191,7 +205,6 @@ class MainActivity : AppCompatActivity() {
         mutableDateTime.postValue(LocalDateTime.now())
         ShowDateTime.setDateAndTime(mutableDateTime)
 
-        //TODO INA
 //        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
 //            if (ContextCompat.checkSelfPermission(
 //                    this,
@@ -199,7 +212,6 @@ class MainActivity : AppCompatActivity() {
 //                ) == PackageManager.PERMISSION_GRANTED
 //            ) {
 //                OmniCard.bindCardBackend(this, mutableCardCode, false)
-//                MyHttpClient.bindHttpClient(mutableLarusCode, db)
 //            } else {
 //                ActivityCompat.requestPermissions(
 //                    this,
@@ -209,7 +221,6 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        } else {
 //            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-//            MyHttpClient.bindHttpClient(mutableLarusCode, db)
 //        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
@@ -324,50 +335,54 @@ class MainActivity : AppCompatActivity() {
             if (!cardScannerActive) {
                 return@observe
             }
-            var accessGranted = false
-            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
-                if (it["ErrorCode"].equals("1")) {
-                    thread {
-                        cardText(
-                            it["CardResponse"].toString(),
-                            accessGranted
-                        ) //TODO INA TREBA FIXAT OVO
-                    }
-                } else if (it["CardNumber"] != null) {
-                    thread {
-                        val allowedAccessDao = db.CardDao()
 
-                        val dataList = allowedAccessDao.getAll()
+            playSound()
 
-                        if (dataList != null) {
-                            for (r in dataList) {
-                                if (r.cardNumber.equals(it["CardNumber"])) {
-                                    accessGranted = true
-                                }
-                            }
-                        }
-
-                        cardText(it["CardNumber"].toString(), accessGranted)
-                        //resetButtons() //!!!!!
-//                        TODO rijesi to kad ce trebat
-//                        if (MyHttpClient.isClientReady() and accessGranted) {
-//                            if (exitBtnClicked) {
-//                                MyHttpClient.postData(mapOf("status" to "exit"))
-//                            } else {
-//                                MyHttpClient.postData(mapOf("status" to "enter"))
+            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+//            var accessGranted = false
+//            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
+//                if (it["ErrorCode"].equals("1")) {
+//                    thread {
+//                        cardText(
+//                            it["CardResponse"].toString(),
+//                            accessGranted
+//                        ) //TODO INA TREBA FIXAT OVO
+//                    }
+//                } else if (it["CardNumber"] != null) {
+//                    thread {
+//                        val allowedAccessDao = db.CardDao()
+//
+//                        val dataList = allowedAccessDao.getAll()
+//
+//                        if (dataList != null) {
+//                            for (r in dataList) {
+//                                if (r.cardNumber.equals(it["CardNumber"])) {
+//                                    accessGranted = true
+//                                }
 //                            }
 //                        }
-                    }
-                }
-            } else {
-                val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
-                alertDialog.setTitle("Napomena")
-                alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
-                alertDialog.setButton(
-                    AlertDialog.BUTTON_NEUTRAL, "OK",
-                    { dialog, which -> dialog.dismiss() })
-                alertDialog.show()
-            }
+//
+//                        cardText(it["CardNumber"].toString(), accessGranted)
+//                        //resetButtons() //!!!!!
+////                        TODO rijesi to kad ce trebat
+////                        if (MyHttpClient.isClientReady() and accessGranted) {
+////                            if (exitBtnClicked) {
+////                                MyHttpClient.postData(mapOf("status" to "exit"))
+////                            } else {
+////                                MyHttpClient.postData(mapOf("status" to "enter"))
+////                            }
+////                        }
+//                    }
+//                }
+//            } else {
+//                val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
+//                alertDialog.setTitle("Napomena")
+//                alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
+//                alertDialog.setButton(
+//                    AlertDialog.BUTTON_NEUTRAL, "OK",
+//                    { dialog, which -> dialog.dismiss() })
+//                alertDialog.show()
+//            }
         }
 
         mutableDateTime.observe(this) {
@@ -387,6 +402,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun playSound() {
+        if(mediaPlayer != null) {
+            mediaPlayer!!.stop()
+            mediaPlayer!!.release()
+            mediaPlayer = MediaPlayer.create(this, R.raw.scan_success);
+
+        }
+        mediaPlayer!!.start()
     }
 
     fun handleCardScan(it: Map<String, String>) {
