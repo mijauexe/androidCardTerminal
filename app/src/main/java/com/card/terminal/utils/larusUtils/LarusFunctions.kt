@@ -14,7 +14,6 @@ import timber.log.Timber
 import java.net.ConnectException
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -394,6 +393,89 @@ class LarusFunctions(
         }
         return result
     }
+
+    fun GVAHoldDoor(doorNum: Int) {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            try {
+                val sharedPreferences = ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                val larusEndpoint = getPortAndIP(sharedPreferences)
+                val selectorManager = SelectorManager(Dispatchers.IO)
+                val socket = aSocket(selectorManager).tcp()
+                val socket1: Socket?
+
+                withTimeout(2000) {
+                    socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                }
+
+                val receiveChannel = socket1?.openReadChannel()
+                val sendChannel = socket1?.openWriteChannel(autoFlush = true)
+
+                val byteArray = "GVA<Holddoor$doorNum>".toByteArray()
+                val buffer = ByteBuffer.allocate(byteArray.size)
+                buffer.put(byteArray)
+                buffer.position(0)
+
+                val doorOpenResponse = getSocketResponse(sendChannel!!, receiveChannel!!, buffer)
+                println(doorOpenResponse)
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
+                    selectorManager?.close()
+                }
+            } catch (e: TimeoutCancellationException) {
+                println("TimeoutCancellationException: ${e.message}")
+                Timber.d("Msg: TimeoutCancellationException to larus board")
+            } catch (e: Exception) {
+                println("Exception: ${e.message}")
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            }
+            Timber.d("Msg: Door $doorNum opened")
+        }
+    }
+
+    fun SVAHoldDoor(doorNum: Int, pulseOrHold: Int) {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            try {
+                val sharedPreferences = ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                val larusEndpoint = getPortAndIP(sharedPreferences)
+                val selectorManager = SelectorManager(Dispatchers.IO)
+                val socket = aSocket(selectorManager).tcp()
+                val socket1: Socket?
+
+                withTimeout(2000) {
+                    socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                }
+
+//                val receiveChannel = socket1?.openReadChannel()
+                val sendChannel = socket1?.openWriteChannel(autoFlush = true)
+
+                val byteArray = "SVA<Holddoor$doorNum>".toByteArray()
+                val buffer = ByteBuffer.allocate(byteArray.size + 1)
+                buffer.put(byteArray)
+                buffer.put(0) //0 - vrata su normalnom modu rada  - prolaz s karticama, 1 - vrata nisu kontrolirana
+                buffer.position(pulseOrHold)
+
+                sendChannel!!.writeAvailable(buffer)
+
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
+                    selectorManager?.close()
+                }
+            } catch (e: TimeoutCancellationException) {
+                println("TimeoutCancellationException: ${e.message}")
+                Timber.d("Msg: TimeoutCancellationException to larus board")
+            } catch (e: Exception) {
+                println("Exception: ${e.message}")
+                Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            }
+            Timber.d("Msg: Door $doorNum opened")
+        }
+//        scope.cancel()
+    }
+
 
 }
 
