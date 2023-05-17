@@ -1,4 +1,4 @@
-package com.card.terminal.utils.cardUtils
+package com.card.terminal.utils.omniCardUtils
 
 import kotlin.math.pow
 

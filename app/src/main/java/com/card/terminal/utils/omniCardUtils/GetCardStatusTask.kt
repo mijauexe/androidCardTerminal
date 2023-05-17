@@ -1,11 +1,11 @@
-package com.card.terminal.utils.cardUtils
+package com.card.terminal.utils.omniCardUtils
 
 import android.smartcardio.Card
 import android.smartcardio.CardException
 import android.smartcardio.CardTerminal
 import android.smartcardio.CommandAPDU
 import androidx.lifecycle.MutableLiveData
-import com.card.terminal.utils.cardUtils.ConvertUtils.hexStringToBinaryString
+import com.card.terminal.utils.omniCardUtils.ConvertUtils.hexStringToBinaryString
 import kotlinx.coroutines.*
 import timber.log.Timber
 
@@ -31,7 +31,7 @@ object GetCardStatusTask {
         mutableCode: MutableLiveData<Map<String, String>>
     ) {
         stop()
-        scope = CoroutineScope(Dispatchers.Default)
+        scope = CoroutineScope(Dispatchers.IO)
         mutableCardCode = mutableCode
         scope.launch {
 
@@ -52,7 +52,12 @@ object GetCardStatusTask {
                     }
                     delay(SLEEP_MILLIS)
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Timber.d(
+                        "Msg: Exception %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
                 }
             }
         }

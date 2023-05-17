@@ -1,4 +1,4 @@
-package com.card.terminal.utils.cardUtils
+package com.card.terminal.utils.omniCardUtils
 
 import android.app.Activity
 import android.app.Application
