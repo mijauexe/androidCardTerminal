@@ -323,7 +323,6 @@ class MiroConverter {
             editor.putString(
                 "serverIP", "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
-            editor.putString("bareIP", objectic.B0_SERVER.IP)
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
 
             counter += 4

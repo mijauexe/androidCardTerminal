@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
+import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -17,10 +18,6 @@ import java.util.*
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-//    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,9 +80,7 @@ class MainFragment : Fragment() {
                 findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")
             }
-
         }
-
     }
 
     override fun onDestroyView() {

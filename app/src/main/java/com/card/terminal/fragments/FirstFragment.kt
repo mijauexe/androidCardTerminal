@@ -1,5 +1,6 @@
 package com.card.terminal.fragments
 
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -34,18 +35,12 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 class FirstFragment : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -63,9 +58,7 @@ class FirstFragment : Fragment() {
                 DateTimeFormatter.ISO_DATE_TIME
             )
                 .format(DateTimeFormatter.ofPattern("HH:mm"))
-//        binding.tvClock.text =
-//            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-//                .format(DateTimeFormatter.ofPattern("HH:mm"))
+
         Timber.d("FirstFragment onCreateView")
         act.cardScannerActive = true
         return binding.root
@@ -74,6 +67,8 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("FirstFragment onViewCreated")
+
+        val delay = 15000L
 
         val existingBundle = requireArguments()
 
@@ -144,9 +139,6 @@ class FirstFragment : Fragment() {
 
         val ct = existingBundle.getString("classType")
 
-        val layout = binding.buttonsGrid
-        println(layout)
-
         if (ct.equals("WORKER")) {
             ubijMe("WORKER", prefs, binding.buttonsGrid, existingBundle)
         } else if (ct.equals("CONTRACTOR")) {
@@ -161,14 +153,13 @@ class FirstFragment : Fragment() {
             when (findNavController().currentDestination?.id) {
                 R.id.FirstFragment -> {
                     existingBundle.putBoolean("NoOptionPressed", true)
-//                    goToCheckoutWithBundle(existingBundle)
-                    MyHttpClient.pingy(existingBundle)
+                    MyHttpClient.publishNewEvent(existingBundle)
                     findNavController().navigate(
                         R.id.action_FirstFragment_to_mainFragment
                     )
                 }
             }
-        }, 15000)
+        }, delay)
     }
 
     fun goToCheckoutWithBundle(bundle: Bundle) {
@@ -178,7 +169,7 @@ class FirstFragment : Fragment() {
                     findNavController().navigate(
                         R.id.action_FirstFragment_to_CheckoutFragment, bundle
                     )
-                    MyHttpClient.pingy(bundle)
+                    MyHttpClient.openDoor(1)
                 }
             }
         }, 500)
@@ -204,7 +195,7 @@ class FirstFragment : Fragment() {
                 val drawable = TextDrawable.builder()
                     .beginConfig()
                     .width(70).height(70)
-                    .withBorder(2) /* thickness in px */
+                    .withBorder(2)
                     .textColor(Color.BLACK)
                     .endConfig()
                     .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
@@ -225,8 +216,6 @@ class FirstFragment : Fragment() {
                     btn.setBackgroundColor(Color.parseColor("#faa61a"))
                     goToCheckoutWithBundle(bundle)
                 }
-
-
             }
         }
     }

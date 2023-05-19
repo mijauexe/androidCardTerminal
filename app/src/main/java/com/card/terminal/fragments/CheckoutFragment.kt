@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
@@ -22,6 +23,10 @@ import java.net.HttpURLConnection
 import java.net.NoRouteToHostException
 import java.net.URL
 import java.net.UnknownHostException
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 /**
  * An example full-screen fragment that shows and hides the system UI (i.e.
@@ -50,13 +55,24 @@ class CheckoutFragment : Fragment() {
             binding.companyName.text = arguments?.getString("companyName")
         }
 
+        binding.tvDateClock.text =
+            LocalDateTime.parse(LocalDateTime.now().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(
+                    DateTimeFormatter.ofPattern(
+                        "d.M.yyyy.",
+                        Locale("hr")
+                    )
+                ) + LocalTime.parse(
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+            )
+
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
         val existingBundle = requireArguments()
         MyHttpClient.openDoor(1)
         MyHttpClient.publishNewEvent(existingBundle)
-        val delay = 6000L
+        val delay = 10000L
 
         try {
             val scope = CoroutineScope(Dispatchers.IO)
@@ -121,10 +137,6 @@ class CheckoutFragment : Fragment() {
         if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
-
-//        val dt =
-//            LocalDateTime.parse(arguments?.getString("DateTime"), DateTimeFormatter.ISO_DATE_TIME)
-//                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy. HH:mm:ss", Locale("hr")))
 
         if (prefs.contains("IFTTERM2_DESCR")) {
             binding.readoutValue.text =

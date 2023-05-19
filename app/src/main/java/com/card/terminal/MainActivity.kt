@@ -74,7 +74,6 @@ class MainActivity : AppCompatActivity() {
     private var mediaPlayer: MediaPlayer? = null
 
 
-
     private lateinit var mAdminComponentName: ComponentName
     lateinit var mDevicePolicyManager: DevicePolicyManager
 
@@ -151,12 +150,6 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
             editor.putString("settingsPin", "0")
-
-            //rezimi rada kad ne treba stistkat tipke
-//            editor.putStringSet(
-//                "noButtonClickNeededRregime", setOf("06:30__07:15", "14:30__15:15", "18:30__19:15")
-//            )
-
             editor.apply()
         }
 
@@ -391,7 +384,12 @@ class MainActivity : AppCompatActivity() {
                 if (dateText != null) {
                     dateText.text =
                         LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                            .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
+                            .format(
+                                DateTimeFormatter.ofPattern(
+                                    "d. MMMM yyyy.",
+                                    Locale("hr")
+                                )
+                            )
                 }
 
                 val clockText = findViewById<TextView>(R.id.tv_clock)
@@ -405,7 +403,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playSound() {
-        if(mediaPlayer != null) {
+        if (mediaPlayer != null) {
             mediaPlayer!!.stop()
             mediaPlayer!!.release()
             mediaPlayer = MediaPlayer.create(this, R.raw.scan_success);
@@ -421,13 +419,15 @@ class MainActivity : AppCompatActivity() {
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
-        if (lastScanEvent == null || !lastScanEvent.cardNumber.toString().equals(it["CardCode"]) ||
+        if (lastScanEvent == null || !lastScanEvent.cardNumber.toString()
+                .equals(it["CardCode"]) ||
             LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
                 .isBefore(LocalDateTime.now())
         ) {
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
-                val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
+                val person =
+                    card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
 
                 if (person != null && card != null) {
                     bundle.putString("firstName", person.firstName)
@@ -458,7 +458,8 @@ class MainActivity : AppCompatActivity() {
                         )
 
                     val currentDateString =
-                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        LocalDateTime.now()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
                     val currentDateDate = LocalDate.parse(currentDateString)
 
@@ -492,7 +493,8 @@ class MainActivity : AppCompatActivity() {
                     try {
                         val dbSchedule1 = db.OperationScheduleDao().getAll()
                         var conforms = -1 //doesnt conform to anything before checking
-                        var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
+                        var containsIfNotSchedule =
+                            false //if contains IF_NOT_SCHEDULE param
                         var IfNotScheduleMode = 0
                         var isTodayHoliday = false
 
@@ -528,16 +530,20 @@ class MainActivity : AppCompatActivity() {
                                         sch.description.substring(sch.description.indexOf(":") + 1)
                                     ) && timeConforms
                                 ) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms =
+                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms =
+                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms =
+                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms =
+                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 }
                             }
@@ -552,7 +558,10 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                         } else {
-                            showDialog("Nemam raspored kontrole! Kartica ${it["CardCode"]}", false)
+                            showDialog(
+                                "Nemam raspored kontrole! Kartica ${it["CardCode"]}",
+                                false
+                            )
                         }
                     } catch (e: java.lang.Exception) {
                         Timber.d(
@@ -588,57 +597,62 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
-
+//        MyHttpClient.checkDoor(1)
+//        MyHttpClient.checkDoor(2)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
 
         if (free == 2) {
             bundle.putBoolean("noButtonClickNeededRegime", true)
-            when (navHostFragment.navController.currentDestination?.id) {
-                R.id.MainFragment -> {
-                    navController.navigate(
-                        R.id.action_mainFragment_to_CheckoutFragment,
-                        bundle
-                    )
-                }
-                R.id.CheckoutFragment -> {
-                    navController.navigate(
-                        R.id.action_CheckoutFragment_to_MainFragment,
-                        bundle
-                    )
-                }
-                R.id.SettingsFragment -> {
-                    showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
-                    )
+            val err = switchRelays(cardCode.toInt(), true)
+
+            if (!err) {
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        navController.navigate(
+                            R.id.action_mainFragment_to_CheckoutFragment,
+                            bundle
+                        )
+                    }
+                    R.id.CheckoutFragment -> {
+                        navController.navigate(
+                            R.id.action_CheckoutFragment_to_MainFragment,
+                            bundle
+                        )
+                    }
+                    R.id.SettingsFragment -> {
+                        showDialog(
+                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                            false
+                        )
+                    }
                 }
             }
         } else if (free == 3) {
             bundle.putBoolean("noButtonClickNeededRegime", false)
-            when (navHostFragment.navController.currentDestination?.id) {
-
-                //ako se tipke trebaju stisnut
-                R.id.MainFragment -> {
-                    navController.navigate(
-                        R.id.action_mainFragment_to_FirstFragment,
-                        bundle
-                    )
-                }
-
-                R.id.CheckoutFragment -> {
-                    navController.navigate(
-                        R.id.action_CheckoutFragment_to_FirstFragment,
-                        bundle
-                    )
-                }
-
-                R.id.SettingsFragment -> {
-                    showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
-                    )
+            val err = switchRelays(cardCode.toInt(), false)
+            if (!err) {
+                when (navHostFragment.navController.currentDestination?.id) {
+                    //ako se tipke trebaju stisnut
+                    R.id.MainFragment -> {
+                        navController.navigate(
+                            R.id.action_mainFragment_to_FirstFragment,
+                            bundle
+                        )
+                    }
+                    R.id.CheckoutFragment -> {
+                        navController.navigate(
+                            R.id.action_CheckoutFragment_to_FirstFragment,
+                            bundle
+                        )
+                    }
+                    R.id.SettingsFragment -> {
+                        showDialog(
+                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                            false
+                        )
+                    }
                 }
             }
         } else {
@@ -647,6 +661,27 @@ class MainActivity : AppCompatActivity() {
                 false
             )
         }
+    }
+
+    fun switchRelays(cardCode: Int, noButtonClickNeededRegime: Boolean): Boolean {
+        var err = false
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+
+        if (prefs.getInt("IFTTERM2_B0_ID", 0) == 212) {
+            //recepcija Hep sisak
+            //NE RADI NISTA; TEO NE KUPI OCITANJA KAD JE RELEJ UPALJEN PA JE SVE SJEBANO
+//            MyHttpClient.hepReceptionRelayToggle(noButtonClickNeededRegime)
+        } else if (prefs.getInt("IFTTERM2_B0_ID", 0) == 214) {
+            //porta1, vani sisak hep
+            MyHttpClient.hepPort1RelaysToggle(noButtonClickNeededRegime)
+        } else {
+            err = true
+            showDialog(
+                "GREŠKA u id-> ${prefs.getInt("IFTTERM2_B0_ID", 0)} ${cardCode}",
+                false
+            )
+        }
+        return err
     }
 
     override fun onPause() {

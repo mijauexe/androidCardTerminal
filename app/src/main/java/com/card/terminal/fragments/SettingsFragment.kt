@@ -161,15 +161,22 @@ class SettingsFragment : Fragment() {
             val editor = mySharedPreferences.edit()
             editor.putString("larusIP", larusIPEditText.text.toString())
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
-            if (!mySharedPreferences.getString("serverIP", "")!!.contains("http")) {
+            if (!serverIPEditText.text.contains("http")) {
                 editor.putString(
                     "serverIP",
                     "http://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
                 )
+                editor.putString("bareIP", serverIPEditText.text.toString())
             } else {
                 editor.putString("serverIP", serverIPEditText.text.toString())
+                editor.putString(
+                    "bareIP",
+                    serverIPEditText.text.substring(7) + serverIPEditText.text.substring(
+                        serverIPEditText.text.indexOf("/") + 1
+                    )
+                )
+
             }
-            editor.putString("bareIP", serverIPEditText.text.toString())
 
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())

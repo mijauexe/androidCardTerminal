@@ -14,7 +14,6 @@ import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
-import com.google.gson.Gson
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -30,7 +29,6 @@ import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 import java.util.*
 
 object MyHttpClient {
@@ -82,11 +80,6 @@ object MyHttpClient {
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
         (publishEventsTask as PublishEventsTask).startTask()
-
-//        Handler().postDelayed({
-//            stopLarusSocket()
-//        }, 10000)
-
     }
 
     fun stopLarusSocket() {
@@ -100,10 +93,38 @@ object MyHttpClient {
         }
     }
 
-    fun pingy(bundle: Bundle) {
-//        larusFunctions?.setDoorTime(15000, 15000, 1000, 1000)
-        larusFunctions?.openDoor(1)
-        publishNewEvent(bundle)
+    fun openDoor(doorNum: Int) {
+//        larusFunctions?.setDoorTime(3000, 5000, 0, 0)
+        larusFunctions?.openDoor(doorNum)
+    }
+
+    fun checkDoor(doorNum: Int) {
+        larusFunctions?.stateDoor(doorNum)
+    }
+
+
+    fun hepReceptionRelayToggle(noButtonClickNeededRegime: Boolean) {
+        if (noButtonClickNeededRegime) {
+            larusFunctions?.changeRelayMode(1, 1)
+            larusFunctions?.changeRelayMode(1, 0)
+        } else {
+            larusFunctions?.changeRelayMode(1, 0)
+        }
+    }
+
+    fun hepPort1RelaysToggle(noButtonClickNeededRegime: Boolean) {
+        if (noButtonClickNeededRegime) {
+//            larusFunctions?.changeRelayMode(1, 1)
+            larusFunctions?.changeRelayMode(2, 1) //1 je hold
+        } else {
+//            larusFunctions?.changeRelayMode(1, 0)
+            larusFunctions?.changeRelayMode(2, 0) //0 je pulse
+        }
+    }
+
+    fun relayMode(doorNum: Int, pulseOrHold: Int) {
+        //0 - vrata su normalnom modu rada  - prolaz s karticama, 1 - vrata nisu kontrolirana
+        larusFunctions?.changeRelayMode(doorNum, pulseOrHold)
     }
 
     suspend fun getSocketResponse(
