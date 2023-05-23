@@ -1,6 +1,6 @@
 package com.card.terminal.fragments
 
-import android.graphics.BitmapFactory
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -9,20 +9,11 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.net.HttpURLConnection
-import java.net.NoRouteToHostException
-import java.net.URL
-import java.net.UnknownHostException
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -46,6 +37,7 @@ class CheckoutFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
@@ -74,73 +66,25 @@ class CheckoutFragment : Fragment() {
         MyHttpClient.publishNewEvent(existingBundle)
         val delay = 10000L
 
-        try {
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
-                if (existingBundle.containsKey("imagePath")) {
-                    try {
-                        val url = URL(
-                            ("http://" + prefs.getString(
-                                "bareIP",
-                                "?"
-                            ) + existingBundle.get("imagePath"))
-                        )
-                        val connection = withContext(Dispatchers.IO) {
-                            url.openConnection()
-                        } as HttpURLConnection
-                        connection.doInput = true
-                        withContext(Dispatchers.IO) {
-                            connection.connect()
-                        }
-                        val input = connection.inputStream
-                        val bitmap = BitmapFactory.decodeStream(input)
-                        withContext(Dispatchers.Main) {
-                            binding.photo.setImageBitmap(bitmap)
-                            existingBundle.putParcelable("imageB64", bitmap)
-                        }
-                        connection.disconnect()
-                    } catch (e: java.lang.Exception) {
-                        Timber.d(
-                            "Msg: Exception %s | %s | %s",
-                            e.cause,
-                            e.stackTraceToString(),
-                            e.message
-                        )
-                    }
-                }
-            }
-        } catch (e: NoRouteToHostException) {
-            Timber.d(
-                "Msg: No route to host exception while getting photo: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        } catch (e: UnknownHostException) {
-            Timber.d(
-                "Msg: Unknown host exception while getting photo: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
+        binding.reasonValue.text =
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+                .getString("reasonValue", "?")
 
-        if (existingBundle.getBoolean("noButtonClickNeededRegime")) {
-            binding.reasonValue.text = "Slobodan prolaz"
-        } else {
-            binding.reasonValue.text =
-                ContextProvider.getApplicationContext()
-                    .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-                    .getString("selection", "?")
-        }
-
-        if (existingBundle.containsKey("imageB64")) {
-            binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
-        }
 
         if (prefs.contains("IFTTERM2_DESCR")) {
-            binding.readoutValue.text =
-                binding.readoutValue.text.toString() + ": " + prefs.getString("IFTTERM2_DESCR", "")
+            var v = "" //TODO
+            if (existingBundle.getInt("eCode") == 2) {
+                v = "Izlaz"
+            } else {
+                v = "Ulaz"
+            }
+
+            if (prefs.getString("IFTTERM2_DESCR", "") == "") {
+                binding.readoutValue.text = v
+            } else {
+                binding.readoutValue.text = v + ": " + prefs.getString("IFTTERM2_DESCR", "")
+            }
         }
 
         super.onViewCreated(view, savedInstanceState)

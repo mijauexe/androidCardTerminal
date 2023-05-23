@@ -10,11 +10,10 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
-import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Locale
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -34,13 +33,17 @@ class MainFragment : Fragment() {
                 LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
                     .format(DateTimeFormatter.ofPattern("HH:mm"))
         }
-        act.cardScannerActive = false
+        act.cardScannerActive = true
         return _binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("MainFragment onViewCreated")
+
+        _binding?.pleaseScanCardText?.text = "Molimo očitajte karticu."
+        _binding?.pleaseScanIcon?.visibility = View.VISIBLE
+        _binding?.progressBar?.visibility = View.GONE
 
         if (_binding != null) {
             var trackerSettingsIcon = IntArray(3)
@@ -52,7 +55,7 @@ class MainFragment : Fragment() {
                 _binding?.settingsButton?.visibility = View.GONE
             }
 
-            _binding?.ervHepLogo?.setOnClickListener {
+            _binding?.mainLogo2?.setOnClickListener {
                 trackerSettingsIcon[0]++
             }
 

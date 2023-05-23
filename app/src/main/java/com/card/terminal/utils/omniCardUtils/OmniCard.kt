@@ -13,6 +13,8 @@ import android.smartcardio.ipc.CardService
 import android.smartcardio.ipc.ICardService
 import androidx.lifecycle.MutableLiveData
 import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
 
 object OmniCard {
     private const val SERVICE_ERROR = "cardService is null"
@@ -28,6 +30,38 @@ object OmniCard {
     private var mutableCode = MutableLiveData<Map<String, String>>()
     private var mContext: Application? = null
     private var isRegisterUsbEventsReceiver: Boolean = false
+
+
+    class Task() :
+        TimerTask() {
+        private var timer: Timer? = null
+        val delay = 0L
+        val period = 2000L
+        var started = false
+
+        override fun run() {
+            started = true
+            getCardStatus(false)
+        }
+
+        fun startTask() {
+            timer = Timer()
+            timer?.scheduleAtFixedRate(
+                this,
+                delay,
+                period
+            )
+            started = true
+            Timber.d("Msg: GetCardStatusTask started")
+        }
+
+        fun stopTask() {
+            started = false
+            timer?.cancel()
+            Timber.d("Msg: GetCardStatusTask stopped")
+        }
+    }
+
 
     fun bindCardBackend(context: Activity, code: MutableLiveData<Map<String, String>>, isInit: Boolean) {
         mutableCode = code

@@ -8,70 +8,72 @@
     tools:context=".fragments.CheckoutFragment">
 
 
+    <GridLayout
+        android:id="@+id/glMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/glDown"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <GridLayout
+        <ImageView
+            android:id="@+id/checkout_logo1"
+            android:layout_width="300dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/erv_hzjz_gray" />
+
+        <TextView
+            android:id="@+id/first_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:columnCount="1"
-            android:id="@+id/glMain"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:useDefaultMargins="true"
-            app:layout_constraintBottom_toTopOf="@+id/glDown"
-            app:layout_constraintEnd_toStartOf="@id/glRight"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Đuro"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
 
-            <ImageView
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="15dp"
-                android:src="@drawable/erv_hep" />
+        <TextView
+            android:id="@+id/last_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Đurić"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
 
-            <TextView
-                android:id="@+id/first_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:text="Đuro"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+        <TextView
+            android:id="@+id/company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Firma"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/last_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Đurić"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+<!--        <ImageView-->
+<!--            android:id="@+id/photo"-->
+<!--            android:layout_width="280dp"-->
+<!--            android:layout_height="280dp"-->
+<!--            android:layout_gravity="center_horizontal"-->
+<!--            android:src="@drawable/ic_unknown_person" />-->
 
-            <TextView
-                android:id="@+id/company_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Firma"
-                android:visibility="gone"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+        <ImageView
+            android:id="@+id/checkout_logo2"
+            android:layout_width="250dp"
+            android:layout_marginTop="100dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/hzjz" />
 
-            <ImageView
-                android:id="@+id/photo"
-                android:layout_width="280dp"
-                android:layout_height="280dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_unknown_person" />
-
-            <ImageView
-                android:layout_width="250dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/hep_proizvodnja" />
-
-        </GridLayout>
+    </GridLayout>
 
     <GridLayout
         android:id="@+id/glDown"
@@ -89,39 +91,38 @@
         android:id="@+id/glRight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="25dp"
         app:cardBackgroundColor="#FAA61A"
+        app:cardCornerRadius="25dp"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/glMain"
-        app:layout_constraintTop_toTopOf="parent"
-        >
+        app:layout_constraintTop_toTopOf="parent">
+
         <GridLayout
             android:layout_width="850dp"
             android:layout_height="600dp"
             android:layout_below="@+id/glMain"
+            android:layout_marginBottom="30dp"
             android:layout_toStartOf="@+id/glMain"
             android:columnCount="1"
-            android:layout_marginBottom="30dp"
-            android:useDefaultMargins="true"
-            >
+            android:useDefaultMargins="true">
 
             <TextView
                 android:id="@+id/confirmation_text"
-                android:textColor="@color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Potvrda"
+                android:textColor="@color/black"
                 android:textSize="55dp" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/bottom"
-                android:columnCount="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:columnCount="1"
                 android:orientation="horizontal"
 
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -138,14 +139,14 @@
 
                     <TextView
                         android:id="@+id/readout_key"
-                        android:textColor="@color/black"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
-                        android:text="Očitanje:"
-                        android:layout_marginTop="-10dp"
                         android:layout_marginStart="20dp"
+                        android:layout_marginTop="-10dp"
+                        android:text="Očitanje:"
                         android:textAllCaps="false"
+                        android:textColor="@color/black"
                         android:textSize="35dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -153,16 +154,16 @@
 
                     <TextView
                         android:id="@+id/readout_value"
-                        android:textColor="@color/black"
                         android:layout_width="350dp"
-                        android:layout_marginStart="30dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
+                        android:layout_marginStart="30dp"
+                        android:layout_marginBottom="10dp"
                         android:inputType="textMultiLine"
                         android:justificationMode="inter_word"
                         android:text="Izlaz"
-                        android:layout_marginBottom="10dp"
                         android:textAllCaps="false"
+                        android:textColor="@color/black"
                         android:textSize="35dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -182,22 +183,22 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
-                        android:text="@string/tv_date"
                         android:layout_marginStart="30dp"
+                        android:text="@string/tv_date"
                         android:textColor="@color/black"
                         android:textSize="45sp" />
 
                     <TextView
                         android:id="@+id/reason_key"
-                        android:textColor="@color/black"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="40dp"
                         android:text="Razlog izlaza:"
                         android:textAllCaps="false"
+                        android:textColor="@color/black"
                         android:textSize="35dp"
-                        android:layout_marginTop="40dp"
-                        android:layout_marginStart="20dp"
 
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -205,16 +206,16 @@
 
                     <TextView
                         android:id="@+id/reason_value"
-                        android:textColor="@color/black"
                         android:layout_width="530dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_marginStart="30dp"
-                        android:inputType="textMultiLine"
                         android:layout_marginTop="50dp"
+                        android:inputType="textMultiLine"
                         android:justificationMode="inter_word"
                         android:text=""
                         android:textAllCaps="false"
+                        android:textColor="@color/black"
                         android:textSize="45dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -252,12 +253,6 @@
                 </GridLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-
-
-
 
 
         </GridLayout>

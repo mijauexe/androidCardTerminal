@@ -7,6 +7,7 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
 import android.provider.Settings
@@ -18,6 +19,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -31,8 +33,10 @@ import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
+import com.card.terminal.db.entity.Event
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
+import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.omniCardUtils.OmniCard
@@ -61,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var db: AppDatabase
+    private val usbReceiver: USBReceiver? = null
 
     private var workBtnClicked = false
     private var privateBtnClicked = false
@@ -84,9 +89,17 @@ class MainActivity : AppCompatActivity() {
         const val LOCK_ACTIVITY_KEY = "com.card.terminal.MainActivity"
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
+
+        val filter = IntentFilter()
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        registerReceiver(usbReceiver, filter)
+
         mAdminComponentName = AdminReceiver.getComponentName(this)
         mDevicePolicyManager =
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -198,49 +211,26 @@ class MainActivity : AppCompatActivity() {
         mutableDateTime.postValue(LocalDateTime.now())
         ShowDateTime.setDateAndTime(mutableDateTime)
 
-//        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
-//            if (ContextCompat.checkSelfPermission(
-//                    this,
-//                    PERMISSION_TO_BIND_BACKEND_SERVICE
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                OmniCard.bindCardBackend(this, mutableCardCode, false)
-//            } else {
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
-//                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
-//                )
-//            }
-//        } else {
-//            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-//        }
+        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    PERMISSION_TO_BIND_BACKEND_SERVICE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                OmniCard.bindCardBackend(this, mutableCardCode, false)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
+                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
+                )
+            }
+        } else {
+            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
+        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
         setObservers()
-    }
-
-    private fun resetButtons() {
-//        findViewById<Button>(R.id.ib_work).setBackgroundColor(Color.TRANSPARENT)
-//        findViewById<Button>(R.id.ib_private).setBackgroundColor(Color.TRANSPARENT)
-//        findViewById<Button>(R.id.ib_coffee).setBackgroundColor(Color.TRANSPARENT)
-        //TODO EXTRAbtn i doktor za INA?
-        workBtnClicked = false
-        privateBtnClicked = false
-        coffeeBtnClicked = false
-        doctorBtnBlicked = false
-    }
-
-    private fun cardText(text: String, access: Boolean) {
-        Handler(Looper.getMainLooper()).post {
-            resetButtons()
-            val dialog = this.let { CustomDialog(it, "Card number: $text", access) }
-            dialog.setOnShowListener {
-                Thread.sleep(3000) //TODO OVO JE JAKO LOSE
-                it.dismiss()
-            }
-            dialog.show()
-        }
     }
 
     fun showSpinningCircle(seconds: Long) {
@@ -281,10 +271,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setObservers() {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
         mutableLarusCode.observe(this) {
-//            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-            val navHostFragment =
-                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
             if (it["CardCode"] == "CONNECTION_RESTORED") {
 
                 when (navHostFragment.navController.currentDestination?.id) {
@@ -329,53 +319,53 @@ class MainActivity : AppCompatActivity() {
                 return@observe
             }
 
-            playSound()
+            if (it["CURRENTLY_SCANNING"].equals("TRUE")) {
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+                        scanCardText.text = "Molimo držite karticu na čitaču."
+                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                        ddd.visibility = View.GONE
+                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+                        dddd.visibility = View.VISIBLE
+                    }
+                }
+            }
 
-            Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
-//            var accessGranted = false
-//            if ((workBtnClicked or privateBtnClicked or coffeeBtnClicked) /*and (enterBtnClicked or exitBtnClicked)?????*/) {
-//                if (it["ErrorCode"].equals("1")) {
-//                    thread {
-//                        cardText(
-//                            it["CardResponse"].toString(),
-//                            accessGranted
-//                        ) //TODO INA TREBA FIXAT OVO
-//                    }
-//                } else if (it["CardNumber"] != null) {
-//                    thread {
-//                        val allowedAccessDao = db.CardDao()
-//
-//                        val dataList = allowedAccessDao.getAll()
-//
-//                        if (dataList != null) {
-//                            for (r in dataList) {
-//                                if (r.cardNumber.equals(it["CardNumber"])) {
-//                                    accessGranted = true
-//                                }
-//                            }
-//                        }
-//
-//                        cardText(it["CardNumber"].toString(), accessGranted)
-//                        //resetButtons() //!!!!!
-////                        TODO rijesi to kad ce trebat
-////                        if (MyHttpClient.isClientReady() and accessGranted) {
-////                            if (exitBtnClicked) {
-////                                MyHttpClient.postData(mapOf("status" to "exit"))
-////                            } else {
-////                                MyHttpClient.postData(mapOf("status" to "enter"))
-////                            }
-////                        }
-//                    }
-//                }
-//            } else {
-//                val alertDialog: AlertDialog = AlertDialog.Builder(this@MainActivity).create()
-//                alertDialog.setTitle("Napomena")
-//                alertDialog.setMessage("Odaberite razlog otvaranja vrata te ulaz ili izlaz")
-//                alertDialog.setButton(
-//                    AlertDialog.BUTTON_NEUTRAL, "OK",
-//                    { dialog, which -> dialog.dismiss() })
-//                alertDialog.show()
-//            }
+            if (it["CURRENTLY_SCANNING"].equals("FALSE")) {
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+                        scanCardText.text = "Molimo očitajte karticu."
+                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                        ddd.visibility = View.VISIBLE
+                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+                        dddd.visibility = View.GONE
+                    }
+                }
+            }
+
+            if (it["CardCode"] != null) {
+
+                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        playSound()
+                        handleCardScan(it)
+                    }
+
+                    R.id.CheckoutFragment -> {
+                        handleCardScan(it)
+                    }
+
+                    R.id.SettingsFragment -> {
+                        showDialog(
+                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+                            false
+                        )
+                    }
+                }
+            }
         }
 
         mutableDateTime.observe(this) {
@@ -391,7 +381,6 @@ class MainActivity : AppCompatActivity() {
                                 )
                             )
                 }
-
                 val clockText = findViewById<TextView>(R.id.tv_clock)
                 if (clockText != null) {
                     clockText.text =
@@ -470,21 +459,27 @@ class MainActivity : AppCompatActivity() {
                         currentDayNum == 1 -> {
                             currentDayString = "MONDAY"
                         }
+
                         currentDayNum == 2 -> {
                             currentDayString = "TUESDAY"
                         }
+
                         currentDayNum == 3 -> {
                             currentDayString = "WEDNESDAY"
                         }
+
                         currentDayNum == 4 -> {
                             currentDayString = "THURSDAY"
                         }
+
                         currentDayNum == 5 -> {
                             currentDayString = "FRIDAY"
                         }
+
                         currentDayNum == 6 -> {
                             currentDayString = "SATURDAY"
                         }
+
                         currentDayNum == 7 -> {
                             currentDayString = "SUNDAY"
                         }
@@ -587,7 +582,6 @@ class MainActivity : AppCompatActivity() {
                     e.message
                 )
                 showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
-//                passageControl(2, it["CardCode"]!!, bundle)
             }
         }
     }
@@ -597,8 +591,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
-//        MyHttpClient.checkDoor(1)
-//        MyHttpClient.checkDoor(2)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
@@ -615,12 +607,14 @@ class MainActivity : AppCompatActivity() {
                             bundle
                         )
                     }
+
                     R.id.CheckoutFragment -> {
                         navController.navigate(
                             R.id.action_CheckoutFragment_to_MainFragment,
                             bundle
                         )
                     }
+
                     R.id.SettingsFragment -> {
                         showDialog(
                             "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
@@ -641,12 +635,14 @@ class MainActivity : AppCompatActivity() {
                             bundle
                         )
                     }
+
                     R.id.CheckoutFragment -> {
                         navController.navigate(
                             R.id.action_CheckoutFragment_to_FirstFragment,
                             bundle
                         )
                     }
+
                     R.id.SettingsFragment -> {
                         showDialog(
                             "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
@@ -685,16 +681,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        Timber.d("MainActivity onPause")
         MyHttpClient.stop()
         cardService?.releaseService()
         super.onPause()
     }
 
     public override fun onStop() {
+        Timber.d("MainActivity onStop")
         MyHttpClient.stop()
         OmniCard.release()
         stopTimber()
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        Timber.d("MainActivity onDestroy")
+        MyHttpClient.server.stop(0, 0)
+        super.onDestroy()
+        unregisterReceiver(usbReceiver);
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -734,11 +739,6 @@ class MainActivity : AppCompatActivity() {
         setAsHomeApp(enable)
         setLockTask(enable, isAdmin)
         setImmersiveMode(enable)
-    }
-
-    override fun onDestroy() {
-        MyHttpClient.server.stop(0, 0)
-        super.onDestroy()
     }
 
     private fun setRestrictions(disallow: Boolean) {

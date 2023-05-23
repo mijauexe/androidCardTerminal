@@ -2,7 +2,6 @@ package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -22,16 +21,9 @@ import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.net.HttpURLConnection
-import java.net.NoRouteToHostException
-import java.net.URL
-import java.net.UnknownHostException
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -39,6 +31,12 @@ class FirstFragment : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
+
+    private var button1Pressed = false
+    private var button2Pressed = false
+    private var button3Pressed = false
+    private var buttonExitPressed = false
+    private var buttonEnterPressed = false
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(
@@ -64,6 +62,7 @@ class FirstFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("FirstFragment onViewCreated")
@@ -72,81 +71,65 @@ class FirstFragment : Fragment() {
 
         val existingBundle = requireArguments()
 
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+        binding.tvDateClock.text =
+            LocalDateTime.parse(LocalDateTime.now().toString(), DateTimeFormatter.ISO_DATE_TIME)
+                .format(
+                    DateTimeFormatter.ofPattern(
+                        "d.M.yyyy.",
+                        Locale("hr")
+                    )
+                ) + " " + LocalTime.parse(
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+            )
 
-        if (existingBundle.containsKey("imagePath")) {
-
-            try {
-                val scope = CoroutineScope(Dispatchers.IO)
-                scope.launch {
-                    if (existingBundle.containsKey("imagePath")) {
-                        try {
-                            val url = URL(
-                                ("http://" + prefs.getString(
-                                    "bareIP",
-                                    "?"
-                                ) + existingBundle.get("imagePath"))
-                            )
-                            val connection = withContext(Dispatchers.IO) {
-                                url.openConnection()
-                            } as HttpURLConnection
-                            connection.doInput = true
-                            withContext(Dispatchers.IO) {
-                                connection.connect()
-                            }
-                            val input = connection.inputStream
-                            val bitmap = BitmapFactory.decodeStream(input)
-                            withContext(Dispatchers.Main) {
-                                binding.photo.setImageBitmap(bitmap)
-                                existingBundle.putParcelable("imageB64", bitmap)
-                            }
-                            connection.disconnect()
-                        } catch (e: java.lang.Exception) {
-                            Timber.d(
-                                "Msg: Exception %s | %s | %s",
-                                e.cause,
-                                e.stackTraceToString(),
-                                e.message
-                            )
-                        }
-                    }
-                }
-            } catch (e: NoRouteToHostException) {
-                Timber.d(
-                    "Msg: No route to host while getting photo: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            } catch (e: UnknownHostException) {
-                Timber.d(
-                    "Msg: Unknown host while getting photo: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
-
+        binding.cardNumber.text =
+            binding.cardNumber.text.toString() + " " + existingBundle.getString("CardCode")
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
-        if (arguments?.containsKey("companyName") == true) {
-            binding.companyName.visibility = View.VISIBLE
-            binding.companyName.text = arguments?.getString("companyName")
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+        val editor = prefs.edit()
+
+
+        binding.button1.setOnClickListener {
+            button1Pressed = true
+            existingBundle.putInt("eCode2", 123) //TODO
+            editor.putInt("eCode2", 123)
+            editor.commit()
+            handleButtonClick(existingBundle)
         }
 
-        val ct = existingBundle.getString("classType")
+        binding.button2.setOnClickListener {
+            button2Pressed = true
+            existingBundle.putInt("eCode2", 456) //TODO
+            editor.putInt("eCode2", 456)
+            editor.commit()
+            handleButtonClick(existingBundle)
+        }
 
-        if (ct.equals("WORKER")) {
-            ubijMe("WORKER", prefs, binding.buttonsGrid, existingBundle)
-        } else if (ct.equals("CONTRACTOR")) {
-            ubijMe("CONTRACTOR", prefs, binding.buttonsGrid, existingBundle)
-        } else if (ct.equals("GUEST")) {
-            ubijMe("GUEST", prefs, binding.buttonsGrid, existingBundle)
-        } else if (ct.equals("VEHICLE")) {
-            ubijMe("VEHICLE", prefs, binding.buttonsGrid, existingBundle)
+        binding.button3.setOnClickListener {
+            button3Pressed = true
+            existingBundle.putInt("eCode2", 789) //TODO
+            editor.putInt("eCode2", 789)
+            editor.commit()
+            handleButtonClick(existingBundle)
+        }
+
+        binding.buttonEnter.setOnClickListener {
+            buttonEnterPressed = true
+            existingBundle.putInt("eCode", 1) //TODO
+            editor.putInt("eCode", 1)
+            editor.commit()
+            handleButtonClick(existingBundle)
+        }
+
+        binding.buttonExit.setOnClickListener {
+            buttonExitPressed
+            existingBundle.putInt("eCode", 2) //TODO
+            editor.putInt("eCode", 2)
+            editor.commit()
+            handleButtonClick(existingBundle)
         }
 
         Handler().postDelayed({
@@ -162,6 +145,53 @@ class FirstFragment : Fragment() {
         }, delay)
     }
 
+    fun handleButtonClick(existingBundle: Bundle) {
+        if (buttonEnterPressed) {
+            buttonExitPressed = false
+            binding.buttonExit.setBackgroundColor(Color.TRANSPARENT)
+            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("readoutValue", "Ulaz")
+        }
+
+        if (buttonExitPressed) {
+            buttonEnterPressed = false
+            binding.buttonEnter.setBackgroundColor(Color.TRANSPARENT)
+            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("readoutValue", "Izlaz")
+        }
+
+        if (button1Pressed) {
+            button2Pressed = false
+            binding.button2.setBackgroundColor(Color.TRANSPARENT)
+            button3Pressed = false
+            binding.button3.setBackgroundColor(Color.TRANSPARENT)
+            binding.button1.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("reasonValue", "Poslovno")
+        }
+
+        if (button2Pressed) {
+            button3Pressed = false
+            binding.button3.setBackgroundColor(Color.TRANSPARENT)
+            button1Pressed = false
+            binding.button1.setBackgroundColor(Color.TRANSPARENT)
+            binding.button2.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("reasonValue", "Privatno")
+        }
+
+        if (button3Pressed) {
+            button2Pressed = false
+            binding.button2.setBackgroundColor(Color.TRANSPARENT)
+            button1Pressed = false
+            binding.button1.setBackgroundColor(Color.TRANSPARENT)
+            binding.button3.setBackgroundResource(R.drawable.card_button_background)
+            existingBundle.putString("reasonValue", "Pauza")
+        }
+
+        if ((button1Pressed || button2Pressed || button3Pressed) && (buttonEnterPressed || buttonExitPressed)) {
+            goToCheckoutWithBundle(existingBundle)
+        }
+    }
+
     fun goToCheckoutWithBundle(bundle: Bundle) {
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {
@@ -173,51 +203,6 @@ class FirstFragment : Fragment() {
                 }
             }
         }, 500)
-    }
-
-    fun ubijMe(
-        str: String,
-        prefs: SharedPreferences,
-        layout: GridLayout,
-        bundle: Bundle
-    ) {
-
-        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-        val btnList = db.ButtonDao().getAllByClassType(str)
-
-        if (btnList != null) {
-            for (i in btnList.indices) {
-                val btn = layout[i] as Button
-                bundle.putInt(btnList[i].title, btnList[i].eCode2)
-                btn.setText("   " + btnList[i].title)
-                btn.visibility = View.VISIBLE
-
-                val drawable = TextDrawable.builder()
-                    .beginConfig()
-                    .width(70).height(70)
-                    .withBorder(2)
-                    .textColor(Color.BLACK)
-                    .endConfig()
-                    .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
-
-                btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
-                btn.setOnClickListener {
-                    val editor = prefs.edit()
-                    editor.putString("selection", btnList[i].title)
-
-                    if (bundle.getBoolean("noButtonClickNeededRegime")) {
-                        editor.putInt("eCode2", 0)
-                    } else {
-                        editor.putInt("eCode2", btnList[i].eCode2)
-                    }
-
-                    editor.commit()
-                    btn.setBackgroundResource(R.drawable.card_button_background)
-                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
-                    goToCheckoutWithBundle(bundle)
-                }
-            }
-        }
     }
 
     override fun onDestroyView() {

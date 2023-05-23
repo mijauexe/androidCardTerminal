@@ -14,22 +14,35 @@ import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.utils.io.*
-import kotlinx.coroutines.*
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.post
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.TimerTask
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -78,8 +91,8 @@ object MyHttpClient {
 
         startNettyServer()
 
-        (larusCheckScansTask as LarusCheckScansTask).startTask()
-        (publishEventsTask as PublishEventsTask).startTask()
+//        (larusCheckScansTask as LarusCheckScansTask).startTask()
+//        (publishEventsTask as PublishEventsTask).startTask()
     }
 
     fun stopLarusSocket() {
@@ -94,7 +107,6 @@ object MyHttpClient {
     }
 
     fun openDoor(doorNum: Int) {
-//        larusFunctions?.setDoorTime(3000, 5000, 0, 0)
         larusFunctions?.openDoor(doorNum)
     }
 
@@ -303,10 +315,7 @@ object MyHttpClient {
                         }
                 if (response != null) {
                     println(response.bodyAsText())
-                    if (response.bodyAsText().contains("\"CODE\":\"0\"")
-                        && response.bodyAsText()
-                            .contains("\"NUM_CREAD\":\"1\"")
-                    )
+                    if (response.bodyAsText().contains("\"CODE\":\"0\""))
                         eventToDatabase(cardResponse, true)
                     Timber.d(
                         "Msg: user %s scanned, response sent to server: %b",
@@ -331,7 +340,6 @@ object MyHttpClient {
     fun publishUnpublishedEvents() {
         val scopeSven = CoroutineScope(Dispatchers.IO)
         scopeSven.launch {
-
             val mySharedPreferences = withContext(Dispatchers.Main) {
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
@@ -394,7 +402,6 @@ object MyHttpClient {
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             }
 
-
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
             if (published) {
                 val e = db.EventDao()
@@ -415,8 +422,8 @@ object MyHttpClient {
                 }
             } else {
                 val event = Event(
-                    eventCode = 2, //TODO
-                    eventCode2 = mySharedPreferences.getInt("eCode2", 696969),
+                    eventCode = cardResponse.getInt("eCode"), //TODO
+                    eventCode2 = cardResponse.getInt("eCode2", 6968),
                     cardNumber = cardResponse.get("CardCode").toString().toInt(),
                     dateTime = cardResponse.get("DateTime").toString(),
                     published = published,
@@ -425,11 +432,7 @@ object MyHttpClient {
                 )
                 db.EventDao().insert(event)
             }
-
-
         }
-
-
     }
 
     fun updateEvents(list: List<Event>) {

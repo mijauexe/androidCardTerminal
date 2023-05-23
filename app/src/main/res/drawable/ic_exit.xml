@@ -1,5 +1,5 @@
-<vector android:alpha="0.89" android:height="@dimen/card_button"
+<vector android:alpha="0.89" android:height="@dimen/card_button_smaller"
     android:viewportHeight="48" android:viewportWidth="48"
-    android:width="@dimen/card_button" xmlns:android="http://schemas.android.com/apk/res/android">
+    android:width="@dimen/card_button_smaller" xmlns:android="http://schemas.android.com/apk/res/android">
     <path android:fillColor="#ff2424" android:pathData="M11.15,42Q10,42 9.2,41.2t-0.8,-1.95v-28.5q0,-1.15 0.8,-1.95t1.95,-0.8h13.1v1.55h-13.1q-0.45,0 -0.85,0.375 -0.4,0.375 -0.4,0.825v28.5q0,0.45 0.4,0.825 0.4,0.375 0.85,0.375h13.1L24.25,42ZM33.15,31.5L32,30.4l4.65,-4.65h-17.8v-1.5L36.6,24.25l-4.65,-4.65 1.15,-1.1 6.5,6.55Z"/>
 </vector>

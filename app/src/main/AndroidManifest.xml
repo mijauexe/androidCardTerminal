@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-feature android:name="android.hardware.usb.host" />
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
 
     <uses-permission android:name="com.hidglobal.ia.omnikey.service.permission.SMARTCARDIO" />
 
@@ -78,13 +80,24 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".BootReceiver"
+        <receiver android:name=".receivers.BootReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
             android:exported="true">
             <intent-filter >
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".receivers.USBReceiver"
+            android:permission="android.permission.USB_PERMISSION"
+            android:exported="true">
+            <intent-filter >
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"/>
+            </intent-filter>
+        </receiver>
+
+
     </application>
 
 </manifest>

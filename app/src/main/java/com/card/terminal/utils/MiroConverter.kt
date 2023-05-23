@@ -598,9 +598,24 @@ class MiroConverter {
         try {
             val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
             db.CardDao().insertAll(cardList)
+
+            for (card in cardList) {
+                try {
+                    db.CardDao().deleteByCardNumber(card.cardNumber)
+                } catch (e: java.lang.Exception) {
+
+                }
+                db.CardDao().insert(card)
+            }
+
             counter += cardList.size
         } catch (e: Exception) {
-            Timber.d("Exception while putting cards in db: %s | %s", e.message, e.cause)
+            Timber.d(
+                "Exception while putting cards in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
         }
         if ((cardList.size == 0 && objectic.CARDS.size != 0) || (acList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
             return iftTermResponse(
@@ -658,7 +673,7 @@ class MiroConverter {
     }
 
     fun pushEventFormat(cardResponse: Bundle): String {
-        val eCode = 2 //TODO POSLIJE KAD BUDE ULAZ I IZLAZ
+        val eCode = cardResponse.getInt("eCode")
 
         //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
 //        val deviceList = mutableListOf<Device>()
@@ -674,8 +689,6 @@ class MiroConverter {
 //            )
 //        }
 
-        val title = cardResponse.getString("title")
-        println(title)
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
@@ -684,8 +697,6 @@ class MiroConverter {
         if (cardResponse.getBoolean("NoOptionPressed")) {
             eCode2 = 0
         }
-
-        print("ecode2 je " + prefs.getInt("eCode2", 696969))
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
             cardResponse.get(
