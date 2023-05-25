@@ -153,7 +153,7 @@ class MiroConverter {
         val scope = CoroutineScope(Dispatchers.IO)
         Timber.d("Got server request: $operation")
         if (operation.contains("ADD_INIT1")) {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.CardDao().deleteAll()
             db.AccessLevelDao().deleteAll()
             db.PersonDao().deleteAll()
@@ -223,8 +223,7 @@ class MiroConverter {
         val personList = mutableListOf<Person>()
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             for (person in objectic.PHOTOS) {
                 try {
                     val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
@@ -275,7 +274,7 @@ class MiroConverter {
         var counter = 0
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.OperationModeDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -287,7 +286,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.OperationScheduleDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -299,7 +298,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.DeviceDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -351,7 +350,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.OperationModeDao().insertAll(operationModeList)
             counter += operationModeList.size
         } catch (e: Exception) {
@@ -364,7 +363,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.OperationScheduleDao().insertAll(operationScheduleList)
             counter += operationScheduleList.size
         } catch (e: Exception) {
@@ -377,7 +376,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.DeviceDao().insert(
                 Device(
                     uid = objectic.DEVS[0].B0_ID.toInt(),
@@ -427,7 +426,7 @@ class MiroConverter {
             )
         }
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.ButtonDao().deleteAll()
             db.ButtonDao().insertAll(mut)
             counter += mut.size
@@ -449,8 +448,7 @@ class MiroConverter {
 
         val scope1 = CoroutineScope(Dispatchers.IO)
         val responseDeferred1 = scope1.async {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             for (card in objectic.CARDS) {
                 try {
                     db.CardDao().deleteByCardNumber(card.toInt())
@@ -471,7 +469,7 @@ class MiroConverter {
         val scope2 = CoroutineScope(Dispatchers.IO)
         val responseDeferred2 = scope2.async {
             try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
                 for (ac in objectic.ACC_LEVELS_DISTR) {
                     db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
                 }
@@ -493,7 +491,7 @@ class MiroConverter {
         val scope3 = CoroutineScope(Dispatchers.IO)
         val responseDeferred3 = scope3.async {
             try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
                 for (person in objectic.HOLDERS) {
                     db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
                         ?.let { personList.add(it) }
@@ -543,7 +541,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.PersonDao().insertAll(personList)
             counter += personList.size
         } catch (e: Exception) {
@@ -567,7 +565,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.AccessLevelDao().insertAll(acList)
             counter += acList.size
         } catch (e: Exception) {
@@ -596,7 +594,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.CardDao().insertAll(cardList)
             counter += cardList.size
         } catch (e: Exception) {
@@ -630,7 +628,7 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.CalendarDao().insertAll(calendarList)
             counter += calendarList.size
         } catch (e: Exception) {
@@ -702,7 +700,7 @@ class MiroConverter {
         val scope = CoroutineScope(Dispatchers.IO)
         //TODO ECODE
         val responseDeferred = scope.async {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
             var dev_b0_id = 0
             try {

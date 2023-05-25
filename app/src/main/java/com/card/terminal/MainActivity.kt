@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         Timber.d("Msg: setDefaultUncaughtExceptionHandler")
 
 
-        db = AppDatabase.getInstance((this))
+        db = AppDatabase.getInstance(this, Thread.currentThread().stackTrace)
 
 //        val scope3 = CoroutineScope(Dispatchers.IO)
 //        scope3.launch {

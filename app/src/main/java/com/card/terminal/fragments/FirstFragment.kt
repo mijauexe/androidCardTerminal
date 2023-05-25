@@ -182,7 +182,7 @@ class FirstFragment : Fragment() {
         bundle: Bundle
     ) {
 
-        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
         val btnList = db.ButtonDao().getAllByClassType(str)
 
         if (btnList != null) {
