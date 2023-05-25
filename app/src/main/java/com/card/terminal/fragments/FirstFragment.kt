@@ -1,24 +1,18 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.GridLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.amulyakhare.textdrawable.TextDrawable
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
-import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
@@ -87,56 +81,51 @@ class FirstFragment : Fragment() {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-        val editor = prefs.edit()
-
-
         binding.button1.setOnClickListener {
-            button1Pressed = true
+            binding.button1.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode2", 123) //TODO
-            editor.putInt("eCode2", 123)
-            editor.commit()
-            handleButtonClick(existingBundle)
+            existingBundle.putString("reasonValue", "Poslovno")
+            existingBundle.putString("readoutValue", "Izlaz")
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.button2.setOnClickListener {
-            button2Pressed = true
+            binding.button2.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode2", 456) //TODO
-            editor.putInt("eCode2", 456)
-            editor.commit()
-            handleButtonClick(existingBundle)
+            existingBundle.putString("reasonValue", "Privatno")
+            existingBundle.putString("readoutValue", "Izlaz")
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.button3.setOnClickListener {
-            button3Pressed = true
+            binding.button3.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode2", 789) //TODO
-            editor.putInt("eCode2", 789)
-            editor.commit()
-            handleButtonClick(existingBundle)
+            existingBundle.putString("reasonValue", "Pauza")
+            existingBundle.putString("readoutValue", "Izlaz")
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.buttonEnter.setOnClickListener {
-            buttonEnterPressed = true
+            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode", 1) //TODO
-            editor.putInt("eCode", 1)
-            editor.commit()
-            handleButtonClick(existingBundle)
+            existingBundle.putString("reasonValue", "Ulaz")
+            existingBundle.putString("readoutValue", "Ulaz")
+            goToCheckoutWithBundle(existingBundle)
         }
 
         binding.buttonExit.setOnClickListener {
-            buttonExitPressed
+            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode", 2) //TODO
-            editor.putInt("eCode", 2)
-            editor.commit()
-            handleButtonClick(existingBundle)
+            existingBundle.putString("reasonValue", "Izlaz")
+            existingBundle.putString("readoutValue", "Izlaz")
+            goToCheckoutWithBundle(existingBundle)
         }
 
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {
                 R.id.FirstFragment -> {
-                    existingBundle.putBoolean("NoOptionPressed", true)
-                    MyHttpClient.publishNewEvent(existingBundle)
+//                    existingBundle.putBoolean("NoOptionPressed", true)
+//                    MyHttpClient.publishNewEvent(existingBundle)
                     findNavController().navigate(
                         R.id.action_FirstFragment_to_mainFragment
                     )
@@ -145,7 +134,7 @@ class FirstFragment : Fragment() {
         }, delay)
     }
 
-    fun handleButtonClick(existingBundle: Bundle) {
+    fun handleButtonClickV1(existingBundle: Bundle) {
         if (buttonEnterPressed) {
             buttonExitPressed = false
             binding.buttonExit.setBackgroundColor(Color.TRANSPARENT)

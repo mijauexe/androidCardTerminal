@@ -347,10 +347,10 @@ class MainActivity : AppCompatActivity() {
 
             if (it["CardCode"] != null) {
 
-                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+//                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
-                        playSound()
+                        playSound(R.raw.scan_success)
                         handleCardScan(it)
                     }
 
@@ -391,11 +391,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun playSound() {
+    private fun playSound(i: Int) {
         if (mediaPlayer != null) {
             mediaPlayer!!.stop()
             mediaPlayer!!.release()
-            mediaPlayer = MediaPlayer.create(this, R.raw.scan_success);
+            mediaPlayer = MediaPlayer.create(this, i);
 
         }
         mediaPlayer!!.start()
@@ -557,6 +557,7 @@ class MainActivity : AppCompatActivity() {
                                 "Nemam raspored kontrole! Kartica ${it["CardCode"]}",
                                 false
                             )
+                            playSound(R.raw.scan_error)
                         }
                     } catch (e: java.lang.Exception) {
                         Timber.d(
@@ -566,6 +567,7 @@ class MainActivity : AppCompatActivity() {
                             e.message
                         )
                         showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
+                        playSound(R.raw.scan_error)
                     }
 
                 } else {
@@ -573,6 +575,7 @@ class MainActivity : AppCompatActivity() {
                         "Greška u bazi podataka! Kartica ${it["CardCode"]}",
                         false
                     )
+                    playSound(R.raw.scan_error)
                 }
             } catch (e: java.lang.Exception) {
                 Timber.d(
@@ -746,7 +749,7 @@ class MainActivity : AppCompatActivity() {
         setUserRestriction(UserManager.DISALLOW_FACTORY_RESET, disallow)
         setUserRestriction(UserManager.DISALLOW_ADD_USER, disallow)
         setUserRestriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, disallow)
-        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)
+//        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)
         mDevicePolicyManager.setStatusBarDisabled(mAdminComponentName, disallow)
     }
 

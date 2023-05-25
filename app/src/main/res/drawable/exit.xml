@@ -1,6 +1,6 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="@dimen/card_button_smaller"
-    android:height="@dimen/card_button_smaller"
+    android:width="@dimen/card_button_bigger"
+    android:height="@dimen/card_button_bigger"
     android:viewportWidth="24"
     android:viewportHeight="24">
   <path

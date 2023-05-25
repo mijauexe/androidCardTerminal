@@ -1,6 +1,7 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
+import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -58,33 +59,17 @@ class CheckoutFragment : Fragment() {
                 LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
             )
 
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-
         val existingBundle = requireArguments()
         MyHttpClient.openDoor(1)
         MyHttpClient.publishNewEvent(existingBundle)
         val delay = 10000L
 
-        binding.reasonValue.text =
-            ContextProvider.getApplicationContext()
-                .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-                .getString("reasonValue", "?")
+        binding.reasonValue.text = arguments?.getString("reasonValue", "")
 
+        binding.readoutValue.text = arguments?.getString("readoutValue")
 
-        if (prefs.contains("IFTTERM2_DESCR")) {
-            var v = "" //TODO
-            if (existingBundle.getInt("eCode") == 2) {
-                v = "Izlaz"
-            } else {
-                v = "Ulaz"
-            }
-
-            if (prefs.getString("IFTTERM2_DESCR", "") == "") {
-                binding.readoutValue.text = v
-            } else {
-                binding.readoutValue.text = v + ": " + prefs.getString("IFTTERM2_DESCR", "")
-            }
+        if(arguments?.getString("reasonValue").equals("Ulaz")) {
+            binding.reasonKey.text = "Razlog ulaza: "
         }
 
         super.onViewCreated(view, savedInstanceState)
