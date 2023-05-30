@@ -83,7 +83,8 @@ class FirstFragment : Fragment() {
 
         binding.button1.setOnClickListener {
             binding.button1.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putInt("eCode2", 123) //TODO
+            existingBundle.putInt("eCode", 2) //TODO
+            existingBundle.putInt("eCode2", 3) //TODO
             existingBundle.putString("reasonValue", "Poslovno")
             existingBundle.putString("readoutValue", "Izlaz")
             goToCheckoutWithBundle(existingBundle)
@@ -91,7 +92,8 @@ class FirstFragment : Fragment() {
 
         binding.button2.setOnClickListener {
             binding.button2.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putInt("eCode2", 456) //TODO
+            existingBundle.putInt("eCode", 2) //TODO
+            existingBundle.putInt("eCode2", 4) //TODO
             existingBundle.putString("reasonValue", "Privatno")
             existingBundle.putString("readoutValue", "Izlaz")
             goToCheckoutWithBundle(existingBundle)
@@ -99,7 +101,8 @@ class FirstFragment : Fragment() {
 
         binding.button3.setOnClickListener {
             binding.button3.setBackgroundResource(R.drawable.card_button_background)
-            existingBundle.putInt("eCode2", 789) //TODO
+            existingBundle.putInt("eCode", 2) //TODO
+            existingBundle.putInt("eCode2", 2) //TODO
             existingBundle.putString("reasonValue", "Pauza")
             existingBundle.putString("readoutValue", "Izlaz")
             goToCheckoutWithBundle(existingBundle)
@@ -108,6 +111,7 @@ class FirstFragment : Fragment() {
         binding.buttonEnter.setOnClickListener {
             binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode", 1) //TODO
+            existingBundle.putInt("eCode2", 1) //TODO
             existingBundle.putString("reasonValue", "Ulaz")
             existingBundle.putString("readoutValue", "Ulaz")
             goToCheckoutWithBundle(existingBundle)
@@ -116,6 +120,7 @@ class FirstFragment : Fragment() {
         binding.buttonExit.setOnClickListener {
             binding.buttonExit.setBackgroundResource(R.drawable.card_button_background)
             existingBundle.putInt("eCode", 2) //TODO
+            existingBundle.putInt("eCode2", 0) //TODO nema pomocnog koda pa je 0
             existingBundle.putString("reasonValue", "Izlaz")
             existingBundle.putString("readoutValue", "Izlaz")
             goToCheckoutWithBundle(existingBundle)

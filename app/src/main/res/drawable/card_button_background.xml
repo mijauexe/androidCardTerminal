@@ -5,4 +5,8 @@
         android:width="5dp"
         android:color="#FAA61A" />
     <solid android:color="@android:color/transparent" />
+
+    <padding
+        android:left="30dp"
+        android:right="30dp" />
 </shape>

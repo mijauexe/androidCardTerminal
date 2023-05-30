@@ -7,6 +7,7 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
@@ -15,6 +16,7 @@ import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVIC
 import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
+import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -88,7 +90,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val LOCK_ACTIVITY_KEY = "com.card.terminal.MainActivity"
     }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -323,7 +324,9 @@ class MainActivity : AppCompatActivity() {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
                         val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
-                        scanCardText.text = "Molimo držite karticu na čitaču."
+                        scanCardText.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50.0f, getResources().getDisplayMetrics()))
+                        scanCardText.setTextColor(Color.parseColor("#FAA61A"))
+                        scanCardText.text = "Molimo držite karticu na čitaču\n do otvaranja slijedećeg ekrana."
                         val ddd = findViewById<ImageView>(R.id.please_scan_icon)
                         ddd.visibility = View.GONE
                         val dddd = findViewById<ProgressBar>(R.id.progressBar)
@@ -337,6 +340,8 @@ class MainActivity : AppCompatActivity() {
                     R.id.MainFragment -> {
                         val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
                         scanCardText.text = "Molimo očitajte karticu."
+                        scanCardText.setTextColor(Color.BLACK)
+                        scanCardText.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 65.0f, getResources().getDisplayMetrics()))
                         val ddd = findViewById<ImageView>(R.id.please_scan_icon)
                         ddd.visibility = View.VISIBLE
                         val dddd = findViewById<ProgressBar>(R.id.progressBar)
@@ -600,59 +605,59 @@ class MainActivity : AppCompatActivity() {
 
         if (free == 2) {
             bundle.putBoolean("noButtonClickNeededRegime", true)
-            val err = switchRelays(cardCode.toInt(), true)
+//                    val err = switchRelays(cardCode.toInt(), true)
 
-            if (!err) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_CheckoutFragment,
-                            bundle
-                        )
-                    }
+//            if (!err) {
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    navController.navigate(
+                        R.id.action_mainFragment_to_CheckoutFragment,
+                        bundle
+                    )
+                }
 
-                    R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_MainFragment,
-                            bundle
-                        )
-                    }
+                R.id.CheckoutFragment -> {
+                    navController.navigate(
+                        R.id.action_CheckoutFragment_to_MainFragment,
+                        bundle
+                    )
+                }
 
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                            false
-                        )
-                    }
+                R.id.SettingsFragment -> {
+                    showDialog(
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                        false
+                    )
                 }
             }
+//            }
         } else if (free == 3) {
             bundle.putBoolean("noButtonClickNeededRegime", false)
-            val err = switchRelays(cardCode.toInt(), false)
-            if (!err) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    //ako se tipke trebaju stisnut
-                    R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
-
-                    R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
-
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                            false
-                        )
-                    }
+//            val err = switchRelays(cardCode.toInt(), false)
+//            if (!err) {
+            when (navHostFragment.navController.currentDestination?.id) {
+                //ako se tipke trebaju stisnut
+                R.id.MainFragment -> {
+                    navController.navigate(
+                        R.id.action_mainFragment_to_FirstFragment,
+                        bundle
+                    )
                 }
+
+                R.id.CheckoutFragment -> {
+                    navController.navigate(
+                        R.id.action_CheckoutFragment_to_FirstFragment,
+                        bundle
+                    )
+                }
+
+                R.id.SettingsFragment -> {
+                    showDialog(
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                        false
+                    )
+                }
+//                }
             }
         } else {
             showDialog(

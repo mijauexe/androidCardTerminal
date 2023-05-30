@@ -693,7 +693,7 @@ class MiroConverter {
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
-        var eCode2 = prefs.getInt("eCode2", 696969)
+        var eCode2 = cardResponse.getInt("eCode2", 696969)
         if (cardResponse.getBoolean("NoOptionPressed")) {
             eCode2 = 0
         }

@@ -133,46 +133,53 @@
                     android:layout_marginBottom="70dp"
                     android:background="@android:color/transparent"
                     android:drawableStart="@drawable/enter"
-                    android:text="   Ulaz "
+                    android:text="   Ulaz   "
                     android:textAllCaps="false"
                     android:textColor="@android:color/black"
                     android:textSize="40dp" />
 
-                <Button
-                    android:id="@+id/button_1"
-                    style="@style/Widget.AppCompat.Button.Colored"
+                <GridLayout
+                    android:columnCount="1"
                     android:layout_gravity="center"
-                    android:layout_marginBottom="35dp"
-                    android:background="@android:color/transparent"
-                    android:drawableStart="@drawable/business_alternative"
-                    android:text="   Poslovno "
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/black"
-                    android:textSize="35dp" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    >
+                    <Button
+                        android:id="@+id/button_1"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginBottom="35dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/business_alternative"
+                        android:text="   Izlaz - Poslovno   "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
 
-                <Button
-                    android:id="@+id/button_2"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="35dp"
-                    android:background="@android:color/transparent"
-                    android:drawableStart="@drawable/home_alternative"
-                    android:text="   Privatno "
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/black"
-                    android:textSize="35dp" />
+                    <Button
+                        android:id="@+id/button_2"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginBottom="35dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/home_alternative"
+                        android:text="   Izlaz - Privatno   "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
 
-                <Button
-                    android:id="@+id/button_3"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:layout_gravity="center"
-                    android:background="@android:color/transparent"
-                    android:drawableStart="@drawable/break_alternative"
-                    android:text="   Pauza "
-                    android:layout_marginBottom="35dp"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/black"
-                    android:textSize="35dp" />
+                    <Button
+                        android:id="@+id/button_3"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/break_alternative"
+                        android:text="   Izlaz - Pauza   "
+                        android:layout_marginBottom="35dp"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
+                </GridLayout>
 
                 <Button
                     android:id="@+id/button_exit"
@@ -180,10 +187,10 @@
                     android:layout_gravity="center"
                     android:background="@android:color/transparent"
                     android:drawableStart="@drawable/exit"
-                    android:text="   Izlaz "
+                    android:text="   Izlaz   "
                     android:textAllCaps="false"
                     android:textColor="@android:color/black"
-                    android:textSize="40dp" />
+                    android:textSize="40dp  " />
 
 
             </GridLayout>

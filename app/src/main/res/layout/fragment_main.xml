@@ -89,33 +89,43 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top">
 
-        <TextView
-            android:id="@+id/please_scan_card_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:shadowColor="#BDBDBD"
-            android:shadowDx="3"
-            android:shadowDy="3"
-            android:shadowRadius="4"
-            android:text="@string/please_scan_card"
-            android:textColor="@color/black"
-            android:textSize="@dimen/menu" />
 
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="1"
+            >
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:layout_centerInParent="false"
+                android:indeterminateTint="#FAA61A"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/please_scan_card_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:shadowColor="#BDBDBD"
+                android:shadowDx="3"
+                android:shadowDy="3"
+                android:shadowRadius="4"
+                android:text="@string/please_scan_card"
+                android:textColor="@color/black"
+                android:textSize="@dimen/menu" />
+
+
+
+        </GridLayout>
         <ImageView
             android:id="@+id/please_scan_icon"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:src="@drawable/card_scan" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="100dp"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="false"
-            android:indeterminateTint="#FAA61A"
-            android:visibility="gone" />
-
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -130,10 +140,10 @@
 
         <ImageView
             android:id="@+id/main_logo2"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:layout_gravity="start"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="30dp"
             android:src="@drawable/erv_hzjz_gray"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
