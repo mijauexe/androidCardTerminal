@@ -51,15 +51,8 @@ object GetCardStatusTask {
                             delay(SLEEP_MILLIS)
                         }
                     }
-//                    delay(SLEEP_MILLIS)
                 } catch (e: Exception) {
                     mutableCode.postValue(mapOf("CURRENTLY_SCANNING" to "FALSE"))
-//                    Timber.d(
-//                        "Msg: Exception %s | %s | %s",
-//                        e.cause,
-//                        e.stackTraceToString(),
-//                        e.message
-//                    )
                 }
             }
         }
@@ -131,6 +124,7 @@ object GetCardStatusTask {
 //            cardMap["UID"] = uid
             cardMap["ErrorCode"] = "0"
 //            cardMap["ATR"] = atr
+            cardMap["Source"] = "Omnikey"
             mutableCode.postValue(cardMap)
         } else {
             val cardMap = mutableMapOf<String, String>()

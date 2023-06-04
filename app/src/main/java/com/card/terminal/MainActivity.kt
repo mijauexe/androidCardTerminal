@@ -1,12 +1,14 @@
 package com.card.terminal
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.R.attr.bitmap
 import android.app.ProgressDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
@@ -35,10 +37,10 @@ import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.db.entity.Event
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
+import com.card.terminal.utils.CameraUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.omniCardUtils.OmniCard
@@ -46,6 +48,7 @@ import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -80,7 +83,6 @@ class MainActivity : AppCompatActivity() {
 
     private var mediaPlayer: MediaPlayer? = null
 
-
     private lateinit var mAdminComponentName: ComponentName
     lateinit var mDevicePolicyManager: DevicePolicyManager
 
@@ -96,6 +98,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
 
+        CameraUtils.init(this)
+
         val filter = IntentFilter()
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
@@ -108,8 +112,7 @@ class MainActivity : AppCompatActivity() {
         val permission = READ_EXTERNAL_STORAGE
         val requestCode = 123 // You can choose any integer value for the request code
         if (ContextCompat.checkSelfPermission(
-                this,
-                permission
+                this, permission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), requestCode)
@@ -120,8 +123,7 @@ class MainActivity : AppCompatActivity() {
         Timber.d("Msg: MainActivity OnCreate called")
         Thread.setDefaultUncaughtExceptionHandler(
             UEHandler(
-                this,
-                MainActivity::class.java
+                this, MainActivity::class.java
             )
         )
         Timber.d("Msg: setDefaultUncaughtExceptionHandler")
@@ -191,14 +193,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             val t = FileLoggerTree.Builder() //RollingFileTree
-                .withFileName("my_log_file.txt")
-                .withDir(logFolder)
-                .withFormatter(CustomLogFormatter())
-                .withFileLimit(1)
-                .withSizeLimit(50000000)
-                .withMinPriority(Log.DEBUG)
-                .appendToFile(true)
-                .build()
+                .withFileName("my_log_file.txt").withDir(logFolder)
+                .withFormatter(CustomLogFormatter()).withFileLimit(1).withSizeLimit(50000000)
+                .withMinPriority(Log.DEBUG).appendToFile(true).build()
 
             Timber.plant(t)
         } catch (e: IOException) {
@@ -214,8 +211,7 @@ class MainActivity : AppCompatActivity() {
 
         if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
             if (ContextCompat.checkSelfPermission(
-                    this,
-                    PERMISSION_TO_BIND_BACKEND_SERVICE
+                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 OmniCard.bindCardBackend(this, mutableCardCode, false)
@@ -324,9 +320,16 @@ class MainActivity : AppCompatActivity() {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
                         val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
-                        scanCardText.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50.0f, getResources().getDisplayMetrics()))
+                        scanCardText.setTextSize(
+                            TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                50.0f,
+                                getResources().getDisplayMetrics()
+                            )
+                        )
                         scanCardText.setTextColor(Color.parseColor("#FAA61A"))
-                        scanCardText.text = "Molimo držite karticu na čitaču\n do otvaranja slijedećeg ekrana."
+                        scanCardText.text =
+                            "Molimo držite karticu na čitaču\n do otvaranja slijedećeg ekrana."
                         val ddd = findViewById<ImageView>(R.id.please_scan_icon)
                         ddd.visibility = View.GONE
                         val dddd = findViewById<ProgressBar>(R.id.progressBar)
@@ -341,7 +344,13 @@ class MainActivity : AppCompatActivity() {
                         val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
                         scanCardText.text = "Molimo očitajte karticu."
                         scanCardText.setTextColor(Color.BLACK)
-                        scanCardText.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 65.0f, getResources().getDisplayMetrics()))
+                        scanCardText.setTextSize(
+                            TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                65.0f,
+                                getResources().getDisplayMetrics()
+                            )
+                        )
                         val ddd = findViewById<ImageView>(R.id.please_scan_icon)
                         ddd.visibility = View.VISIBLE
                         val dddd = findViewById<ProgressBar>(R.id.progressBar)
@@ -360,6 +369,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     R.id.CheckoutFragment -> {
+                        playSound(R.raw.scan_success)
                         handleCardScan(it)
                     }
 
@@ -378,11 +388,9 @@ class MainActivity : AppCompatActivity() {
                 val dateText = findViewById<TextView>(R.id.tv_date)
                 if (dateText != null) {
                     dateText.text =
-                        LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                            .format(
+                        LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME).format(
                                 DateTimeFormatter.ofPattern(
-                                    "d. MMMM yyyy.",
-                                    Locale("hr")
+                                    "d. MMMM yyyy.", Locale("hr")
                                 )
                             )
                 }
@@ -410,18 +418,19 @@ class MainActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putString("CardCode", it["CardCode"])
         bundle.putString("DateTime", it["DateTime"])
+        if (it.containsKey("Source")) {
+            bundle.putString("Source", it["Source"])
+        }
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
         if (lastScanEvent == null || !lastScanEvent.cardNumber.toString()
-                .equals(it["CardCode"]) ||
-            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
-                .isBefore(LocalDateTime.now())
+                .equals(it["CardCode"]) || LocalDateTime.parse(lastScanEvent.dateTime)
+                .plusSeconds(10).isBefore(LocalDateTime.now())
         ) {
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
-                val person =
-                    card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
+                val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
 
                 if (person != null && card != null) {
                     bundle.putString("firstName", person.firstName)
@@ -446,14 +455,12 @@ class MainActivity : AppCompatActivity() {
 
                     getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
-                    val currentTime =
-                        LocalTime.parse(
-                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        )
+                    val currentTime = LocalTime.parse(
+                        LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                    )
 
                     val currentDateString =
-                        LocalDateTime.now()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
                     val currentDateDate = LocalDate.parse(currentDateString)
 
@@ -493,8 +500,7 @@ class MainActivity : AppCompatActivity() {
                     try {
                         val dbSchedule1 = db.OperationScheduleDao().getAll()
                         var conforms = -1 //doesnt conform to anything before checking
-                        var containsIfNotSchedule =
-                            false //if contains IF_NOT_SCHEDULE param
+                        var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
                         var IfNotScheduleMode = 0
                         var isTodayHoliday = false
 
@@ -504,11 +510,8 @@ class MainActivity : AppCompatActivity() {
                             currentDateDate.year
                         )
 
-                        val d2 = db.CalendarDao()
-                            .getByDate(
-                                currentDateDate.dayOfWeek.value,
-                                currentDateDate.monthValue,
-                                0
+                        val d2 = db.CalendarDao().getByDate(
+                                currentDateDate.dayOfWeek.value, currentDateDate.monthValue, 0
                             )
 
                         if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
@@ -530,20 +533,16 @@ class MainActivity : AppCompatActivity() {
                                         sch.description.substring(sch.description.indexOf(":") + 1)
                                     ) && timeConforms
                                 ) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
                                     break
                                 }
                             }
@@ -559,8 +558,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         } else {
                             showDialog(
-                                "Nemam raspored kontrole! Kartica ${it["CardCode"]}",
-                                false
+                                "Nemam raspored kontrole! Kartica ${it["CardCode"]}", false
                             )
                             playSound(R.raw.scan_error)
                         }
@@ -577,17 +575,13 @@ class MainActivity : AppCompatActivity() {
 
                 } else {
                     showDialog(
-                        "Greška u bazi podataka! Kartica ${it["CardCode"]}",
-                        false
+                        "Greška u bazi podataka! Kartica ${it["CardCode"]}", false
                     )
                     playSound(R.raw.scan_error)
                 }
             } catch (e: java.lang.Exception) {
                 Timber.d(
-                    "Msg: Exception %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
+                    "Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message
                 )
                 showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
             }
@@ -611,22 +605,19 @@ class MainActivity : AppCompatActivity() {
             when (navHostFragment.navController.currentDestination?.id) {
                 R.id.MainFragment -> {
                     navController.navigate(
-                        R.id.action_mainFragment_to_CheckoutFragment,
-                        bundle
+                        R.id.action_mainFragment_to_CheckoutFragment, bundle
                     )
                 }
 
                 R.id.CheckoutFragment -> {
                     navController.navigate(
-                        R.id.action_CheckoutFragment_to_MainFragment,
-                        bundle
+                        R.id.action_CheckoutFragment_to_MainFragment, bundle
                     )
                 }
 
                 R.id.SettingsFragment -> {
                     showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)", false
                     )
                 }
             }
@@ -639,30 +630,26 @@ class MainActivity : AppCompatActivity() {
                 //ako se tipke trebaju stisnut
                 R.id.MainFragment -> {
                     navController.navigate(
-                        R.id.action_mainFragment_to_FirstFragment,
-                        bundle
+                        R.id.action_mainFragment_to_FirstFragment, bundle
                     )
                 }
 
                 R.id.CheckoutFragment -> {
                     navController.navigate(
-                        R.id.action_CheckoutFragment_to_FirstFragment,
-                        bundle
+                        R.id.action_CheckoutFragment_to_FirstFragment, bundle
                     )
                 }
 
                 R.id.SettingsFragment -> {
                     showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)", false
                     )
                 }
 //                }
             }
         } else {
             showDialog(
-                "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz",
-                false
+                "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz", false
             )
         }
     }
@@ -681,8 +668,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             err = true
             showDialog(
-                "GREŠKA u id-> ${prefs.getInt("IFTTERM2_B0_ID", 0)} ${cardCode}",
-                false
+                "GREŠKA u id-> ${prefs.getInt("IFTTERM2_B0_ID", 0)} ${cardCode}", false
             )
         }
         return err
@@ -705,9 +691,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         Timber.d("MainActivity onDestroy")
-        MyHttpClient.server.stop(0, 0)
         super.onDestroy()
+        MyHttpClient.server.stop(0, 0)
         unregisterReceiver(usbReceiver);
+        CameraUtils.release()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -769,15 +756,11 @@ class MainActivity : AppCompatActivity() {
         mDevicePolicyManager.setGlobalSetting(
             mAdminComponentName,
             Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
-            (BatteryManager.BATTERY_PLUGGED_AC
-                    or BatteryManager.BATTERY_PLUGGED_USB
-                    or BatteryManager.BATTERY_PLUGGED_WIRELESS).toString()
+            (BatteryManager.BATTERY_PLUGGED_AC or BatteryManager.BATTERY_PLUGGED_USB or BatteryManager.BATTERY_PLUGGED_WIRELESS).toString()
         )
     } else {
         mDevicePolicyManager.setGlobalSetting(
-            mAdminComponentName,
-            Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
-            "0"
+            mAdminComponentName, Settings.Global.STAY_ON_WHILE_PLUGGED_IN, "0"
         )
     }
 
@@ -797,8 +780,7 @@ class MainActivity : AppCompatActivity() {
     private fun setUpdatePolicy(enable: Boolean) {
         if (enable) {
             mDevicePolicyManager.setSystemUpdatePolicy(
-                mAdminComponentName,
-                SystemUpdatePolicy.createWindowedInstallPolicy(60, 120)
+                mAdminComponentName, SystemUpdatePolicy.createWindowedInstallPolicy(60, 120)
             )
         } else {
             mDevicePolicyManager.setSystemUpdatePolicy(mAdminComponentName, null)
@@ -830,17 +812,12 @@ class MainActivity : AppCompatActivity() {
     @Suppress("DEPRECATION")
     private fun setImmersiveMode(enable: Boolean) {
         if (enable) {
-            val flags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            val flags =
+                (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
             window.decorView.systemUiVisibility = flags
         } else {
-            val flags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            val flags =
+                (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
             window.decorView.systemUiVisibility = flags
         }
     }

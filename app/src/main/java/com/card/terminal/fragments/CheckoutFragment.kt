@@ -1,6 +1,7 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.CameraUtils
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
 import java.time.LocalDateTime
@@ -61,6 +63,9 @@ class CheckoutFragment : Fragment() {
 
         val existingBundle = requireArguments()
         MyHttpClient.openDoor(1)
+
+        eventImageLogic(existingBundle)
+
         MyHttpClient.publishNewEvent(existingBundle)
         val delay = 10000L
 
@@ -68,7 +73,7 @@ class CheckoutFragment : Fragment() {
 
         binding.readoutValue.text = arguments?.getString("readoutValue")
 
-        if(arguments?.getString("reasonValue").equals("Ulaz")) {
+        if (arguments?.getString("reasonValue").equals("Ulaz")) {
             binding.reasonKey.text = "Razlog ulaza: "
         }
 
@@ -84,6 +89,23 @@ class CheckoutFragment : Fragment() {
                 }
             }
         }, delay)
+    }
+
+    private fun eventImageLogic(existingBundle: Bundle) {
+        if (existingBundle.containsKey("Source") && existingBundle.getString("Source")
+                .equals("Omnikey")
+        ) {
+            CameraUtils.captureImage(ContextProvider.getApplicationContext())
+            val b64Img = ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE).getString(
+                    "EventImage",
+                    ""
+                )
+            if (!b64Img.equals("")) {
+                existingBundle.putString("EventImage", b64Img)
+            } else
+                existingBundle.putString("EventImage", "")
+        }
     }
 
     override fun onDestroyView() {

@@ -414,13 +414,18 @@ object MyHttpClient {
                         cardNumber = it.cardNumber,
                         dateTime = it.dateTime,
                         published = true,
-                        deviceId = it.deviceId
+                        deviceId = it.deviceId,
+                        image = it.image
                     )
                 }
                 if (newE != null) {
                     db.EventDao().update(newE)
                 }
             } else {
+                var img = ""
+                if (cardResponse.containsKey("EventImage")) {
+                    img = cardResponse.getString("EventImage")!!
+                }
                 val event = Event(
                     eventCode = cardResponse.getInt("eCode"), //TODO
                     eventCode2 = cardResponse.getInt("eCode2", 6968),
@@ -428,7 +433,8 @@ object MyHttpClient {
                     dateTime = cardResponse.get("DateTime").toString(),
                     published = published,
                     uid = 0, //auto-generate
-                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969) //TODO
+                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969),//TODO
+                    image = img
                 )
                 db.EventDao().insert(event)
             }
@@ -446,7 +452,8 @@ object MyHttpClient {
                     cardNumber = e.cardNumber,
                     dateTime = e.dateTime,
                     published = true,
-                    deviceId = 0 //TODO
+                    deviceId = 0, //TODO
+                    image = e.image
                 )
             )
         }
