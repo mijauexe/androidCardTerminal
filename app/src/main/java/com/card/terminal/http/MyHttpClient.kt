@@ -23,12 +23,10 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
-import java.nio.ByteBuffer
 import java.util.*
 
 object MyHttpClient {
@@ -113,28 +111,6 @@ object MyHttpClient {
     fun relayMode(doorNum: Int, pulseOrHold: Int) {
         //0 - vrata su normalnom modu rada  - prolaz s karticama, 1 - vrata nisu kontrolirana
         larusFunctions?.changeRelayMode(doorNum, pulseOrHold)
-    }
-
-    suspend fun getSocketResponse(
-        sendChannel: ByteWriteChannel,
-        receiveChannel: ByteReadChannel,
-        buffer: ByteBuffer
-    ): ByteArray {
-        sendChannel.writeAvailable(buffer)
-
-        var i = 0
-        var byteResponseArray = byteArrayOf()
-
-        while (true) {
-            try {
-                val response = receiveChannel.readByte()
-                byteResponseArray += response
-            } catch (e: Exception) {
-                break
-            }
-            i += 1
-        }
-        return byteResponseArray
     }
 
     fun byteArrayToInt(byteArray: ByteArray): Int {

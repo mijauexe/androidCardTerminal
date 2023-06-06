@@ -136,22 +136,22 @@ class MainActivity : AppCompatActivity() {
         var isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
         Timber.d("hello world")
-//        isFirstBoot = true
+        val editor = prefs.edit()
+        editor.putBoolean("Connection", false)
         if (isFirstBoot) { //Set the preferences for first time app install...
 
-            val editor = prefs.edit()
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
             editor.putBoolean("kioskMode", false)
             editor.putString("larusIP", "192.168.0.200")
             editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "")
             editor.putInt("serverPort", 80)
-            editor.putBoolean("Connection", false)
+
             editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
             editor.putString("settingsPin", "0")
-            editor.apply()
         }
+        editor.apply()
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 

@@ -65,151 +65,160 @@ class LarusFunctions(
                 buffer.position(0)
 
                 val dataInfo =
-                    MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
+                    getSocketResponse(sendChannel, receiveChannel, buffer)
 
-                println(LocalTime.now())
-                for (i in dataInfo) {
-                    print("$i ")
-                }
-                println()
-
-                lastRead =
-                    MyHttpClient.byteArrayToInt(
-                        byteArrayOf(
-                            dataInfo[0],
-                            dataInfo[1],
-                            dataInfo[2],
-                            dataInfo[3]
-                        )
-                    )
-
-                lastSave =
-                    MyHttpClient.byteArrayToInt(
-                        byteArrayOf(
-                            dataInfo[4],
-                            dataInfo[5],
-                            dataInfo[6],
-                            dataInfo[7]
-                        )
-                    )
-
-                full = dataInfo[12].toInt()
-
-                withContext(Dispatchers.IO) {
-                    socket1?.close()
-                }
-
-                if (sharedPreferences.getBoolean("Connection", false) == false && lastSave != 0) {
-
-                    //TODO OVO TREBA POPRAVIT
-                    //ako je veza bila pukuta (false), a sad je socket uspio proc ->
-                    //treba stavit lastRead na lastSave i promijeniti connection u true
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                if (dataInfo.size == 13) {
+                    println(LocalTime.now())
+                    for (i in dataInfo) {
+                        print("$i ")
                     }
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+                    println()
 
-                    byteArray = "GVA<Dataread>".toByteArray()
-                    buffer = ByteBuffer.allocate(5 + byteArray.size)
-                    buffer.put(byteArray)
-
-                    byteArray = byteArrayOf(
-                        (lastSave shr 0).toByte(),
-                        (lastSave shr 8).toByte(),
-                        (lastSave shr 16).toByte(),
-                        (lastSave shr 24).toByte(),
-                        0
-                    )
-
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    sendChannel.writeAvailable(buffer)
-
-                    withContext(Dispatchers.IO) {
-                        socket1?.close()
-                    }
-
-                    val editor = sharedPreferences.edit()
-                    editor.putBoolean("Connection", true)
-                    editor.apply()
-                    mutableCode.postValue(
-                        mapOf(
-                            "CardCode" to "CONNECTION_RESTORED"
-                        )
-                    )
-                } else if (lastRead < lastSave || full == 1) {
-                    lastRead += 12
-
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
-                    }
-
-                    receiveChannel = socket1!!.openReadChannel()
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
-
-                    byteArray = "GVA<Event>".toByteArray()
-                    buffer = ByteBuffer.allocate(byteArray.size)
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    val event =
-                        MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
-
-                    val cardCode =
+                    lastRead =
                         MyHttpClient.byteArrayToInt(
                             byteArrayOf(
-                                event[1],
-                                event[2],
-                                event[3],
-                                event[4]
+                                dataInfo[0],
+                                dataInfo[1],
+                                dataInfo[2],
+                                dataInfo[3]
                             )
                         )
 
-                    println("cardCode:$cardCode")
+                    lastSave =
+                        MyHttpClient.byteArrayToInt(
+                            byteArrayOf(
+                                dataInfo[4],
+                                dataInfo[5],
+                                dataInfo[6],
+                                dataInfo[7]
+                            )
+                        )
 
-                    val door = event[11] //uvijek 1??
-                    print(door)
-                    val dateTimeString = LocalDateTime.now()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
-
-                    println(dateTimeString)
+                    full = dataInfo[12].toInt()
 
                     withContext(Dispatchers.IO) {
                         socket1?.close()
                     }
+
+                    if (sharedPreferences.getBoolean(
+                            "Connection",
+                            false
+                        ) == false && lastSave != 0
+                    ) {
+
+                        //TODO OVO TREBA POPRAVIT
+                        //ako je veza bila pukuta (false), a sad je socket uspio proc ->
+                        //treba stavit lastRead na lastSave i promijeniti connection u true
                     withTimeout(2000) {
                         socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                     }
                     sendChannel = socket1!!.openWriteChannel(autoFlush = true)
 
-                    byteArray = "GVA<Dataread>".toByteArray()
-                    buffer = ByteBuffer.allocate(5 + byteArray.size)
-                    buffer.put(byteArray)
+                        byteArray = "GVA<Dataread>".toByteArray()
+                        buffer = ByteBuffer.allocate(5 + byteArray.size)
+                        buffer.put(byteArray)
 
-                    byteArray = byteArrayOf(
-                        (lastRead shr 0).toByte(),
-                        (lastRead shr 8).toByte(),
-                        (lastRead shr 16).toByte(),
-                        (lastRead shr 24).toByte(),
-                        0
-                    )
-
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    sendChannel.writeAvailable(buffer)
-
-                    withContext(Dispatchers.IO) {
-                        socket1?.close()
-                    }
-
-                    mutableCode.postValue(
-                        mapOf(
-                            "CardCode" to cardCode.toString(),
-                            "DateTime" to dateTimeString
+                        byteArray = byteArrayOf(
+                            (lastSave shr 0).toByte(),
+                            (lastSave shr 8).toByte(),
+                            (lastSave shr 16).toByte(),
+                            (lastSave shr 24).toByte(),
+                            0
                         )
-                    )
+
+                        buffer.put(byteArray)
+                        buffer.position(0)
+
+                        sendChannel.writeAvailable(buffer)
+
+                        withContext(Dispatchers.IO) {
+                            socket1?.close()
+                        }
+
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean("Connection", true)
+                        editor.apply()
+                        mutableCode.postValue(
+                            mapOf(
+                                "CardCode" to "CONNECTION_RESTORED"
+                            )
+                        )
+                    } else if (lastRead < lastSave || full == 1) {
+                        lastRead += 12
+
+                        withTimeout(2000) {
+                            socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                        }
+
+                        receiveChannel = socket1!!.openReadChannel()
+                        sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                        byteArray = "GVA<Event>".toByteArray()
+                        buffer = ByteBuffer.allocate(byteArray.size)
+                        buffer.put(byteArray)
+                        buffer.position(0)
+                        val event =
+                            getSocketResponse(sendChannel, receiveChannel, buffer)
+
+                        if (event.size >= 4) {
+                            val cardCode =
+                                MyHttpClient.byteArrayToInt(
+                                    byteArrayOf(
+                                        event[1],
+                                        event[2],
+                                        event[3],
+                                        event[4]
+                                    )
+                                )
+
+                            println("cardCode:$cardCode")
+
+                            val dateTimeString = LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+                                .toString()
+
+                            println(dateTimeString)
+
+                            withContext(Dispatchers.IO) {
+                                socket1?.close()
+                            }
+                            withTimeout(2000) {
+                                socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                            }
+                            sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                            byteArray = "GVA<Dataread>".toByteArray()
+                            buffer = ByteBuffer.allocate(5 + byteArray.size)
+                            buffer.put(byteArray)
+
+                            byteArray = byteArrayOf(
+                                (lastRead shr 0).toByte(),
+                                (lastRead shr 8).toByte(),
+                                (lastRead shr 16).toByte(),
+                                (lastRead shr 24).toByte(),
+                                0
+                            )
+
+                            buffer.put(byteArray)
+                            buffer.position(0)
+
+                            sendChannel.writeAvailable(buffer)
+
+                            withContext(Dispatchers.IO) {
+                                socket1?.close()
+                            }
+
+                            mutableCode.postValue(
+                                mapOf(
+                                    "CardCode" to cardCode.toString(),
+                                    "DateTime" to dateTimeString
+                                )
+                            )
+                        }
+                    }
+                }
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
                 }
             } catch (e: NoRouteToHostException) {
                 if (sharedPreferences.getBoolean("Connection", false)) {
@@ -245,6 +254,8 @@ class LarusFunctions(
                         )
                     )
                 }
+            } catch (e: TimeoutCancellationException) {
+
             } catch (e: Exception) {
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
@@ -258,7 +269,6 @@ class LarusFunctions(
     ): ByteArray {
         sendChannel.writeAvailable(buffer)
 
-        var i = 0
         var byteResponseArray = byteArrayOf()
 
         while (true) {
@@ -268,7 +278,6 @@ class LarusFunctions(
             } catch (e: Exception) {
                 break
             }
-            i += 1
         }
         return byteResponseArray
     }
