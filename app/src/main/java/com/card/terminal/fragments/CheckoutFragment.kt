@@ -129,9 +129,7 @@ class CheckoutFragment : Fragment() {
             binding.reasonValue.text = "Slobodan prolaz"
         } else {
             binding.reasonValue.text =
-                ContextProvider.getApplicationContext()
-                    .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-                    .getString("selection", "?")
+                existingBundle.getString("selection", "?")
         }
 
         if (existingBundle.containsKey("imageB64")) {

@@ -668,11 +668,9 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
         if (prefs.getInt("IFTTERM2_B0_ID", 0) == 212) {
-            //recepcija Hep sisak
             //NE RADI NISTA; TEO NE KUPI OCITANJA KAD JE RELEJ UPALJEN PA JE SVE SJEBANO
-//            MyHttpClient.hepReceptionRelayToggle(noButtonClickNeededRegime)
         } else if (prefs.getInt("IFTTERM2_B0_ID", 0) == 214) {
-            //porta1, vani sisak hep
+            //porta1
             MyHttpClient.hepPort1RelaysToggle(noButtonClickNeededRegime)
         } else {
             err = true

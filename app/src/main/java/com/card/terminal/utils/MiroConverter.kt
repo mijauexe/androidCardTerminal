@@ -678,12 +678,10 @@ class MiroConverter {
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 0)
 
-        var eCode2 = prefs.getInt("eCode2", 696969)
+        var eCode2 = cardResponse.getInt("eCode2")
         if (cardResponse.getBoolean("NoOptionPressed")) {
             eCode2 = 0
         }
-
-        print("ecode2 je " + prefs.getInt("eCode2", 696969))
 
         return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
             cardResponse.get(
@@ -694,7 +692,7 @@ class MiroConverter {
         }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
     }
 
-    suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
+    suspend fun getFormattedUnpublishedEvents(iftTermId: Int): EventStringPair {
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
         val unpublishedEvents = mutableListOf<Event>()
         val scope = CoroutineScope(Dispatchers.IO)

@@ -102,22 +102,10 @@ object MyHttpClient {
         larusFunctions?.stateDoor(doorNum)
     }
 
-
-    fun hepReceptionRelayToggle(noButtonClickNeededRegime: Boolean) {
-        if (noButtonClickNeededRegime) {
-            larusFunctions?.changeRelayMode(1, 1)
-            larusFunctions?.changeRelayMode(1, 0)
-        } else {
-            larusFunctions?.changeRelayMode(1, 0)
-        }
-    }
-
     fun hepPort1RelaysToggle(noButtonClickNeededRegime: Boolean) {
         if (noButtonClickNeededRegime) {
-//            larusFunctions?.changeRelayMode(1, 1)
             larusFunctions?.changeRelayMode(2, 1) //1 je hold
         } else {
-//            larusFunctions?.changeRelayMode(1, 0)
             larusFunctions?.changeRelayMode(2, 0) //0 je pulse
         }
     }
@@ -341,8 +329,7 @@ object MyHttpClient {
                 mySharedPreferences.getInt(
                     "IFTTERM2_B0_ID",
                     696969
-                ),
-                mySharedPreferences.getInt("eCode2", 696969)
+                )
             )
 
             if (esp.eventList.isNotEmpty()) {
@@ -385,7 +372,6 @@ object MyHttpClient {
     }
 
     fun eventToDatabase(cardResponse: Bundle, published: Boolean) {
-
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
 
@@ -416,7 +402,7 @@ object MyHttpClient {
             } else {
                 val event = Event(
                     eventCode = 2, //TODO
-                    eventCode2 = mySharedPreferences.getInt("eCode2", 696969),
+                    eventCode2 = cardResponse.getInt("eCode2"),
                     cardNumber = cardResponse.get("CardCode").toString().toInt(),
                     dateTime = cardResponse.get("DateTime").toString(),
                     published = published,

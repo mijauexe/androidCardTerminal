@@ -140,13 +140,13 @@ class FirstFragment : Fragment() {
         val ct = existingBundle.getString("classType")
 
         if (ct.equals("WORKER")) {
-            ubijMe("WORKER", prefs, binding.buttonsGrid, existingBundle)
+            ubijMe("WORKER", binding.buttonsGrid, existingBundle)
         } else if (ct.equals("CONTRACTOR")) {
-            ubijMe("CONTRACTOR", prefs, binding.buttonsGrid, existingBundle)
+            ubijMe("CONTRACTOR", binding.buttonsGrid, existingBundle)
         } else if (ct.equals("GUEST")) {
-            ubijMe("GUEST", prefs, binding.buttonsGrid, existingBundle)
+            ubijMe("GUEST", binding.buttonsGrid, existingBundle)
         } else if (ct.equals("VEHICLE")) {
-            ubijMe("VEHICLE", prefs, binding.buttonsGrid, existingBundle)
+            ubijMe("VEHICLE", binding.buttonsGrid, existingBundle)
         }
 
         Handler().postDelayed({
@@ -177,7 +177,6 @@ class FirstFragment : Fragment() {
 
     fun ubijMe(
         str: String,
-        prefs: SharedPreferences,
         layout: GridLayout,
         bundle: Bundle
     ) {
@@ -202,19 +201,17 @@ class FirstFragment : Fragment() {
 
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 btn.setOnClickListener {
-                    val editor = prefs.edit()
-                    editor.putString("selection", btnList[i].title)
+                    bundle.putString("selection", btnList[i].title)
 
                     if (bundle.getBoolean("noButtonClickNeededRegime")) {
-                        editor.putInt("eCode2", 0)
+                        bundle.putInt("eCode2", 0)
                     } else {
-                        editor.putInt("eCode2", btnList[i].eCode2)
+                        bundle.putInt("eCode2", btnList[i].eCode2)
                     }
 
-                    editor.commit()
                     btn.setBackgroundResource(R.drawable.card_button_background)
                     btn.setBackgroundColor(Color.parseColor("#faa61a"))
-                    goToCheckoutWithBundle(bundle)
+                    goToCheckoutWithBundle(bundle.deepCopy())
                 }
             }
         }
