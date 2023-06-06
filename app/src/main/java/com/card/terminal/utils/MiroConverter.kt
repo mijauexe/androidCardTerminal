@@ -442,7 +442,7 @@ class MiroConverter {
 
     suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
         var deletionCounter = 0
-        val cardList = mutableListOf<Card>()
+        val cardList = mutableListOf<String>()
         val accessLevelList = mutableListOf<AccessLevel>()
         val personList = mutableListOf<Person>()
 
@@ -451,7 +451,7 @@ class MiroConverter {
             val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             for (card in objectic.CARDS) {
                 try {
-                    db.CardDao().deleteByCardNumber(card.toInt())
+                    db.CardDao().deleteByCardNumber(card.toInt())?.let { cardList.add(card) }
                     deletionCounter += 1
                 } catch (e: Exception) {
                     Timber.d(
