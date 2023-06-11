@@ -177,9 +177,11 @@
                         android:textColor="@color/black"
                         android:textSize="40sp" />
 
-                    <TextView
+                    <TextClock
                         android:id="@+id/tv_date_clock"
                         android:layout_width="wrap_content"
+                        android:format12Hour="EEEE, d. MMMM yyyy, HH:mm"
+                        android:format24Hour="EEEE, d. MMMM yyyy, HH:mm"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_marginStart="30dp"

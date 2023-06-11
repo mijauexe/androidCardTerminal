@@ -50,17 +50,6 @@ class CheckoutFragment : Fragment() {
             binding.companyName.text = arguments?.getString("companyName")
         }
 
-        binding.tvDateClock.text =
-            LocalDateTime.parse(LocalDateTime.now().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(
-                    DateTimeFormatter.ofPattern(
-                        "d.M.yyyy.",
-                        Locale("hr")
-                    )
-                ) + LocalTime.parse(
-                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-            )
-
         val existingBundle = requireArguments()
         MyHttpClient.openDoor(1)
 
@@ -92,15 +81,22 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun eventImageLogic(existingBundle: Bundle) {
+        /*
         if (existingBundle.containsKey("Source") && existingBundle.getString("Source")
                 .equals("Omnikey")
-        ) {
+         */
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+
+        if (prefs.getBoolean("CaptureOnEvent", true)) {
             CameraUtils.captureImage(ContextProvider.getApplicationContext())
-            val b64Img = ContextProvider.getApplicationContext()
-                .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE).getString(
-                    "EventImage",
-                    ""
-                )
+        }
+
+        if (prefs.getBoolean("pushImageToServer", false)) {
+            val b64Img = prefs.getString(
+                "EventImage",
+                ""
+            )
             if (!b64Img.equals("")) {
                 existingBundle.putString("EventImage", b64Img)
             } else

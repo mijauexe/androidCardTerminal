@@ -36,26 +36,28 @@
                 android:layout_marginEnd="50dp"
                 android:columnCount="1">
 
-                <TextView
+                <TextClock
                     android:id="@+id/tv_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:shadowColor="#BDBDBD"
                     android:shadowDx="2"
+                    android:format24Hour="EEEE, d. MMMM yyyy"
                     android:shadowDy="2"
                     android:shadowRadius="4"
                     android:text="@string/tv_date"
                     android:textColor="@color/black"
                     android:textSize="60sp" />
 
-                <TextView
+                <TextClock
                     android:id="@+id/tv_clock"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
                     android:shadowColor="#BDBDBD"
                     android:shadowDx="2"
+                    android:format24Hour="HH:mm"
                     android:shadowDy="2"
                     android:shadowRadius="4"
                     android:text="@string/clock"

@@ -40,12 +40,12 @@ class SecondFragment : Fragment() {
         Timber.d("SecondFragment onCreateView")
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        binding.tvDate.text =
-            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
-        binding.tvClock.text =
-            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(DateTimeFormatter.ofPattern("HH:mm"))
+//        binding.tvDate.text =
+//            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+//                .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
+//        binding.tvClock.text =
+//            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
+//                .format(DateTimeFormatter.ofPattern("HH:mm"))
         act.cardScannerActive = false
         return binding.root
 

@@ -27,11 +27,12 @@
             android:layout_marginBottom="15dp"
             android:src="@drawable/erv_hzjz_gray" />
 
-        <TextView
+        <TextClock
             android:id="@+id/tv_date_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:format24Hour="d. MMMM yyyy, HH:mm"
             android:text="@string/tv_date"
             android:textColor="@color/black"
             android:textSize="40sp" />

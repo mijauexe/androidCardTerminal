@@ -1,14 +1,12 @@
 package com.card.terminal
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.R.attr.bitmap
 import android.app.ProgressDialog
 import android.app.admin.DevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
@@ -42,13 +40,11 @@ import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.CameraUtils
 import com.card.terminal.utils.ContextProvider
-import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.omniCardUtils.OmniCard
 import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -64,8 +60,6 @@ class MainActivity : AppCompatActivity() {
 
     private var cardService: ICardService? = null
     var mutableLarusCode = MutableLiveData<Map<String, String>>()
-
-    private var mutableDateTime = MutableLiveData<LocalDateTime>()
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -104,6 +98,9 @@ class MainActivity : AppCompatActivity() {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
         registerReceiver(usbReceiver, filter)
+
+        val croatianLocale = Locale("hr", "HR")
+        Locale.setDefault(croatianLocale)
 
         mAdminComponentName = AdminReceiver.getComponentName(this)
         mDevicePolicyManager =
@@ -205,9 +202,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        mutableDateTime.postValue(LocalDateTime.now())
-        ShowDateTime.setDateAndTime(mutableDateTime)
 
         if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
             if (ContextCompat.checkSelfPermission(
@@ -379,26 +373,6 @@ class MainActivity : AppCompatActivity() {
                             false
                         )
                     }
-                }
-            }
-        }
-
-        mutableDateTime.observe(this) {
-            if (it != null) {
-                val dateText = findViewById<TextView>(R.id.tv_date)
-                if (dateText != null) {
-                    dateText.text =
-                        LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME).format(
-                                DateTimeFormatter.ofPattern(
-                                    "d. MMMM yyyy.", Locale("hr")
-                                )
-                            )
-                }
-                val clockText = findViewById<TextView>(R.id.tv_clock)
-                if (clockText != null) {
-                    clockText.text =
-                        LocalDateTime.parse(it.toString(), DateTimeFormatter.ISO_DATE_TIME)
-                            .format(DateTimeFormatter.ofPattern("HH:mm"))
                 }
             }
         }
@@ -586,10 +560,6 @@ class MainActivity : AppCompatActivity() {
                 showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
             }
         }
-    }
-
-    fun getDateTime(): LocalDateTime? {
-        return mutableDateTime.value
     }
 
     fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
