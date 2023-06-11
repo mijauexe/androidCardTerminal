@@ -80,6 +80,11 @@ class MainFragment : Fragment() {
                 findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")
             }
+
+            _binding?.ifsimusLogo?.setOnClickListener {
+                MyHttpClient.checkDoor(1)
+                MyHttpClient.checkDoor(2)
+            }
         }
     }
 

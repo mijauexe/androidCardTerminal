@@ -1,5 +1,9 @@
 package com.card.terminal.utils
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.card.terminal.MainActivity
@@ -9,7 +13,12 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Date
 
 class MiroConverter {
     data class HOLDERS(
@@ -153,7 +162,9 @@ class MiroConverter {
         val scope = CoroutineScope(Dispatchers.IO)
         Timber.d("Got server request: $operation")
         if (operation.contains("ADD_INIT1")) {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.CardDao().deleteAll()
             db.AccessLevelDao().deleteAll()
             db.PersonDao().deleteAll()
@@ -223,7 +234,9 @@ class MiroConverter {
         val personList = mutableListOf<Person>()
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             for (person in objectic.PHOTOS) {
                 try {
                     val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
@@ -270,11 +283,13 @@ class MiroConverter {
         }
     }
 
-    private suspend fun init0(objectic: init0Object): iftTermResponse {
+    private suspend fun init0(init0JSON: init0Object): iftTermResponse {
         var counter = 0
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.OperationModeDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -286,7 +301,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.OperationScheduleDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -298,7 +315,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.DeviceDao().deleteAll()
         } catch (e: Exception) {
             Timber.d(
@@ -313,16 +332,16 @@ class MiroConverter {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
             val editor = prefs.edit()
-            editor.putInt("IFTTERM2_B0_ID", objectic.IFTTERM2_B0_ID.toInt())
+            editor.putInt("IFTTERM2_B0_ID", init0JSON.IFTTERM2_B0_ID.toInt())
             editor.putInt(
-                "DEV_B0_ID", objectic.DEVS[0].B0_ID.toInt()
+                "DEV_B0_ID", init0JSON.DEVS[0].B0_ID.toInt()
             ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
-            editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
+            editor.putString("IFTTERM2_DESCR", init0JSON.IFTTERM2_DESCR)
             editor.putString(
-                "serverIP", "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
+                "serverIP", "http://" + init0JSON.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
-            editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
+            editor.putInt("serverPort", init0JSON.B0_SERVER.HTTP_PORT.toInt())
 
             counter += 4
 
@@ -331,13 +350,13 @@ class MiroConverter {
 
         val operationModeList = mutableListOf<OperationMode>()
 
-        for (def in objectic.OPERATION_MODE.DEFINITIONS) {
+        for (def in init0JSON.OPERATION_MODE.DEFINITIONS) {
             operationModeList.add(OperationMode(uid = def.ID.toInt(), description = def.DESCR))
         }
 
         val operationScheduleList = mutableListOf<OperationSchedule>()
 
-        for (sch in objectic.OPERATION_MODE.SCHEDULE) {
+        for (sch in init0JSON.OPERATION_MODE.SCHEDULE) {
             operationScheduleList.add(
                 OperationSchedule(
                     uid = 0, //auto-generate
@@ -350,7 +369,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.OperationModeDao().insertAll(operationModeList)
             counter += operationModeList.size
         } catch (e: Exception) {
@@ -363,7 +384,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.OperationScheduleDao().insertAll(operationScheduleList)
             counter += operationScheduleList.size
         } catch (e: Exception) {
@@ -376,14 +399,16 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.DeviceDao().insert(
                 Device(
-                    uid = objectic.DEVS[0].B0_ID.toInt(),
-                    localId = objectic.DEVS[0].LOCAL_ID.toInt(),
+                    uid = init0JSON.DEVS[0].B0_ID.toInt(),
+                    localId = init0JSON.DEVS[0].LOCAL_ID.toInt(),
                     controlIn = 0/*objectic.DEVS[0].CONTROL_IN.toInt()*/,
                     controlOut = 0/*objectic.DEVS[0].CONTROL_OUT.toInt()*/,
-                    description = objectic.DEVS[0].DESCR
+                    description = init0JSON.DEVS[0].DESCR
                 )
             )
             counter += 1
@@ -396,9 +421,24 @@ class MiroConverter {
             )
         }
 
-        parseButtons(objectic.EVENT_CODE2)
+        parseButtons(init0JSON.EVENT_CODE2)
 
-        if ((objectic.DEVS.size != 0 && counter == 0)) {
+        if (init0JSON.IFTTERM2_B0_ID.toInt() == 214) {
+            try {
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                )
+                val mutList = mutableListOf<OperationSchedule>()
+                db.OperationScheduleDao().getAll()?.let { mutList.addAll(it) }
+                setRelayTimes(mutList)
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception: %s | %s | %s", e.cause, e.stackTraceToString(), e.message
+                )
+            }
+        }
+
+        if ((init0JSON.DEVS.size != 0 && counter == 0)) {
             return iftTermResponse(
                 counter = 0,
                 err = "1",
@@ -407,6 +447,217 @@ class MiroConverter {
         } else {
             return iftTermResponse(counter = counter, err = "0", msg = "Successful")
         }
+    }
+
+    fun setRelayTimes(operationMode: MutableList<OperationSchedule>) {
+        for (op in operationMode) {
+            if (op.modeId == 2) {
+                deleteExistingAlarms(op.uid)
+                //ako je nekontrolirani prolaz, postavit alrm da se relej stavi u HOLD kad to vrijeme pocne
+                //i isto tako ga stavit nazad u PULSE nacin kad to vrijeme zavrsi
+                alarmParser(op)
+            }
+        }
+    }
+
+    private fun deleteExistingAlarms(uid: Int) {
+        val alarmManager = ContextProvider.getApplicationContext()
+            .getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val relayHoldIntent =
+            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+        relayHoldIntent.action = "com.relay.hold"
+
+        val pendingIntentHold = PendingIntent.getBroadcast(
+            ContextProvider.getApplicationContext(),
+            relayHoldIntent.hashCode() + uid,
+            relayHoldIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val relayPulseIntent =
+            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+        relayPulseIntent.action = "com.relay.pulse"
+
+        val pendingIntentPulse = PendingIntent.getBroadcast(
+            ContextProvider.getApplicationContext(),
+            relayPulseIntent.hashCode() + uid,
+            relayPulseIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        //kanceliraj sve prosle alarme
+        alarmManager.cancel(pendingIntentHold)
+        alarmManager.cancel(pendingIntentPulse)
+    }
+
+    fun checkIfHoliday(): Boolean {
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+
+            val currentDateDate = LocalDate.parse(
+                LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            )
+
+            val d1 = db.CalendarDao().getByDate(
+                currentDateDate.dayOfWeek.value,
+                currentDateDate.monthValue,
+                currentDateDate.year
+            )
+
+            val d2 = db.CalendarDao()
+                .getByDate(
+                    currentDateDate.dayOfWeek.value,
+                    currentDateDate.monthValue,
+                    0
+                )
+
+            return (d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)
+        } catch (e: Exception) {
+            Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            return false
+        }
+    }
+
+    private fun alarmParser(op: OperationSchedule) {
+        val localDateTime = LocalDateTime.now().toString()
+
+        val timeStart = SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(
+            localDateTime.substring(
+                0, localDateTime.indexOf('T')
+            ) + 'T' + op.timeFrom
+        )!!.time
+
+        val timeEnd = SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(
+            localDateTime.substring(
+                0, localDateTime.indexOf('T')
+            ) + 'T' + op.timeTo
+        )!!.time
+
+        Timber.d("timeStart: ${Date(timeStart)}, timeEnd: ${Date(timeEnd)}")
+
+        if (op.description.equals("WORKING_DAY") || op.description.equals("HOLIDAY")) {
+            for (i in 2..6) {
+                val cal1 = Calendar.getInstance()
+                val cal2 = Calendar.getInstance()
+
+                cal1.time = Date(timeStart)
+                cal2.time = Date(timeEnd)
+
+                cal1.set(Calendar.DAY_OF_WEEK, i);
+
+                if (cal1.before(Calendar.getInstance())) {
+                    cal1.add(Calendar.WEEK_OF_YEAR, 1)
+                }
+
+                cal2.set(Calendar.DAY_OF_WEEK, i);
+
+                if (cal2.before(Calendar.getInstance())) {
+                    cal2.add(Calendar.WEEK_OF_YEAR, 1)
+                }
+
+                setAlarm(op.uid, cal1.timeInMillis, cal2.timeInMillis)
+            }
+        } else if (op.description.equals("SATURDAY")) {
+            val cal1 = Calendar.getInstance()
+            cal1.time = Date(timeStart)
+            cal1.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+
+            if (cal1.before(Calendar.getInstance())) {
+                cal1.add(Calendar.WEEK_OF_YEAR, 1)
+            }
+
+            val cal2 = Calendar.getInstance()
+            cal2.time = Date(timeEnd)
+            cal2.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
+
+            if (cal2.before(Calendar.getInstance())) {
+                cal2.add(Calendar.WEEK_OF_YEAR, 1)
+            }
+
+            setAlarm(op.uid, cal1.timeInMillis, cal2.timeInMillis)
+        } else if (op.description.equals("SUNDAY")) {
+            val cal1 = Calendar.getInstance()
+            cal1.time = Date(timeStart)
+            cal1.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+            if (cal1.before(Calendar.getInstance())) {
+                cal1.add(Calendar.WEEK_OF_YEAR, 1)
+            }
+
+            val cal2 = Calendar.getInstance()
+            cal2.time = Date(timeEnd)
+            cal2.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+            if (cal2.before(Calendar.getInstance())) {
+                cal2.add(Calendar.WEEK_OF_YEAR, 1)
+            }
+
+            setAlarm(op.uid, cal1.timeInMillis, cal2.timeInMillis)
+        } else if (op.description.contains("SPECIFIC_DAY")) {
+            val date = SimpleDateFormat("yyyy-MM-dd").parse(
+                op.description.substring(
+                    op.description.indexOf(":") + 1
+                )
+            )
+            val dateStartTime = SimpleDateFormat("yyyy-MM-dd").format(date) + 'T' + op.timeFrom
+            val dateEndTime = SimpleDateFormat("yyyy-MM-dd").format(date) + 'T' + op.timeTo
+
+            val cal1 = Calendar.getInstance()
+            cal1.time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(dateStartTime)
+
+            val cal2 = Calendar.getInstance()
+            cal2.time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(dateEndTime)
+
+            setAlarm(op.uid, cal1.timeInMillis, cal2.timeInMillis)
+        }
+    }
+
+    private fun setAlarm(
+        uid: Int,
+        timeStart: Long, timeEnd: Long
+    ) {
+        val relayHoldIntent =
+            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+        relayHoldIntent.action = "com.relay.hold"
+
+        val pendingIntentHold = PendingIntent.getBroadcast(
+            ContextProvider.getApplicationContext(),
+            relayHoldIntent.hashCode() + uid,
+            relayHoldIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val relayPulseIntent =
+            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+        relayPulseIntent.action = "com.relay.pulse"
+
+        val pendingIntentPulse = PendingIntent.getBroadcast(
+            ContextProvider.getApplicationContext(),
+            relayPulseIntent.hashCode() + uid,
+            relayPulseIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val alarmManager = ContextProvider.getApplicationContext()
+            .getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        //ovo se pali 7 puta odjednom il neki k?? mozda zbog koristenja uid i uid+1?
+//        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(timeStart, pendingIntentHold), pendingIntentHold
+//        )
+//
+//        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(timeEnd, pendingIntentPulse), pendingIntentPulse
+//        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            timeStart,
+            pendingIntentHold
+        )
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeEnd, pendingIntentPulse)
     }
 
     private fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
@@ -426,7 +677,9 @@ class MiroConverter {
             )
         }
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.ButtonDao().deleteAll()
             db.ButtonDao().insertAll(mut)
             counter += mut.size
@@ -448,7 +701,9 @@ class MiroConverter {
 
         val scope1 = CoroutineScope(Dispatchers.IO)
         val responseDeferred1 = scope1.async {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             for (card in objectic.CARDS) {
                 try {
                     db.CardDao().deleteByCardNumber(card.toInt())?.let { cardList.add(card) }
@@ -469,7 +724,9 @@ class MiroConverter {
         val scope2 = CoroutineScope(Dispatchers.IO)
         val responseDeferred2 = scope2.async {
             try {
-                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                )
                 for (ac in objectic.ACC_LEVELS_DISTR) {
                     db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
                 }
@@ -491,7 +748,9 @@ class MiroConverter {
         val scope3 = CoroutineScope(Dispatchers.IO)
         val responseDeferred3 = scope3.async {
             try {
-                val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                )
                 for (person in objectic.HOLDERS) {
                     db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
                         ?.let { personList.add(it) }
@@ -541,7 +800,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.PersonDao().insertAll(personList)
             counter += personList.size
         } catch (e: Exception) {
@@ -565,7 +826,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.AccessLevelDao().insertAll(acList)
             counter += acList.size
         } catch (e: Exception) {
@@ -594,7 +857,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.CardDao().insertAll(cardList)
             counter += cardList.size
         } catch (e: Exception) {
@@ -613,10 +878,10 @@ class MiroConverter {
 
     private fun addHoliday(objectic: holidayObject): iftTermResponse {
         var counter = 0
-        val calendarList = mutableListOf<Calendar>()
+        val calendarList = mutableListOf<com.card.terminal.db.entity.Calendar>()
         for (c in objectic.DAYS) {
             calendarList.add(
-                Calendar(
+                com.card.terminal.db.entity.Calendar(
                     uid = c.B0_ID.toInt(),
                     day = c.D.toInt(),
                     month = c.M.toInt(),
@@ -628,7 +893,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.CalendarDao().insertAll(calendarList)
             counter += calendarList.size
         } catch (e: Exception) {
@@ -698,7 +965,9 @@ class MiroConverter {
         val scope = CoroutineScope(Dispatchers.IO)
         //TODO ECODE
         val responseDeferred = scope.async {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
             db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
             var dev_b0_id = 0
             try {

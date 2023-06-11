@@ -72,12 +72,18 @@ object MyHttpClient {
         larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
         publishEventsTask = PublishEventsTask()
 
-        database = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+        database = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
 
         startNettyServer()
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
         (publishEventsTask as PublishEventsTask).startTask()
+
+        larusFunctions?.changeRelayMode(1, 0)
+        larusFunctions?.changeRelayMode(2, ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("relay2State", 0))
     }
 
     fun stopLarusSocket() {
@@ -357,7 +363,10 @@ object MyHttpClient {
             }
 
 
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
             if (published) {
                 val e = db.EventDao()
                     .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
@@ -409,7 +418,10 @@ object MyHttpClient {
                 )
             )
         }
-        val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+        val db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
         db.EventDao().updateEvents(newEvents)
     }
 }

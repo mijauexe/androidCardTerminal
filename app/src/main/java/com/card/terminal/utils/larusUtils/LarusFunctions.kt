@@ -11,6 +11,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.io.IOException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.nio.ByteBuffer
@@ -220,6 +221,15 @@ class LarusFunctions(
                 withContext(Dispatchers.IO) {
                     socket1?.close()
                 }
+            } catch (e: IOException) {
+                if (sharedPreferences.getBoolean("Connection", false)) {
+                    Timber.d(
+                        "Msg: IOException %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
+                }
             } catch (e: NoRouteToHostException) {
                 if (sharedPreferences.getBoolean("Connection", false)) {
                     Timber.d(
@@ -311,6 +321,7 @@ class LarusFunctions(
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Door ${doorNum} opened.")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
@@ -489,6 +500,7 @@ class LarusFunctions(
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Relay ${doorNum} in state: ${doorOpenResponse}")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
@@ -529,6 +541,7 @@ class LarusFunctions(
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Msg: Relay $doorNum set to ${pulseOrHold}")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
@@ -536,7 +549,6 @@ class LarusFunctions(
                 println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
-            Timber.d("Msg: Door $doorNum opened")
         }
     }
 

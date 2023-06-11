@@ -28,12 +28,12 @@ abstract class AppDatabase : RoomDatabase() {
 
                 //TODO MAKNI MAIN THREAD QUERIES...
             }
-            Timber.d("Msg: Instantiating database")
-            Timber.d("Msg: start stacktrace")
-            for (element in stackTrace) {
-                Timber.d("${element.className}.${element.methodName}, ln ${element.lineNumber}")
-            }
-            Timber.d("Msg: end stacktrace")
+//            Timber.d("Msg: Instantiating database")
+//            Timber.d("Msg: start stacktrace")
+//            for (element in stackTrace) {
+//                Timber.d("${element.className}.${element.methodName}, ln ${element.lineNumber}")
+//            }
+//            Timber.d("Msg: end stacktrace")
             return instance as AppDatabase
         }
     }

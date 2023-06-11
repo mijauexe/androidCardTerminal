@@ -31,9 +31,11 @@ import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
+import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.utils.ContextProvider
+import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.ShowDateTime
 import com.card.terminal.utils.omniCardUtils.OmniCard
 import fr.bipi.tressence.context.GlobalContext.stopTimber
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
+
         mAdminComponentName = AdminReceiver.getComponentName(this)
         mDevicePolicyManager =
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -167,6 +170,26 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer!!.setOnCompletionListener { mediaPlayer -> // Release the MediaPlayer resources
             mediaPlayer.release()
         }
+
+        rescheduleAlarms()
+    }
+
+    private fun rescheduleAlarms() {
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                MiroConverter().setRelayTimes(
+                    db.OperationScheduleDao().getAll() as MutableList<OperationSchedule>
+                )
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while rescheduling alarms: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
     }
 
     private fun startLogger() {
@@ -217,6 +240,8 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
+
+//        MyHttpClient.larusFunctions?.setDoorTime(3000, 6000, 3000, 6000)
         setObservers()
     }
 
@@ -416,6 +441,7 @@ class MainActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putString("CardCode", it["CardCode"])
         bundle.putString("DateTime", it["DateTime"])
+        Timber.d("skenirao se: ${it}")
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
@@ -424,10 +450,13 @@ class MainActivity : AppCompatActivity() {
             LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
                 .isBefore(LocalDateTime.now())
         ) {
+            Timber.d("usao u prvi if")
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
+                Timber.d("dohvatio karticu")
                 val person =
                     card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
+                Timber.d("dohvatio osobu")
 
                 if (person != null && card != null) {
                     bundle.putString("firstName", person.firstName)
@@ -450,12 +479,12 @@ class MainActivity : AppCompatActivity() {
                         supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
                     navHostFragment.navController
 
-                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-
                     val currentTime =
                         LocalTime.parse(
                             LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                         )
+
+//                    val currentTime = LocalTime.parse("14:31:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
 
                     val currentDateString =
                         LocalDateTime.now()
@@ -470,28 +499,36 @@ class MainActivity : AppCompatActivity() {
                         currentDayNum == 1 -> {
                             currentDayString = "MONDAY"
                         }
+
                         currentDayNum == 2 -> {
                             currentDayString = "TUESDAY"
                         }
+
                         currentDayNum == 3 -> {
                             currentDayString = "WEDNESDAY"
                         }
+
                         currentDayNum == 4 -> {
                             currentDayString = "THURSDAY"
                         }
+
                         currentDayNum == 5 -> {
                             currentDayString = "FRIDAY"
                         }
+
                         currentDayNum == 6 -> {
                             currentDayString = "SATURDAY"
                         }
+
                         currentDayNum == 7 -> {
                             currentDayString = "SUNDAY"
                         }
                     }
+                    Timber.d("Danas je ${currentDayString}")
 
                     try {
                         val dbSchedule1 = db.OperationScheduleDao().getAll()
+                        Timber.d("dohvatio raspored: ${dbSchedule1}")
                         var conforms = -1 //doesnt conform to anything before checking
                         var containsIfNotSchedule =
                             false //if contains IF_NOT_SCHEDULE param
@@ -503,6 +540,7 @@ class MainActivity : AppCompatActivity() {
                             currentDateDate.monthValue,
                             currentDateDate.year
                         )
+                        Timber.d("d1: ${d1?.workDay}, ${d1?.day}, ${d1?.description}")
 
                         val d2 = db.CalendarDao()
                             .getByDate(
@@ -510,14 +548,18 @@ class MainActivity : AppCompatActivity() {
                                 currentDateDate.monthValue,
                                 0
                             )
+                        Timber.d("d2: ${d2?.workDay}, ${d2?.day}, ${d2?.description}")
 
                         if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
                             isTodayHoliday = true
+                            Timber.d("Danas je praznik: True")
                         }
 
                         if (dbSchedule1 != null) {
                             for (sch in dbSchedule1) {
 
+                                Timber.d("currentTime je ${currentTime}")
+                                Timber.d("timeFrom: ${sch.timeFrom}, timeTo: ${sch.timeTo}")
                                 val timeConforms =
                                     currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
                                         LocalTime.parse(sch.timeTo)
@@ -532,25 +574,31 @@ class MainActivity : AppCompatActivity() {
                                 ) {
                                     conforms =
                                         db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    Timber.d("SPECIFIC DAY")
                                     break
                                 } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
                                     conforms =
                                         db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    Timber.d("HOLIDAY")
                                     break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
                                     conforms =
                                         db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    Timber.d("WORKING_DAY")
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
                                     conforms =
                                         db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                    Timber.d("currentDayString: ${currentDayString}")
                                     break
                                 }
                             }
 
                             if (conforms == -1 && containsIfNotSchedule) {
                                 passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
+                                Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
                             } else {
+                                Timber.d("db.OperationScheduleDao().getById(conforms)?.modeId!!,")
                                 passageControl(
                                     db.OperationScheduleDao().getById(conforms)?.modeId!!,
                                     it["CardCode"]!!,
@@ -558,6 +606,9 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                         } else {
+                            Timber.d(
+                                "Nemam raspored kontrole"
+                            )
                             showDialog(
                                 "Nemam raspored kontrole! Kartica ${it["CardCode"]}",
                                 false
@@ -574,6 +625,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 } else {
+                    Timber.d("Greška u bazi podataka! Kartica ${it["CardCode"]}")
                     showDialog(
                         "Greška u bazi podataka! Kartica ${it["CardCode"]}",
                         false
@@ -604,56 +656,73 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         if (free == 2) {
-            bundle.putBoolean("noButtonClickNeededRegime", true)
-            val err = switchRelays(cardCode.toInt(), true)
+            Timber.d("passageControl: ne treba izbor")
 
-            if (!err) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_CheckoutFragment,
-                            bundle
-                        )
-                    }
-                    R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_MainFragment,
-                            bundle
-                        )
-                    }
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                            false
-                        )
-                    }
+            bundle.putBoolean("noButtonClickNeededRegime", true)
+//            val err = switchRelays(cardCode.toInt(), true)
+
+//            if (!err) {
+            Timber.d("nema err")
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    Timber.d("action_mainFragment_to_CheckoutFragment")
+
+                    navController.navigate(
+                        R.id.action_mainFragment_to_CheckoutFragment,
+                        bundle
+                    )
+                }
+
+//                    R.id.CheckoutFragment -> {
+//                        Timber.d("action_CheckoutFragment_to_MainFragment")
+//
+//                        navController.navigate(
+//                            R.id.action_CheckoutFragment_to_MainFragment,
+//                            bundle
+//                        )
+//                    }
+
+                R.id.SettingsFragment -> {
+                    showDialog(
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                        false
+                    )
                 }
             }
+//            }
         } else if (free == 3) {
+            Timber.d("passageControl: TREBA izbor")
             bundle.putBoolean("noButtonClickNeededRegime", false)
-            val err = switchRelays(cardCode.toInt(), false)
-            if (!err) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    //ako se tipke trebaju stisnut
-                    R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
-                    R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_FirstFragment,
-                            bundle
-                        )
-                    }
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                            false
-                        )
-                    }
+//            val err = switchRelays(cardCode.toInt(), false)
+//            if (!err) {
+            Timber.d("nema errora")
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                //ako se tipke trebaju stisnut
+                R.id.MainFragment -> {
+                    Timber.d("action_mainFragment_to_FirstFragment")
+
+                    navController.navigate(
+                        R.id.action_mainFragment_to_FirstFragment,
+                        bundle
+                    )
                 }
+
+                R.id.CheckoutFragment -> {
+                    Timber.d("action_CheckoutFragment_to_FirstFragment")
+                    navController.navigate(
+                        R.id.action_CheckoutFragment_to_FirstFragment,
+                        bundle
+                    )
+                }
+
+                R.id.SettingsFragment -> {
+                    showDialog(
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
+                        false
+                    )
+                }
+//                }
             }
         } else {
             showDialog(
@@ -671,6 +740,7 @@ class MainActivity : AppCompatActivity() {
             //NE RADI NISTA; TEO NE KUPI OCITANJA KAD JE RELEJ UPALJEN PA JE SVE SJEBANO
         } else if (prefs.getInt("IFTTERM2_B0_ID", 0) == 214) {
             //porta1
+            Timber.d("Dosao u switchRelays, linija 713")
             MyHttpClient.hepPort1RelaysToggle(noButtonClickNeededRegime)
         } else {
             err = true
