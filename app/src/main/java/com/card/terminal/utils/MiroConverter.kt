@@ -50,10 +50,6 @@ class MiroConverter {
         val counter: Int, val err: String, val msg: String
     )
 
-    data class CREAD(
-        val CN: String, val GENT: String, val ECODE: String, val DEV_B0_ID: String
-    )
-
     data class EventStringPair(
         val eventList: List<Event>, val eventString: String
     )
@@ -110,13 +106,19 @@ class MiroConverter {
         @SerializedName("SCHEDULE") val SCHEDULE: ArrayList<SCHEDULE>
     )
 
+    data class IMAGES(
+        @SerializedName("CAPTURE_ON_EVENT") val CAPTURE_ON_EVENT: String,
+        @SerializedName("IMG_SIZE") val IMG_SIZE: String,
+        @SerializedName("SEND_TO_IFTSRV2") val SEND_TO_IFTSRV2: String,
+    )
+
 
     data class init0Object(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
         @SerializedName("IFTTERM2_DESCR") val IFTTERM2_DESCR: String,
         @SerializedName("OPERATION_MODE") val OPERATION_MODE: OPERATION_MODE,
-
+        @SerializedName("IMAGES") val IMAGES: IMAGES,
         @SerializedName("B0_SERVER") val B0_SERVER: B0_SERVER,
         @SerializedName("DEVS") val DEVS: ArrayList<DEVS>,
         @SerializedName("EVENT_CODE2") val EVENT_CODE2: ArrayList<EVENT_CODE2>
@@ -243,9 +245,9 @@ class MiroConverter {
                         personList.add(newP)
                     }
                 } catch (e: java.lang.Exception) {
-
+                    Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                 } catch (e: Exception) {
-
+                    Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                 }
             }
 
@@ -319,14 +321,32 @@ class MiroConverter {
                 "DEV_B0_ID", objectic.DEVS[0].B0_ID.toInt()
             ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
+            if (objectic.IMAGES.CAPTURE_ON_EVENT.equals("YES")) {
+                editor.putBoolean("CaptureOnEvent", true)
+            } else {
+                editor.putBoolean("CaptureOnEvent", false)
+            }
+
+            if (objectic.IMAGES.IMG_SIZE.equals("SMALL")) {
+                editor.putInt("ImageSize", 50)
+            } else if (objectic.IMAGES.IMG_SIZE.equals("MEDIUM")) {
+                editor.putInt("ImageSize", 75)
+            } else {
+                editor.putInt("ImageSize", 100)
+            }
+
+            if (objectic.IMAGES.SEND_TO_IFTSRV2.equals("YES")) {
+                editor.putBoolean("pushImageToServer", true)
+            } else {
+                editor.putBoolean("pushImageToServer", false)
+            }
+
             editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString(
                 "serverIP", "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
             editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
-
             counter += 4
-
             editor.apply()
         }
 
@@ -443,17 +463,18 @@ class MiroConverter {
 
     suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
         var deletionCounter = 0
-        val cardList = mutableListOf<Card>()
+        val cardList = mutableListOf<String>()
         val accessLevelList = mutableListOf<AccessLevel>()
         val personList = mutableListOf<Person>()
 
         val scope1 = CoroutineScope(Dispatchers.IO)
         val responseDeferred1 = scope1.async {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext()
+            )
             for (card in objectic.CARDS) {
                 try {
-                    db.CardDao().deleteByCardNumber(card.toInt())
+                    db.CardDao().deleteByCardNumber(card.toInt())?.let { cardList.add(card) }
                     deletionCounter += 1
                 } catch (e: Exception) {
                     Timber.d(
@@ -471,7 +492,9 @@ class MiroConverter {
         val scope2 = CoroutineScope(Dispatchers.IO)
         val responseDeferred2 = scope2.async {
             try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext()
+                )
                 for (ac in objectic.ACC_LEVELS_DISTR) {
                     db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
                 }
@@ -493,7 +516,9 @@ class MiroConverter {
         val scope3 = CoroutineScope(Dispatchers.IO)
         val responseDeferred3 = scope3.async {
             try {
-                val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext()
+                )
                 for (person in objectic.HOLDERS) {
                     db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
                         ?.let { personList.add(it) }
@@ -603,7 +628,7 @@ class MiroConverter {
                 try {
                     db.CardDao().deleteByCardNumber(card.cardNumber)
                 } catch (e: java.lang.Exception) {
-
+                    Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                 }
                 db.CardDao().insert(card)
             }
@@ -691,23 +716,37 @@ class MiroConverter {
 
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
-        val id = prefs.getInt("IFTTERM2_B0_ID", 0)
+        val id = prefs.getInt("IFTTERM2_B0_ID", 666)
 
         var eCode2 = cardResponse.getInt("eCode2", 696969)
         if (cardResponse.getBoolean("NoOptionPressed")) {
             eCode2 = 0
         }
 
-        return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
-            cardResponse.get(
-                "CardCode"
-            )
-        }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
-            eCode2
-        }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
+        var img = cardResponse.getString("EventImage", "")
+        if (!prefs.getBoolean("pushImageToServer", false)) {
+            img = ""
+        }
+
+        val rtr2 = "{\n" +
+                "    \"ACT\": \"NEW_EVENTS\",\n" +
+                "    \"IFTTERM2_B0_ID\": \"nnn\",\n" +
+                "    \"CREAD\": [\n" +
+                "        {\n" +
+                "            \"CN\": \"${cardResponse.getString("CardCode", "")}\",\n" +
+                "            \"GENT\": \"${cardResponse.getString("DateTime", "")}\",\n" +
+                "            \"ECODE\": \"${eCode}\",\n" +
+                "            \"ECODE2\": \"${eCode2}\",\n" +
+                "            \"DEV_B0_ID\": \"${id}\",\n" +
+                "            \"IMG_B64\": \"${img}\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+
+        return rtr2
     }
 
-    suspend fun getFormattedUnpublishedEvents(iftTermId: Int, eCode2: Int): EventStringPair {
+    suspend fun getFormattedUnpublishedEvents(iftTermId: Int): EventStringPair {
         var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
         val unpublishedEvents = mutableListOf<Event>()
         val scope = CoroutineScope(Dispatchers.IO)
@@ -742,17 +781,5 @@ class MiroConverter {
         }
         responseDeferred.await()
         return EventStringPair(unpublishedEvents, strNew)
-    }
-
-    fun convertECode(s: String): Int {
-        var eCode = -1
-        when (s) {
-            s -> eCode = 0
-//            "Liječnik" -> eCode = 3
-//            "Privatno" -> eCode = 4
-//            "Pauza" -> eCode = 5
-//            "Poslovno" -> eCode = 6
-        }
-        return eCode
     }
 }

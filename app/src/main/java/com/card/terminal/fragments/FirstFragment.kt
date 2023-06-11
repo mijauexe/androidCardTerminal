@@ -184,7 +184,7 @@ class FirstFragment : Fragment() {
                     findNavController().navigate(
                         R.id.action_FirstFragment_to_CheckoutFragment, bundle
                     )
-                    MyHttpClient.openDoor(1)
+//                    MyHttpClient.openDoor(1)
                 }
             }
         }, 500)

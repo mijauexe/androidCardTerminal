@@ -14,24 +14,15 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.media.Image
 import android.media.ImageReader
-import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Base64
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
 
 object CameraUtils {
-    private const val TAG = "CameraUtils"
-    private const val PERMISSIONS_REQUEST_CAMERA = 1001
     private const val IMAGE_WIDTH = 640
     private const val IMAGE_HEIGHT = 480
 
@@ -45,7 +36,9 @@ object CameraUtils {
 
     private val imageAvailableListener = ImageReader.OnImageAvailableListener { reader ->
         val image: Image? = reader.acquireLatestImage()
-        saveImage(image)
+        saveImage(
+            image
+        )
         image?.close()
         closeCamera()
     }
@@ -85,7 +78,7 @@ object CameraUtils {
                 }
             }, null)
         } catch (e: CameraAccessException) {
-            Log.e(TAG, "Failed to open camera: ${e.message}")
+            Timber.d("Failed to open camera: ${e.message}")
         }
     }
 
@@ -103,7 +96,7 @@ object CameraUtils {
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {
-                        Log.e(TAG, "Failed to configure capture session.")
+                        Timber.d("Failed to configure capture session. | ${session}")
                     }
                 }, null
             )
@@ -128,10 +121,9 @@ object CameraUtils {
         try {
             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
             val outputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             val imgBytes = outputStream.toByteArray()
             val base64String = Base64.encodeToString(imgBytes, Base64.DEFAULT)
-
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             val editor = prefs.edit()
@@ -181,7 +173,7 @@ object CameraUtils {
         try {
             backgroundThread.join()
         } catch (e: InterruptedException) {
-            Log.e(TAG, "Interrupted while waiting for background thread: ${e.message}")
+            Timber.d("Interrupted while waiting for background thread: ${e.message}")
         }
     }
 }

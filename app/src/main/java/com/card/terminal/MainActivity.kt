@@ -265,45 +265,45 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        mutableLarusCode.observe(this) {
-            if (it["CardCode"] == "CONNECTION_RESTORED") {
-
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Molimo očitajte karticu."
-                        ddd.visibility = View.VISIBLE
-                    }
-                }
-            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        handleCardScan(it)
-                    }
-
-                    R.id.CheckoutFragment -> {
-                        handleCardScan(it)
-                    }
-
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
-                            false
-                        )
-                    }
-                }
-            } else if (it["CardCode"] == "CONNECTION_LOST") {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Prekinuta LAN mreža."
-                        ddd.visibility = View.GONE
-                    }
-                }
-            }
-        }
+//        mutableLarusCode.observe(this) {
+//            if (it["CardCode"] == "CONNECTION_RESTORED") {
+//
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Molimo očitajte karticu."
+//                        ddd.visibility = View.VISIBLE
+//                    }
+//                }
+//            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.CheckoutFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.SettingsFragment -> {
+//                        showDialog(
+//                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+//                            false
+//                        )
+//                    }
+//                }
+//            } else if (it["CardCode"] == "CONNECTION_LOST") {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Prekinuta LAN mreža."
+//                        ddd.visibility = View.GONE
+//                    }
+//                }
+//            }
+//        }
 
         mutableCardCode.observe(this) {
             if (!cardScannerActive) {
@@ -426,8 +426,6 @@ class MainActivity : AppCompatActivity() {
                     val navHostFragment =
                         supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
                     navHostFragment.navController
-
-                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
                     val currentTime = LocalTime.parse(
                         LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))

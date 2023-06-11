@@ -51,7 +51,7 @@ class CheckoutFragment : Fragment() {
         }
 
         val existingBundle = requireArguments()
-        MyHttpClient.openDoor(1)
+//        MyHttpClient.openDoor(1)
 
         eventImageLogic(existingBundle)
 
@@ -90,17 +90,15 @@ class CheckoutFragment : Fragment() {
 
         if (prefs.getBoolean("CaptureOnEvent", true)) {
             CameraUtils.captureImage(ContextProvider.getApplicationContext())
-        }
-
-        if (prefs.getBoolean("pushImageToServer", false)) {
-            val b64Img = prefs.getString(
-                "EventImage",
-                ""
+            existingBundle.putString(
+                "EventImage", prefs.getString(
+                    "EventImage",
+                    ""
+                )
             )
-            if (!b64Img.equals("")) {
-                existingBundle.putString("EventImage", b64Img)
-            } else
-                existingBundle.putString("EventImage", "")
+            val editor = prefs.edit()
+            editor.putString("EventImage", "")
+            editor.commit()
         }
     }
 

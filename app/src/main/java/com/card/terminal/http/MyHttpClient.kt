@@ -83,8 +83,8 @@ object MyHttpClient {
 
         mutableCode = code
 
-        larusFunctions = LarusFunctions(client!!, mutableCode)
-        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+//        larusFunctions = LarusFunctions(client!!, mutableCode)
+//        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
         publishEventsTask = PublishEventsTask()
 
         database = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
@@ -92,11 +92,13 @@ object MyHttpClient {
         startNettyServer()
 
 //        (larusCheckScansTask as LarusCheckScansTask).startTask()
-//        (publishEventsTask as PublishEventsTask).startTask()
+        (publishEventsTask as PublishEventsTask).startTask()
     }
 
     fun stopLarusSocket() {
-        (larusCheckScansTask as LarusCheckScansTask).stopTask()
+        if(larusCheckScansTask != null) {
+            (larusCheckScansTask as LarusCheckScansTask).stopTask()
+        }
     }
 
     fun startLarusSocket() {
@@ -349,8 +351,7 @@ object MyHttpClient {
                 mySharedPreferences.getInt(
                     "IFTTERM2_B0_ID",
                     696969
-                ),
-                mySharedPreferences.getInt("eCode2", 696969)
+                )
             )
 
             if (esp.eventList.isNotEmpty()) {
