@@ -28,7 +28,22 @@ import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.util.*
-
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.post
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 object MyHttpClient {
     private var client: HttpClient? = null
 
@@ -81,13 +96,18 @@ object MyHttpClient {
 
         (larusCheckScansTask as LarusCheckScansTask).startTask()
         (publishEventsTask as PublishEventsTask).startTask()
-
+//        val prefs = ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+//        val editor = prefs.edit()
+//        editor.putInt("relay2State", 0)
+//        editor.commit()
         larusFunctions?.changeRelayMode(1, 0)
         larusFunctions?.changeRelayMode(2, ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("relay2State", 0))
     }
 
     fun stopLarusSocket() {
-        (larusCheckScansTask as LarusCheckScansTask).stopTask()
+        if(larusCheckScansTask != null) {
+            (larusCheckScansTask as LarusCheckScansTask).stopTask()
+        }
     }
 
     fun startLarusSocket() {
@@ -98,12 +118,15 @@ object MyHttpClient {
     }
 
     fun openDoor(doorNum: Int) {
-//        larusFunctions?.setDoorTime(3000, 5000, 0, 0)
         larusFunctions?.openDoor(doorNum)
     }
 
     fun checkDoor(doorNum: Int) {
         larusFunctions?.stateDoor(doorNum)
+    }
+
+    fun reset() {
+        larusFunctions?.reset()
     }
 
     fun hepPort1RelaysToggle(noButtonClickNeededRegime: Boolean) {
@@ -273,16 +296,21 @@ object MyHttpClient {
                         }
                 if (response != null) {
                     println(response.bodyAsText())
-                    if (response.bodyAsText().contains("\"CODE\":\"0\"")
-                        && response.bodyAsText()
-                            .contains("\"NUM_CREAD\":\"1\"")
-                    )
+                    if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
-                    Timber.d(
-                        "Msg: user %s scanned, response sent to server: %b",
-                        cardResponse,
-                        true
-                    )
+                        Timber.d(
+                            "Msg: user %s scanned, response sent to server: %b",
+                            cardResponse,
+                            true
+                        )
+                    } else {
+                        eventToDatabase(cardResponse, false)
+                        Timber.d(
+                            "Msg: user %s scanned, response sent to server: %b",
+                            cardResponse,
+                            false
+                        )
+                    }
                 }
             } catch (ce: ConnectException) {
                 Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
@@ -301,7 +329,6 @@ object MyHttpClient {
     fun publishUnpublishedEvents() {
         val scopeSven = CoroutineScope(Dispatchers.IO)
         scopeSven.launch {
-
             val mySharedPreferences = withContext(Dispatchers.Main) {
                 ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
@@ -354,6 +381,7 @@ object MyHttpClient {
     }
 
     fun eventToDatabase(cardResponse: Bundle, published: Boolean) {
+
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
 
@@ -362,11 +390,7 @@ object MyHttpClient {
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             }
 
-
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(),
-                Thread.currentThread().stackTrace
-            )
+            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
             if (published) {
                 val e = db.EventDao()
                     .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
@@ -378,29 +402,31 @@ object MyHttpClient {
                         cardNumber = it.cardNumber,
                         dateTime = it.dateTime,
                         published = true,
-                        deviceId = it.deviceId
+                        deviceId = it.deviceId,
+                        image = it.image
                     )
                 }
                 if (newE != null) {
                     db.EventDao().update(newE)
                 }
             } else {
+                var img = ""
+                if (cardResponse.containsKey("EventImage")) {
+                    img = cardResponse.getString("EventImage")!!
+                }
                 val event = Event(
-                    eventCode = 2, //TODO
-                    eventCode2 = cardResponse.getInt("eCode2"),
+                    eventCode = cardResponse.getInt("eCode"), //TODO
+                    eventCode2 = cardResponse.getInt("eCode2", 6968),
                     cardNumber = cardResponse.get("CardCode").toString().toInt(),
                     dateTime = cardResponse.get("DateTime").toString(),
                     published = published,
                     uid = 0, //auto-generate
-                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969) //TODO
+                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969),//TODO
+                    image = img
                 )
                 db.EventDao().insert(event)
             }
-
-
         }
-
-
     }
 
     fun updateEvents(list: List<Event>) {
@@ -414,7 +440,8 @@ object MyHttpClient {
                     cardNumber = e.cardNumber,
                     dateTime = e.dateTime,
                     published = true,
-                    deviceId = 0 //TODO
+                    deviceId = 0, //TODO
+                    image = e.image
                 )
             )
         }

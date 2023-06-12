@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="com.hidglobal.ia.omnikey.service.permission.SMARTCARDIO" />
-
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -81,6 +81,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".receivers.USBReceiver"
+            android:permission="android.permission.USB_PERMISSION"
+            android:exported="true">
+            <intent-filter >
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"/>
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".BootReceiver"
             android:exported="true"

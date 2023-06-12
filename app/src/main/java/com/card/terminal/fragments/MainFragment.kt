@@ -12,9 +12,6 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
 import com.card.terminal.http.MyHttpClient
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -26,14 +23,6 @@ class MainFragment : Fragment() {
         Timber.d("MainFragment onCreateView")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        if (act.getDateTime() != null) {
-            _binding?.tvDate?.text =
-                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("d. MMMM yyyy.", Locale("hr")))
-            _binding?.tvClock?.text =
-                LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                    .format(DateTimeFormatter.ofPattern("HH:mm"))
-        }
         act.cardScannerActive = false
         return _binding?.root
     }
@@ -82,8 +71,7 @@ class MainFragment : Fragment() {
             }
 
             _binding?.ifsimusLogo?.setOnClickListener {
-                MyHttpClient.checkDoor(1)
-                MyHttpClient.checkDoor(2)
+                MyHttpClient.reset()
             }
         }
     }

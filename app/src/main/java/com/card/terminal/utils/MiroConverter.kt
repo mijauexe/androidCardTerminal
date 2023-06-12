@@ -17,8 +17,8 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Date
+import java.util.Calendar
 
 class MiroConverter {
     data class HOLDERS(
@@ -57,10 +57,6 @@ class MiroConverter {
 
     data class iftTermResponse(
         val counter: Int, val err: String, val msg: String
-    )
-
-    data class CREAD(
-        val CN: String, val GENT: String, val ECODE: String, val DEV_B0_ID: String
     )
 
     data class EventStringPair(
@@ -119,13 +115,19 @@ class MiroConverter {
         @SerializedName("SCHEDULE") val SCHEDULE: ArrayList<SCHEDULE>
     )
 
+    data class IMAGES(
+        @SerializedName("CAPTURE_ON_EVENT") val CAPTURE_ON_EVENT: String,
+        @SerializedName("IMG_SIZE") val IMG_SIZE: String,
+        @SerializedName("SEND_TO_IFTSRV2") val SEND_TO_IFTSRV2: String,
+    )
+
 
     data class init0Object(
         @SerializedName("ACT") val ACT: String,
         @SerializedName("IFTTERM2_B0_ID") val IFTTERM2_B0_ID: String,
         @SerializedName("IFTTERM2_DESCR") val IFTTERM2_DESCR: String,
         @SerializedName("OPERATION_MODE") val OPERATION_MODE: OPERATION_MODE,
-
+        @SerializedName("IMAGES") val IMAGES: IMAGES,
         @SerializedName("B0_SERVER") val B0_SERVER: B0_SERVER,
         @SerializedName("DEVS") val DEVS: ArrayList<DEVS>,
         @SerializedName("EVENT_CODE2") val EVENT_CODE2: ArrayList<EVENT_CODE2>
@@ -163,7 +165,8 @@ class MiroConverter {
         Timber.d("Got server request: $operation")
         if (operation.contains("ADD_INIT1")) {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.CardDao().deleteAll()
             db.AccessLevelDao().deleteAll()
@@ -235,8 +238,10 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
+
             for (person in objectic.PHOTOS) {
                 try {
                     val p = db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
@@ -255,9 +260,19 @@ class MiroConverter {
                         personList.add(newP)
                     }
                 } catch (e: java.lang.Exception) {
-
+                    Timber.d(
+                        "Msg: Exception %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
                 } catch (e: Exception) {
-
+                    Timber.d(
+                        "Msg: Exception %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
                 }
             }
 
@@ -283,12 +298,13 @@ class MiroConverter {
         }
     }
 
-    private suspend fun init0(init0JSON: init0Object): iftTermResponse {
+    private suspend fun init0(objectic: init0Object): iftTermResponse {
         var counter = 0
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.OperationModeDao().deleteAll()
         } catch (e: Exception) {
@@ -302,7 +318,8 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.OperationScheduleDao().deleteAll()
         } catch (e: Exception) {
@@ -316,7 +333,8 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.DeviceDao().deleteAll()
         } catch (e: Exception) {
@@ -332,31 +350,49 @@ class MiroConverter {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
             val editor = prefs.edit()
-            editor.putInt("IFTTERM2_B0_ID", init0JSON.IFTTERM2_B0_ID.toInt())
+            editor.putInt("IFTTERM2_B0_ID", objectic.IFTTERM2_B0_ID.toInt())
             editor.putInt(
-                "DEV_B0_ID", init0JSON.DEVS[0].B0_ID.toInt()
+                "DEV_B0_ID", objectic.DEVS[0].B0_ID.toInt()
             ) //TODO OVDJE UZIMAM SAMO PRVI JER POSTOJI SAMO 1 UREDAJ
 
-            editor.putString("IFTTERM2_DESCR", init0JSON.IFTTERM2_DESCR)
+            if (objectic.IMAGES.CAPTURE_ON_EVENT.equals("YES")) {
+                editor.putBoolean("CaptureOnEvent", true)
+            } else {
+                editor.putBoolean("CaptureOnEvent", false)
+            }
+
+            if (objectic.IMAGES.IMG_SIZE.equals("SMALL")) {
+                editor.putInt("ImageSize", 50)
+            } else if (objectic.IMAGES.IMG_SIZE.equals("MEDIUM")) {
+                editor.putInt("ImageSize", 75)
+            } else {
+                editor.putInt("ImageSize", 100)
+            }
+
+            if (objectic.IMAGES.SEND_TO_IFTSRV2.equals("YES")) {
+                editor.putBoolean("pushImageToServer", true)
+            } else {
+                editor.putBoolean("pushImageToServer", false)
+            }
+
+            editor.putString("IFTTERM2_DESCR", objectic.IFTTERM2_DESCR)
             editor.putString(
-                "serverIP", "http://" + init0JSON.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
+                "serverIP", "http://" + objectic.B0_SERVER.IP + "/b0pass/b0pass_iftp2.php"
             )
-            editor.putInt("serverPort", init0JSON.B0_SERVER.HTTP_PORT.toInt())
-
+            editor.putInt("serverPort", objectic.B0_SERVER.HTTP_PORT.toInt())
             counter += 4
-
             editor.apply()
         }
 
         val operationModeList = mutableListOf<OperationMode>()
 
-        for (def in init0JSON.OPERATION_MODE.DEFINITIONS) {
+        for (def in objectic.OPERATION_MODE.DEFINITIONS) {
             operationModeList.add(OperationMode(uid = def.ID.toInt(), description = def.DESCR))
         }
 
         val operationScheduleList = mutableListOf<OperationSchedule>()
 
-        for (sch in init0JSON.OPERATION_MODE.SCHEDULE) {
+        for (sch in objectic.OPERATION_MODE.SCHEDULE) {
             operationScheduleList.add(
                 OperationSchedule(
                     uid = 0, //auto-generate
@@ -370,7 +406,8 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.OperationModeDao().insertAll(operationModeList)
             counter += operationModeList.size
@@ -385,7 +422,8 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.OperationScheduleDao().insertAll(operationScheduleList)
             counter += operationScheduleList.size
@@ -400,15 +438,16 @@ class MiroConverter {
 
         try {
             val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
             )
             db.DeviceDao().insert(
                 Device(
-                    uid = init0JSON.DEVS[0].B0_ID.toInt(),
-                    localId = init0JSON.DEVS[0].LOCAL_ID.toInt(),
+                    uid = objectic.DEVS[0].B0_ID.toInt(),
+                    localId = objectic.DEVS[0].LOCAL_ID.toInt(),
                     controlIn = 0/*objectic.DEVS[0].CONTROL_IN.toInt()*/,
                     controlOut = 0/*objectic.DEVS[0].CONTROL_OUT.toInt()*/,
-                    description = init0JSON.DEVS[0].DESCR
+                    description = objectic.DEVS[0].DESCR
                 )
             )
             counter += 1
@@ -421,24 +460,9 @@ class MiroConverter {
             )
         }
 
-        parseButtons(init0JSON.EVENT_CODE2)
+        parseButtons(objectic.EVENT_CODE2)
 
-        if (init0JSON.IFTTERM2_B0_ID.toInt() == 214) {
-            try {
-                val db = AppDatabase.getInstance(
-                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-                )
-                val mutList = mutableListOf<OperationSchedule>()
-                db.OperationScheduleDao().getAll()?.let { mutList.addAll(it) }
-                setRelayTimes(mutList)
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception: %s | %s | %s", e.cause, e.stackTraceToString(), e.message
-                )
-            }
-        }
-
-        if ((init0JSON.DEVS.size != 0 && counter == 0)) {
+        if ((objectic.DEVS.size != 0 && counter == 0)) {
             return iftTermResponse(
                 counter = 0,
                 err = "1",
@@ -447,6 +471,387 @@ class MiroConverter {
         } else {
             return iftTermResponse(counter = counter, err = "0", msg = "Successful")
         }
+    }
+
+    private fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
+        val mut = mutableListOf<Button>()
+        var counter = 0
+
+        for (btn in eventCode2) {
+            mut.add(
+                Button(
+                    uid = 0,
+                    classType = btn.CLASESS,
+                    label = btn.LABEL,
+                    title = btn.TITLE,
+                    eCode2 = btn.ID.toInt(),
+                    eCode = btn.B0_DEV_E_CODE.toInt()
+                )
+            )
+        }
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+            db.ButtonDao().deleteAll()
+            db.ButtonDao().insertAll(mut)
+            counter += mut.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while adding buttons in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+    }
+
+    suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
+        var deletionCounter = 0
+        val cardList = mutableListOf<String>()
+        val accessLevelList = mutableListOf<AccessLevel>()
+        val personList = mutableListOf<Person>()
+
+        val scope1 = CoroutineScope(Dispatchers.IO)
+        val responseDeferred1 = scope1.async {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+
+            for (card in objectic.CARDS) {
+                try {
+                    db.CardDao().deleteByCardNumber(card.toInt())?.let { cardList.add(card) }
+                    deletionCounter += 1
+                } catch (e: Exception) {
+                    Timber.d(
+                        "Exception while deleting cards in db: %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
+                }
+            }
+        }
+        responseDeferred1.await()
+        print(responseDeferred1)
+
+        val scope2 = CoroutineScope(Dispatchers.IO)
+        val responseDeferred2 = scope2.async {
+            try {
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(),
+                    Thread.currentThread().stackTrace
+                )
+
+                for (ac in objectic.ACC_LEVELS_DISTR) {
+                    db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
+                }
+                db.AccessLevelDao().deleteMany(accessLevelList)
+                deletionCounter += accessLevelList.size
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while deleting access levels in db: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+        responseDeferred2.await()
+        print(responseDeferred2)
+
+
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        val responseDeferred3 = scope3.async {
+            try {
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(),
+                    Thread.currentThread().stackTrace
+                )
+
+                for (person in objectic.HOLDERS) {
+                    db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
+                        ?.let { personList.add(it) }
+                }
+                db.PersonDao().deleteMany(personList)
+                deletionCounter += personList.size
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while deleting holders in db: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+        responseDeferred3.await()
+        print(responseDeferred3)
+
+        if ((cardList.size == 0 && objectic.CARDS.size != 0) || (accessLevelList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
+            return iftTermResponse(
+                counter = deletionCounter,
+                err = "1",
+                msg = "Not all entries were successfully deleted. Check logs: ${LocalDateTime.now()}"
+            )
+        } else {
+            return iftTermResponse(counter = deletionCounter, err = "0", msg = "Successful")
+        }
+    }
+
+    fun addHcal(objectic: initHcalObject): iftTermResponse {
+        var counter = 0
+
+        val personList = mutableListOf<Person>()
+
+        for (person in objectic.HOLDERS) {
+            personList.add(
+                Person(
+                    uid = person.B0_ID.toInt(),
+                    classType = person.B0_CLASS,
+                    firstName = person.FNAME,
+                    lastName = person.LNAME,
+                    imageB64 = "",
+                    imagePath = person.PHOTO_B0_HTTP_PATH,
+                    companyName = person.COMP_SHORT_NAME
+                )
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+            db.PersonDao().insertAll(personList)
+            counter += personList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while putting persons in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        val acList = mutableListOf<AccessLevel>()
+        for (obj in objectic.ACC_LEVELS_DISTR) {
+            acList.add(
+                AccessLevel(
+                    uid = obj.HOLDER_B0_ID.toInt(),
+                    classType = obj.B0_CLASS,
+                    accessLevel = obj.ACC_L_B0_ID.toInt()
+                )
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+            db.AccessLevelDao().insertAll(acList)
+            counter += acList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while deleting access lists in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        val cardList = mutableListOf<Card>()
+        var i = 0
+
+        for (cards in objectic.CARDS) {
+            cardList.add(
+                Card(
+                    cardNumber = cards.CN.toInt(),
+                    classType = cards.B0_CLASS,
+                    owner = cards.HOLDER_B0_ID.toInt(),
+                    activationDate = cards.ACTIVATION_DATE,
+                    expirationDate = cards.EXPIRATION_DATE
+                )
+            )
+            i++
+        }
+
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+            db.CardDao().insertAll(cardList)
+
+            for (card in cardList) {
+                try {
+                    db.CardDao().deleteByCardNumber(card.cardNumber)
+                } catch (e: java.lang.Exception) {
+                    Timber.d(
+                        "Msg: Exception %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
+                    )
+                }
+                db.CardDao().insert(card)
+            }
+
+            counter += cardList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while putting cards in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+        if ((cardList.size == 0 && objectic.CARDS.size != 0) || (acList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
+            return iftTermResponse(
+                counter = counter,
+                err = "1",
+                msg = "Not all entries were successfully added. Check log: ${LocalDateTime.now()}"
+            )
+        } else {
+            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
+        }
+    }
+
+    private fun addHoliday(objectic: holidayObject): iftTermResponse {
+        var counter = 0
+        val calendarList = mutableListOf<com.card.terminal.db.entity.Calendar>()
+        for (c in objectic.DAYS) {
+            calendarList.add(
+                com.card.terminal.db.entity.Calendar(
+                    uid = c.B0_ID.toInt(),
+                    day = c.D.toInt(),
+                    month = c.M.toInt(),
+                    year = c.Y.toInt(),
+                    workDay = c.NO_WORK == 1,
+                    description = c.DESCR
+                )
+            )
+        }
+
+        try {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+            )
+            db.CalendarDao().insertAll(calendarList)
+            counter += calendarList.size
+        } catch (e: Exception) {
+            Timber.d(
+                "Exception while putting calendar in db: %s | %s | %s",
+                e.cause,
+                e.stackTraceToString(),
+                e.message
+            )
+        }
+
+        if (calendarList.size == 0 && objectic.DAYS.size != 0) {
+            return iftTermResponse(
+                counter = counter,
+                err = "1",
+                msg = "Not all entries were successfully added. Check log: ${LocalDateTime.now()}"
+            )
+        } else {
+            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
+        }
+    }
+
+    fun iftTermResponse(response: iftTermResponse): String {
+        return "{\"ACT\": \"IFTSRV2_RESPONSE\",\"NUM_CREAD\": \"${response.counter}\",\"ERROR\": {\"CODE\": \"${response.err}\",\"TEXT\": \"${response.msg}\"}}"
+    }
+
+    fun pushEventFormat(cardResponse: Bundle): String {
+        val eCode = cardResponse.getInt("eCode")
+
+        //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
+//        val deviceList = mutableListOf<Device>()
+//        try {
+//            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+//            deviceList.addAll(db.DeviceDao().getAll())
+//        } catch (e: Exception) {
+//            Timber.d(
+//                "Exception while getting device in db: %s | %s | %s",
+//                e.cause,
+//                e.stackTraceToString(),
+//                e.message
+//            )
+//        }
+
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+        val id = prefs.getInt("IFTTERM2_B0_ID", 666)
+
+        var eCode2 = cardResponse.getInt("eCode2", 696969)
+        if (cardResponse.getBoolean("NoOptionPressed")) {
+            eCode2 = 0
+        }
+
+        var img = cardResponse.getString("EventImage", "")
+        if (!prefs.getBoolean("pushImageToServer", false)) {
+            img = ""
+        }
+
+        val rtr2 = "{\n" +
+                "    \"ACT\": \"NEW_EVENTS\",\n" +
+                "    \"IFTTERM2_B0_ID\": \"nnn\",\n" +
+                "    \"CREAD\": [\n" +
+                "        {\n" +
+                "            \"CN\": \"${cardResponse.getString("CardCode", "")}\",\n" +
+                "            \"GENT\": \"${cardResponse.getString("DateTime", "")}\",\n" +
+                "            \"ECODE\": \"${eCode}\",\n" +
+                "            \"ECODE2\": \"${eCode2}\",\n" +
+                "            \"DEV_B0_ID\": \"${id}\",\n" +
+                "            \"IMG_B64\": \"${img}\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+
+        return rtr2
+    }
+
+    suspend fun getFormattedUnpublishedEvents(iftTermId: Int): EventStringPair {
+        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
+        val unpublishedEvents = mutableListOf<Event>()
+        val scope = CoroutineScope(Dispatchers.IO)
+        //TODO ECODE
+        val responseDeferred = scope.async {
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
+            db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
+            var dev_b0_id = 0
+            try {
+                dev_b0_id = db.DeviceDao().getAll()
+                    ?.get(0)?.uid!!  //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
+
+            } catch (e: java.lang.IndexOutOfBoundsException) {
+                //ako nema uredaja, samo salji 0
+            } catch (e: Exception) {
+                //ako nema uredaja, samo salji 0
+
+            } catch (e: java.lang.Exception) {
+                //ako nema uredaja, samo salji 0
+            }
+
+            if (unpublishedEvents.size != 0) {
+                for (ue in unpublishedEvents.indices) {
+                    if (ue != unpublishedEvents.size - 1) {
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}, \"IMG_B64\":\"${unpublishedEvents[ue].image}\"},"
+                    } else {
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\", \"IMG_B64\":\"${unpublishedEvents[ue].image}\"}]}"
+                    }
+                }
+            }
+
+        }
+        responseDeferred.await()
+        return EventStringPair(unpublishedEvents, strNew)
     }
 
     fun setRelayTimes(operationMode: MutableList<OperationSchedule>) {
@@ -658,355 +1063,5 @@ class MiroConverter {
             pendingIntentHold
         )
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeEnd, pendingIntentPulse)
-    }
-
-    private fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
-        val mut = mutableListOf<Button>()
-        var counter = 0
-
-        for (btn in eventCode2) {
-            mut.add(
-                Button(
-                    uid = 0,
-                    classType = btn.CLASESS,
-                    label = btn.LABEL,
-                    title = btn.TITLE,
-                    eCode2 = btn.ID.toInt(),
-                    eCode = btn.B0_DEV_E_CODE.toInt()
-                )
-            )
-        }
-        try {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.ButtonDao().deleteAll()
-            db.ButtonDao().insertAll(mut)
-            counter += mut.size
-        } catch (e: Exception) {
-            Timber.d(
-                "Exception while adding buttons in db: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
-    }
-
-    suspend fun deleteHcal(objectic: deleteHcalObject): iftTermResponse {
-        var deletionCounter = 0
-        val cardList = mutableListOf<String>()
-        val accessLevelList = mutableListOf<AccessLevel>()
-        val personList = mutableListOf<Person>()
-
-        val scope1 = CoroutineScope(Dispatchers.IO)
-        val responseDeferred1 = scope1.async {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            for (card in objectic.CARDS) {
-                try {
-                    db.CardDao().deleteByCardNumber(card.toInt())?.let { cardList.add(card) }
-                    deletionCounter += 1
-                } catch (e: Exception) {
-                    Timber.d(
-                        "Exception while deleting cards in db: %s | %s | %s",
-                        e.cause,
-                        e.stackTraceToString(),
-                        e.message
-                    )
-                }
-            }
-        }
-        responseDeferred1.await()
-        print(responseDeferred1)
-
-        val scope2 = CoroutineScope(Dispatchers.IO)
-        val responseDeferred2 = scope2.async {
-            try {
-                val db = AppDatabase.getInstance(
-                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-                )
-                for (ac in objectic.ACC_LEVELS_DISTR) {
-                    db.AccessLevelDao().get(ac.B0_ID.toInt())?.let { accessLevelList.add(it) }
-                }
-                db.AccessLevelDao().deleteMany(accessLevelList)
-                deletionCounter += accessLevelList.size
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while deleting access levels in db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
-        responseDeferred2.await()
-        print(responseDeferred2)
-
-
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        val responseDeferred3 = scope3.async {
-            try {
-                val db = AppDatabase.getInstance(
-                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-                )
-                for (person in objectic.HOLDERS) {
-                    db.PersonDao().get(person.B0_ID.toInt(), person.B0_CLASS)
-                        ?.let { personList.add(it) }
-                }
-                db.PersonDao().deleteMany(personList)
-                deletionCounter += personList.size
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while deleting holders in db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
-        responseDeferred3.await()
-        print(responseDeferred3)
-
-        if ((cardList.size == 0 && objectic.CARDS.size != 0) || (accessLevelList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
-            return iftTermResponse(
-                counter = deletionCounter,
-                err = "1",
-                msg = "Not all entries were successfully deleted. Check logs: ${LocalDateTime.now()}"
-            )
-        } else {
-            return iftTermResponse(counter = deletionCounter, err = "0", msg = "Successful")
-        }
-    }
-
-    fun addHcal(objectic: initHcalObject): iftTermResponse {
-        var counter = 0
-
-        val personList = mutableListOf<Person>()
-
-        for (person in objectic.HOLDERS) {
-            personList.add(
-                Person(
-                    uid = person.B0_ID.toInt(),
-                    classType = person.B0_CLASS,
-                    firstName = person.FNAME,
-                    lastName = person.LNAME,
-                    imageB64 = "",
-                    imagePath = person.PHOTO_B0_HTTP_PATH,
-                    companyName = person.COMP_SHORT_NAME
-                )
-            )
-        }
-
-        try {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.PersonDao().insertAll(personList)
-            counter += personList.size
-        } catch (e: Exception) {
-            Timber.d(
-                "Exception while putting persons in db: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
-
-        val acList = mutableListOf<AccessLevel>()
-        for (obj in objectic.ACC_LEVELS_DISTR) {
-            acList.add(
-                AccessLevel(
-                    uid = obj.HOLDER_B0_ID.toInt(),
-                    classType = obj.B0_CLASS,
-                    accessLevel = obj.ACC_L_B0_ID.toInt()
-                )
-            )
-        }
-
-        try {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.AccessLevelDao().insertAll(acList)
-            counter += acList.size
-        } catch (e: Exception) {
-            Timber.d(
-                "Exception while deleting access lists in db: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
-
-        val cardList = mutableListOf<Card>()
-        var i = 0
-
-        for (cards in objectic.CARDS) {
-            cardList.add(
-                Card(
-                    cardNumber = cards.CN.toInt(),
-                    classType = cards.B0_CLASS,
-                    owner = cards.HOLDER_B0_ID.toInt(),
-                    activationDate = cards.ACTIVATION_DATE,
-                    expirationDate = cards.EXPIRATION_DATE
-                )
-            )
-            i++
-        }
-
-        try {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.CardDao().insertAll(cardList)
-            counter += cardList.size
-        } catch (e: Exception) {
-            Timber.d("Exception while putting cards in db: %s | %s", e.message, e.cause)
-        }
-        if ((cardList.size == 0 && objectic.CARDS.size != 0) || (acList.size == 0 && objectic.ACC_LEVELS_DISTR.size != 0) || (personList.size == 0 && objectic.HOLDERS.size != 0)) {
-            return iftTermResponse(
-                counter = counter,
-                err = "1",
-                msg = "Not all entries were successfully added. Check log: ${LocalDateTime.now()}"
-            )
-        } else {
-            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
-        }
-    }
-
-    private fun addHoliday(objectic: holidayObject): iftTermResponse {
-        var counter = 0
-        val calendarList = mutableListOf<com.card.terminal.db.entity.Calendar>()
-        for (c in objectic.DAYS) {
-            calendarList.add(
-                com.card.terminal.db.entity.Calendar(
-                    uid = c.B0_ID.toInt(),
-                    day = c.D.toInt(),
-                    month = c.M.toInt(),
-                    year = c.Y.toInt(),
-                    workDay = c.NO_WORK == 1,
-                    description = c.DESCR
-                )
-            )
-        }
-
-        try {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.CalendarDao().insertAll(calendarList)
-            counter += calendarList.size
-        } catch (e: Exception) {
-            Timber.d(
-                "Exception while putting calendar in db: %s | %s | %s",
-                e.cause,
-                e.stackTraceToString(),
-                e.message
-            )
-        }
-
-        if (calendarList.size == 0 && objectic.DAYS.size != 0) {
-            return iftTermResponse(
-                counter = counter,
-                err = "1",
-                msg = "Not all entries were successfully added. Check log: ${LocalDateTime.now()}"
-            )
-        } else {
-            return iftTermResponse(counter = counter, err = "0", msg = "Successful")
-        }
-    }
-
-    fun iftTermResponse(response: iftTermResponse): String {
-        return "{\"ACT\": \"IFTSRV2_RESPONSE\",\"NUM_CREAD\": \"${response.counter}\",\"ERROR\": {\"CODE\": \"${response.err}\",\"TEXT\": \"${response.msg}\"}}"
-    }
-
-    fun pushEventFormat(cardResponse: Bundle): String {
-        val eCode = 2 //TODO POSLIJE KAD BUDE ULAZ I IZLAZ
-
-        //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
-//        val deviceList = mutableListOf<Device>()
-//        try {
-//            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
-//            deviceList.addAll(db.DeviceDao().getAll())
-//        } catch (e: Exception) {
-//            Timber.d(
-//                "Exception while getting device in db: %s | %s | %s",
-//                e.cause,
-//                e.stackTraceToString(),
-//                e.message
-//            )
-//        }
-
-        val title = cardResponse.getString("title")
-        println(title)
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
-        val id = prefs.getInt("IFTTERM2_B0_ID", 0)
-
-        var eCode2 = cardResponse.getInt("eCode2")
-        if (cardResponse.getBoolean("NoOptionPressed")) {
-            eCode2 = 0
-        }
-
-        return "{\"ACT\": \"NEW_EVENTS\",\"IFTTERM2_B0_ID\": \"${id}\",\"CREAD\": [{\"CN\": \"${
-            cardResponse.get(
-                "CardCode"
-            )
-        }\",\"GENT\": \"${cardResponse.get("DateTime")}\",\"ECODE\": \"${eCode}\",\"ECODE2\": \"${
-            eCode2
-        }\",\"DEV_B0_ID\": \"${prefs.getInt("DEV_B0_ID", 666)}\"}]}"
-    }
-
-    suspend fun getFormattedUnpublishedEvents(iftTermId: Int): EventStringPair {
-        var strNew = "{\"ACT\": \"NEW_EVENTS\",  \"IFTTERM2_B0_ID\":\"${iftTermId}\",\"CREAD\":["
-        val unpublishedEvents = mutableListOf<Event>()
-        val scope = CoroutineScope(Dispatchers.IO)
-        //TODO ECODE
-        val responseDeferred = scope.async {
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
-            )
-            db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
-            var dev_b0_id = 0
-            try {
-                dev_b0_id = db.DeviceDao().getAll()
-                    ?.get(0)?.uid!!  //TODO dev_b0_id pitaj miru kaj s tim, zasad je samo 1 uredaj, ali to se mora spremat u bazu skupa s eventom, koji uredaj je izgenerirao -> njegov b0 id mi treba ovdje, ovo je retardirano
-
-            } catch (e: java.lang.IndexOutOfBoundsException) {
-                //ako nema uredaja, samo salji 0
-            } catch (e: Exception) {
-                //ako nema uredaja, samo salji 0
-
-            } catch (e: java.lang.Exception) {
-                //ako nema uredaja, samo salji 0
-            }
-
-            if (unpublishedEvents.size != 0) {
-                for (ue in unpublishedEvents.indices) {
-                    if (ue != unpublishedEvents.size - 1) {
-                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
-                    } else {
-                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
-                    }
-                }
-            }
-
-        }
-        responseDeferred.await()
-        return EventStringPair(unpublishedEvents, strNew)
-    }
-
-    fun convertECode(s: String): Int {
-        var eCode = -1
-        when (s) {
-            s -> eCode = 0
-//            "Liječnik" -> eCode = 3
-//            "Privatno" -> eCode = 4
-//            "Pauza" -> eCode = 5
-//            "Poslovno" -> eCode = 6
-        }
-        return eCode
     }
 }

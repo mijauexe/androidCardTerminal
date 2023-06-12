@@ -9,69 +9,69 @@
 
 
 
-        <GridLayout
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="1"
+        android:id="@+id/glMain"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toTopOf="@+id/glDown"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/erv_hep" />
+
+        <TextView
+            android:id="@+id/first_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:columnCount="1"
-            android:id="@+id/glMain"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:useDefaultMargins="true"
-            app:layout_constraintBottom_toTopOf="@+id/glDown"
-            app:layout_constraintEnd_toStartOf="@id/glRight"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Đuro"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
 
-            <ImageView
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="15dp"
-                android:src="@drawable/erv_hep" />
+        <TextView
+            android:id="@+id/last_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Đurić"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
 
-            <TextView
-                android:id="@+id/first_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:text="Đuro"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+        <TextView
+            android:id="@+id/company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Firma"
+            android:visibility="gone"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
 
-            <TextView
-                android:id="@+id/last_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Đurić"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_unknown_person" />
 
-            <TextView
-                android:id="@+id/company_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Firma"
-                android:visibility="gone"
-                android:textColor="@color/black"
-                android:textSize="40sp" />
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/hep_proizvodnja" />
 
-            <ImageView
-                android:id="@+id/photo"
-                android:layout_width="280dp"
-                android:layout_height="280dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_unknown_person" />
-
-            <ImageView
-                android:layout_width="250dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/hep_proizvodnja" />
-
-        </GridLayout>
+    </GridLayout>
 
     <GridLayout
         android:id="@+id/glDown"
@@ -177,8 +177,9 @@
                         android:textColor="@color/black"
                         android:textSize="40sp" />
 
-                    <TextView
+                    <TextClock
                         android:id="@+id/tv_date_clock"
+                        android:format24Hour="d. MMMM yyyy, HH:mm"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"

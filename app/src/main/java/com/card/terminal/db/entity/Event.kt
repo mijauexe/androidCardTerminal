@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Entity
 @Serializable
-class Event (
+class Event(
     @Serializable @PrimaryKey(autoGenerate = true) val uid: Int,
     @Serializable @ColumnInfo(name = "device_id") val deviceId: Int,
     @Serializable @ColumnInfo(name = "event_code") val eventCode: Int,
@@ -15,5 +15,6 @@ class Event (
     @Serializable @ColumnInfo(name = "card_number") val cardNumber: Int,
     @Serializable @ColumnInfo(name = "date_time") val dateTime: String,
     @Serializable @ColumnInfo(name = "published") val published: Boolean,
+    @Serializable @ColumnInfo(name = "image") val image: String
 )
 

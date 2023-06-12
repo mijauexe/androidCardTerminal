@@ -21,6 +21,11 @@ class RelayReceiver : BroadcastReceiver() {
     }
 
     private fun performAction(pulseOrHold: Int) {
+        val prefs = ContextProvider.getApplicationContext()
+            .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putInt("relay2State", pulseOrHold)
+        editor.commit()
         MyHttpClient.relayMode(2, pulseOrHold)
     }
 }

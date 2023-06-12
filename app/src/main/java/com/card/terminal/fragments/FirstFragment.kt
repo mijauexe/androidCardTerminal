@@ -46,18 +46,6 @@ class FirstFragment : Fragment() {
     ): View? {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        binding.tvDateClock.text =
-            LocalDateTime.parse(act.getDateTime().toString(), DateTimeFormatter.ISO_DATE_TIME)
-                .format(
-                    DateTimeFormatter.ofPattern(
-                        "d. MMMM yyyy.",
-                        Locale("hr")
-                    )
-                ) + LocalDateTime.parse(
-                act.getDateTime().toString(),
-                DateTimeFormatter.ISO_DATE_TIME
-            )
-                .format(DateTimeFormatter.ofPattern("HH:mm"))
 
         Timber.d("FirstFragment onCreateView")
         act.cardScannerActive = true

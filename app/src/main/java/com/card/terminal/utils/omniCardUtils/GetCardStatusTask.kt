@@ -8,6 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import com.card.terminal.utils.omniCardUtils.ConvertUtils.hexStringToBinaryString
 import kotlinx.coroutines.*
 import timber.log.Timber
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object GetCardStatusTask {
     private const val WILDCARD_PROTOCOL = "*"
@@ -17,12 +19,12 @@ object GetCardStatusTask {
     //private const val COMMAND_APDU = "ff680d0000"
     private const val COMMAND_APDU = "ff70076b07a005a10380010400"
     private const val CORRECT_APDU_END_RESPONSE = "9000"
-    private const val SLEEP_MILLIS = 100L
+    private const val SLEEP_MILLIS = 1000L
     private const val MESSAGE = "MESSAGE"
     private lateinit var scope: CoroutineScope
 
-    private var uid = ""
-    private var atr = ""
+//    private var uid = ""
+//    private var atr = ""
 
     private lateinit var mutableCardCode: MutableLiveData<Map<String, String>>
 
@@ -38,30 +40,24 @@ object GetCardStatusTask {
             while (scope.isActive) {
                 try {
                     if (READER_NAME in terminal.name && terminal.isCardPresent) {
+                        mutableCode.postValue(mapOf("CURRENTLY_SCANNING" to "TRUE"))
                         val card = terminal.connect(WILDCARD_PROTOCOL)
-                        uid = getCardUid(card)
-                        atr = getCardAtr(card)
                         parseResp(requestApdu(card), mutableCode)
-
                         card.disconnect(true)
+                        mutableCode.postValue(mapOf("CURRENTLY_SCANNING" to "FALSE"))
                         var isCardAbsent = false
                         while (scope.isActive && !isCardAbsent) {
                             isCardAbsent = terminal.waitForCardAbsent(SLEEP_MILLIS)
                             delay(SLEEP_MILLIS)
                         }
                     }
-                    delay(SLEEP_MILLIS)
                 } catch (e: Exception) {
-                    Timber.d(
-                        "Msg: Exception %s | %s | %s",
-                        e.cause,
-                        e.stackTraceToString(),
-                        e.message
-                    )
+                    mutableCode.postValue(mapOf("CURRENTLY_SCANNING" to "FALSE"))
                 }
             }
         }
     }
+
 
     fun stop() {
         try {
@@ -91,6 +87,9 @@ object GetCardStatusTask {
 
             val cardMap = mutableMapOf<String, String>()
             cardMap["CardFormat"] = resp.length.toString()
+            cardMap["DateTime"] =
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+                    .toString()
             when (resp.length) {
                 26 -> {
                     resp = resp.dropLast(1)
@@ -100,27 +99,32 @@ object GetCardStatusTask {
                             .toString()
                     facilityCode = Integer.parseInt(resp.substring(1, 8), 2).toString()
                 }
+
                 34 -> {
-                    cardNumber = Integer.parseInt(resp.substring(17, resp.length - 1), 2).toString()
+                    cardNumber =
+                        Integer.parseInt(resp.substring(17, resp.length - 1), 2).toString()
                     facilityCode = Integer.parseInt(resp.substring(0, 17), 2).toString()
                 }
+
                 37 -> {
                     resp = resp.dropLast(1)
                     resp = resp.drop(1)
                     facilityCode = Integer.parseInt(resp.substring(0, 16), 2).toString()
                     cardNumber = Integer.parseInt(resp.substring(17), 2).toString()
                 }
+
                 else -> {
                     mutableCode.postValue(mapOf("CardNumber" to "", "FacilityCode" to ""))
                     return
                 }
             }
             cardMap["CardResponse"] = response
-            cardMap["CardNumber"] = cardNumber
+            cardMap["CardCode"] = cardNumber
             cardMap["FacilityCode"] = facilityCode
-            cardMap["UID"] = uid
+//            cardMap["UID"] = uid
             cardMap["ErrorCode"] = "0"
-            cardMap["ATR"] = atr
+//            cardMap["ATR"] = atr
+            cardMap["Source"] = "Omnikey"
             mutableCode.postValue(cardMap)
         } else {
             val cardMap = mutableMapOf<String, String>()
