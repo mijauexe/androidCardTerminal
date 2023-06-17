@@ -67,7 +67,7 @@
         </androidx.cardview.widget.CardView>
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/main_logo1"
             android:layout_width="380dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -90,19 +90,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top">
 
-        <TextView
-            android:id="@+id/please_scan_card_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:shadowColor="#BDBDBD"
-            android:shadowDx="3"
-            android:shadowDy="3"
-            android:shadowRadius="4"
-            android:textColor="@color/black"
-            android:text="@string/please_scan_card"
-            android:textSize="@dimen/menu" />
 
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="1"
+            >
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:layout_centerInParent="false"
+                android:indeterminateTint="#FAA61A"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/please_scan_card_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:shadowColor="#BDBDBD"
+                android:shadowDx="3"
+                android:shadowDy="3"
+                android:shadowRadius="4"
+                android:text="@string/please_scan_card"
+                android:textColor="@color/black"
+                android:textSize="@dimen/menu" />
+
+
+
+        </GridLayout>
         <ImageView
             android:id="@+id/please_scan_icon"
             android:layout_width="200dp"
@@ -121,7 +140,7 @@
         tools:layout_editor_absoluteX="0dp">
 
         <ImageView
-            android:id="@+id/erv_hep_logo"
+            android:id="@+id/main_logo2"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="start"
@@ -172,7 +191,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
-            android:id="@+id/ifsimus_logo"
+            android:id="@+id/main_logo3"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="start"

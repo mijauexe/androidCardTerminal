@@ -55,7 +55,7 @@ class CheckoutFragment : Fragment() {
         MyHttpClient.publishNewEvent(existingBundle)
         val delay = 10000L
 
-        binding.reasonValue.text = arguments?.getString("reasonValue", "")
+        binding.reasonValue.text = arguments?.getString("selection", "")
 
         if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))

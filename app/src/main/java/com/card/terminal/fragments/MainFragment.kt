@@ -23,13 +23,17 @@ class MainFragment : Fragment() {
         Timber.d("MainFragment onCreateView")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        act.cardScannerActive = false
+        act.cardScannerActive = true
         return _binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("MainFragment onViewCreated")
+
+        _binding?.pleaseScanCardText?.text = "Molimo očitajte karticu."
+        _binding?.pleaseScanIcon?.visibility = View.VISIBLE
+        _binding?.progressBar?.visibility = View.GONE
 
         if (_binding != null) {
             var trackerSettingsIcon = IntArray(3)
@@ -41,7 +45,7 @@ class MainFragment : Fragment() {
                 _binding?.settingsButton?.visibility = View.GONE
             }
 
-            _binding?.ervHepLogo?.setOnClickListener {
+            _binding?.mainLogo2?.setOnClickListener {
                 trackerSettingsIcon[0]++
             }
 
@@ -68,10 +72,6 @@ class MainFragment : Fragment() {
             _binding?.settingsButton?.setOnClickListener {
                 findNavController().navigate(R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")
-            }
-
-            _binding?.ifsimusLogo?.setOnClickListener {
-                MyHttpClient.reset()
             }
         }
     }

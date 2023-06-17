@@ -7,15 +7,21 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
 import android.provider.Settings
+import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
+import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -31,6 +37,7 @@ import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
+import com.card.terminal.utils.omniCardUtils.OmniCard
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -331,22 +338,22 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-//        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
-//            if (ContextCompat.checkSelfPermission(
-//                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                OmniCard.bindCardBackend(this, mutableCardCode, false)
-//            } else {
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
-//                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
-//                )
-//            }
-//        } else {
-//            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-//        }
+        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
+            if (ContextCompat.checkSelfPermission(
+                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                OmniCard.bindCardBackend(this, mutableCardCode, false)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
+                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
+                )
+            }
+        } else {
+            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
+        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
 
@@ -395,24 +402,103 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        mutableLarusCode.observe(this) {
-            if (it["CardCode"] == "CONNECTION_RESTORED") {
+//        mutableLarusCode.observe(this) {
+//            if (it["CardCode"] == "CONNECTION_RESTORED") {
+//
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Molimo očitajte karticu."
+//                        ddd.visibility = View.VISIBLE
+//                    }
+//                }
+//            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.CheckoutFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.SettingsFragment -> {
+//                        showDialog(
+//                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+//                            false
+//                        )
+//                    }
+//                }
+//            } else if (it["CardCode"] == "CONNECTION_LOST") {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Prekinuta LAN mreža."
+//                        ddd.visibility = View.GONE
+//                    }
+//                }
+//            }
+//        }
 
+        mutableCardCode.observe(this) {
+            if (!cardScannerActive) {
+                return@observe
+            }
+
+            if (it["CURRENTLY_SCANNING"].equals("TRUE")) {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+                        scanCardText.setTextSize(
+                            TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                50.0f,
+                                getResources().getDisplayMetrics()
+                            )
+                        )
+                        scanCardText.setTextColor(Color.parseColor("#FAA61A"))
+                        scanCardText.text =
+                            "Molimo držite karticu na čitaču\n do otvaranja slijedećeg ekrana."
                         val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Molimo očitajte karticu."
-                        ddd.visibility = View.VISIBLE
+                        ddd.visibility = View.GONE
+                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+                        dddd.visibility = View.VISIBLE
                     }
                 }
-            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
+            }
+
+            if (it["CURRENTLY_SCANNING"].equals("FALSE")) {
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
+                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+                        scanCardText.text = "Molimo očitajte karticu."
+                        scanCardText.setTextColor(Color.BLACK)
+                        scanCardText.setTextSize(
+                            TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                65.0f,
+                                getResources().getDisplayMetrics()
+                            )
+                        )
+                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+                        ddd.visibility = View.VISIBLE
+                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+                        dddd.visibility = View.GONE
+                    }
+                }
+            }
+
+            if (it["CardCode"] != null) {
+                when (navHostFragment.navController.currentDestination?.id) {
+                    R.id.MainFragment -> {
+                        playSound(R.raw.scan_success)
                         handleCardScan(it)
                     }
 
                     R.id.CheckoutFragment -> {
+                        playSound(R.raw.scan_success)
                         handleCardScan(it)
                     }
 
@@ -421,15 +507,6 @@ class MainActivity : AppCompatActivity() {
                             "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
                             false
                         )
-                    }
-                }
-            } else if (it["CardCode"] == "CONNECTION_LOST") {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Prekinuta LAN mreža."
-                        ddd.visibility = View.GONE
                     }
                 }
             }
@@ -626,9 +703,9 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    Timber.d("Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka")
+                    Timber.d("Kartica ${it["CardCode"]} ili osoba ne postoji u bazi podataka")
                     showDialog(
-                        "Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka",
+                        "Kartica ${it["CardCode"]} ili osoba ne postoji u bazi podataka",
                         false
                     )
                 }

@@ -91,7 +91,7 @@ object MyHttpClient {
 
         startNettyServer()
 
-        (larusCheckScansTask as LarusCheckScansTask).startTask()
+//        (larusCheckScansTask as LarusCheckScansTask).startTask()
         (publishEventsTask as PublishEventsTask).startTask()
 //        val prefs = ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 //        val editor = prefs.edit()

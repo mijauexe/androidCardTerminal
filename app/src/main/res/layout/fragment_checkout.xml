@@ -60,10 +60,11 @@
 
         <ImageView
             android:id="@+id/photo"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_unknown_person" />
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="fitCenter"
+            android:layout_gravity="center"
+            android:src="@drawable/img" />
 
         <ImageView
             android:layout_width="250dp"

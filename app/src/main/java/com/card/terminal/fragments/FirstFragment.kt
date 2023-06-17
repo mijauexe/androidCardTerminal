@@ -1,8 +1,9 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -21,16 +22,9 @@ import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.net.HttpURLConnection
-import java.net.NoRouteToHostException
-import java.net.URL
-import java.net.UnknownHostException
 import java.util.*
+
 
 class FirstFragment : Fragment() {
 
@@ -60,58 +54,59 @@ class FirstFragment : Fragment() {
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
-        if (existingBundle.containsKey("imagePath")) {
+//        if (existingBundle.containsKey("imagePath")) {
+//
+//            try {
+//                val scope = CoroutineScope(Dispatchers.IO)
+//                scope.launch {
+//                        try {
+//                            val url = URL(
+//                                ("http://" + prefs.getString(
+//                                    "bareIP",
+//                                    "?"
+//                                ) + existingBundle.get("imagePath"))
+//                            )
+//                            Timber.d("url je ${url}")
+//                            val connection = withContext(Dispatchers.IO) {
+//                                url.openConnection()
+//                            } as HttpURLConnection
+//                            connection.doInput = true
+//                            withContext(Dispatchers.IO) {
+//                                connection.connect()
+//                            }
+//                            val input = connection.inputStream
+//                            val bitmap = BitmapFactory.decodeStream(input)
+//                            withContext(Dispatchers.Main) {
+//                                binding.photo.setImageBitmap(bitmap)
+//                                existingBundle.putParcelable("imageB64", bitmap)
+//                            }
+//                            connection.disconnect()
+//                        } catch (e: java.lang.Exception) {
+//                            Timber.d(
+//                                "Msg: Exception %s | %s | %s",
+//                                e.cause,
+//                                e.stackTraceToString(),
+//                                e.message
+//                            )
+//                        }
+//                }
+//            } catch (e: NoRouteToHostException) {
+//                Timber.d(
+//                    "Msg: No route to host while getting photo: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            } catch (e: UnknownHostException) {
+//                Timber.d(
+//                    "Msg: Unknown host while getting photo: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            }
+//        }
 
-            try {
-                val scope = CoroutineScope(Dispatchers.IO)
-                scope.launch {
-                        try {
-                            val url = URL(
-                                ("http://" + prefs.getString(
-                                    "bareIP",
-                                    "?"
-                                ) + existingBundle.get("imagePath"))
-                            )
-                            Timber.d("url je ${url}")
-                            val connection = withContext(Dispatchers.IO) {
-                                url.openConnection()
-                            } as HttpURLConnection
-                            connection.doInput = true
-                            withContext(Dispatchers.IO) {
-                                connection.connect()
-                            }
-                            val input = connection.inputStream
-                            val bitmap = BitmapFactory.decodeStream(input)
-                            withContext(Dispatchers.Main) {
-                                binding.photo.setImageBitmap(bitmap)
-                                existingBundle.putParcelable("imageB64", bitmap)
-                            }
-                            connection.disconnect()
-                        } catch (e: java.lang.Exception) {
-                            Timber.d(
-                                "Msg: Exception %s | %s | %s",
-                                e.cause,
-                                e.stackTraceToString(),
-                                e.message
-                            )
-                        }
-                }
-            } catch (e: NoRouteToHostException) {
-                Timber.d(
-                    "Msg: No route to host while getting photo: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            } catch (e: UnknownHostException) {
-                Timber.d(
-                    "Msg: Unknown host while getting photo: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
 
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
