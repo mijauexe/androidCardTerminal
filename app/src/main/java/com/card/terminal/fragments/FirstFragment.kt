@@ -1,7 +1,6 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
@@ -31,8 +30,6 @@ import java.net.HttpURLConnection
 import java.net.NoRouteToHostException
 import java.net.URL
 import java.net.UnknownHostException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 class FirstFragment : Fragment() {
@@ -68,7 +65,6 @@ class FirstFragment : Fragment() {
             try {
                 val scope = CoroutineScope(Dispatchers.IO)
                 scope.launch {
-                    if (existingBundle.containsKey("imagePath")) {
                         try {
                             val url = URL(
                                 ("http://" + prefs.getString(
@@ -76,6 +72,7 @@ class FirstFragment : Fragment() {
                                     "?"
                                 ) + existingBundle.get("imagePath"))
                             )
+                            Timber.d("url je ${url}")
                             val connection = withContext(Dispatchers.IO) {
                                 url.openConnection()
                             } as HttpURLConnection
@@ -98,7 +95,6 @@ class FirstFragment : Fragment() {
                                 e.message
                             )
                         }
-                    }
                 }
             } catch (e: NoRouteToHostException) {
                 Timber.d(
@@ -190,7 +186,6 @@ class FirstFragment : Fragment() {
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 btn.setOnClickListener {
                     bundle.putString("selection", btnList[i].title)
-
                     if (bundle.getBoolean("noButtonClickNeededRegime")) {
                         bundle.putInt("eCode2", 0)
                     } else {

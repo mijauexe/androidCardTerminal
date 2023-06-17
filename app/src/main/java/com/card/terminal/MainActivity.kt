@@ -7,31 +7,21 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
 import android.provider.Settings
-import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
-import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
-import android.util.TypedValue
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
@@ -39,11 +29,8 @@ import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
-import com.card.terminal.utils.CameraUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
-import com.card.terminal.utils.omniCardUtils.OmniCard
-import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -94,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
 
-        CameraUtils.init(this)
+//        CameraUtils.init(this)
 
         val filter = IntentFilter()
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
@@ -133,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 //        val scope3 = CoroutineScope(Dispatchers.IO)
 //        scope3.launch {
 //            try {
-//                db.clearAllTables()
+//                db.EventDao().deleteAll()
 //            } catch (e: Exception) {
 //                Timber.d(
 //                    "Exception while clearing db: %s | %s | %s",
@@ -472,13 +459,10 @@ class MainActivity : AppCompatActivity() {
             LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
                 .isBefore(LocalDateTime.now())
         ) {
-            Timber.d("usao u prvi if")
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
-                Timber.d("dohvatio karticu")
                 val person =
                     card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
-                Timber.d("dohvatio osobu")
 
                 if (person != null && card != null) {
                     bundle.putString("firstName", person.firstName)
@@ -546,7 +530,6 @@ class MainActivity : AppCompatActivity() {
                             currentDayString = "SUNDAY"
                         }
                     }
-                    Timber.d("Danas je ${currentDayString}")
 
                     try {
                         val dbSchedule1 = db.OperationScheduleDao().getAll()
@@ -578,63 +561,59 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         if (dbSchedule1 != null) {
-                            for (sch in dbSchedule1) {
-
-                                Timber.d("currentTime je ${currentTime}")
-                                Timber.d("timeFrom: ${sch.timeFrom}, timeTo: ${sch.timeTo}")
-                                val timeConforms =
-                                    currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
-                                        LocalTime.parse(sch.timeTo)
+                            if (dbSchedule1.isEmpty()) {
+                                Timber.d("Raspored prazan!!!")
+                                passageControl(2, it["CardCode"]!!, bundle)
+                                MyHttpClient.pushRequest("IFTTERM2_INIT0")
+                            } else {
+                                for (sch in dbSchedule1) {
+                                    val timeConforms =
+                                        currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
+                                            LocalTime.parse(sch.timeTo)
+                                        )
+                                    if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
+                                        containsIfNotSchedule = true
+                                        IfNotScheduleMode = sch.modeId
+                                    } else if (sch.description.contains("SPECIFIC_DAY") && currentDateString.equals(
+                                            sch.description.substring(sch.description.indexOf(":") + 1)
+                                        ) && timeConforms
+                                    ) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("SPECIFIC DAY")
+                                        break
+                                    } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("HOLIDAY")
+                                        break
+                                    } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("WORKING_DAY")
+                                        break
+                                    } else if (sch.description.contains(currentDayString) && timeConforms) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("currentDayString: ${currentDayString}")
+                                        break
+                                    }
+                                }
+                                if (conforms == -1 && containsIfNotSchedule) {
+                                    passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
+                                    Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
+                                } else {
+                                    passageControl(
+                                        db.OperationScheduleDao().getById(conforms)?.modeId!!,
+                                        it["CardCode"]!!,
+                                        bundle
                                     )
-
-                                if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
-                                    containsIfNotSchedule = true
-                                    IfNotScheduleMode = sch.modeId
-                                } else if (sch.description.contains("SPECIFIC_DAY") && currentDateString.equals(
-                                        sch.description.substring(sch.description.indexOf(":") + 1)
-                                    ) && timeConforms
-                                ) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("SPECIFIC DAY")
-                                    break
-                                } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("HOLIDAY")
-                                    break
-                                } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("WORKING_DAY")
-                                    break
-                                } else if (sch.description.contains(currentDayString) && timeConforms) {
-                                    conforms =
-                                        db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("currentDayString: ${currentDayString}")
-                                    break
                                 }
                             }
-
-                            if (conforms == -1 && containsIfNotSchedule) {
-                                passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
-                                Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
-                            } else {
-                                Timber.d("db.OperationScheduleDao().getById(conforms)?.modeId!!,")
-                                passageControl(
-                                    db.OperationScheduleDao().getById(conforms)?.modeId!!,
-                                    it["CardCode"]!!,
-                                    bundle
-                                )
-                            }
                         } else {
-                            Timber.d(
-                                "Nemam raspored kontrole"
-                            )
-                            showDialog(
-                                "Nemam raspored kontrole! Kartica ${it["CardCode"]}",
-                                false
-                            )
+                            Timber.d("Raspored NULL!!!")
+                            passageControl(3, it["CardCode"]!!, bundle)
+                            MyHttpClient.pushRequest("IFTTERM2_INIT0")
                         }
                     } catch (e: java.lang.Exception) {
                         Timber.d(
@@ -647,9 +626,9 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    Timber.d("Greška u bazi podataka! Kartica ${it["CardCode"]}")
+                    Timber.d("Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka")
                     showDialog(
-                        "Greška u bazi podataka! Kartica ${it["CardCode"]}",
+                        "Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka",
                         false
                     )
                 }
@@ -672,6 +651,7 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
+        bundle.putInt("eCode", 2) //TODO
 
         if (free == 2) {
             Timber.d("passageControl: ne treba izbor")

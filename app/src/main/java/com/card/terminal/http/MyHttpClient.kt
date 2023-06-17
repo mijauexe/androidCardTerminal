@@ -14,20 +14,6 @@ import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.larusUtils.LarusFunctions
-import io.ktor.client.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import kotlinx.coroutines.*
-import timber.log.Timber
-import java.net.ConnectException
-import java.net.NoRouteToHostException
-import java.util.*
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -44,6 +30,17 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.net.ConnectException
+import java.net.NoRouteToHostException
+import java.util.TimerTask
+
 object MyHttpClient {
     private var client: HttpClient? = null
 
@@ -100,12 +97,13 @@ object MyHttpClient {
 //        val editor = prefs.edit()
 //        editor.putInt("relay2State", 0)
 //        editor.commit()
-        larusFunctions?.changeRelayMode(1, 0)
-        larusFunctions?.changeRelayMode(2, ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("relay2State", 0))
+//        larusFunctions?.changeRelayMode(1, 0)
+//        larusFunctions?.changeRelayMode(2, ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("relay2State", 0))
+//        larusFunctions?.changeRelayMode(2, 0)
     }
 
     fun stopLarusSocket() {
-        if(larusCheckScansTask != null) {
+        if (larusCheckScansTask != null) {
             (larusCheckScansTask as LarusCheckScansTask).stopTask()
         }
     }
@@ -244,6 +242,7 @@ object MyHttpClient {
                             }
                         }
                 if (response != null) {
+                    Timber.d("Response received: ${response.bodyAsText()}")
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
                     MiroConverter().processRequest(response.bodyAsText())
                 }
@@ -295,25 +294,31 @@ object MyHttpClient {
                             }
                         }
                 if (response != null) {
-                    println(response.bodyAsText())
+                    Timber.d("Sent: ${body}")
+                    Timber.d("Response received: ${response.bodyAsText()}")
                     if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
                         Timber.d(
                             "Msg: user %s scanned, response sent to server: %b",
-                            cardResponse,
+                            cardResponse.getString("CardCode"),
                             true
                         )
                     } else {
                         eventToDatabase(cardResponse, false)
                         Timber.d(
                             "Msg: user %s scanned, response sent to server: %b",
-                            cardResponse,
+                            cardResponse.getString("CardCode"),
                             false
                         )
                     }
                 }
             } catch (ce: ConnectException) {
-                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
+                Timber.d(
+                    "Msg: user %s scanned, response sent to server: %b",
+                    cardResponse.getString("CardCode"),
+                    false
+                )
+                eventToDatabase(cardResponse, false)
             } catch (e: Exception) {
                 Timber.d(
                     "Exception while publishing event(s) to server: %s | %s | %s | %s",
@@ -321,6 +326,12 @@ object MyHttpClient {
                     e.stackTraceToString(),
                     e.message,
                     body
+                )
+                eventToDatabase(cardResponse, false)
+                Timber.d(
+                    "Msg: user %s scanned, response sent to server: %b",
+                    cardResponse.getString("CardCode"),
+                    false
                 )
             }
         }
@@ -337,7 +348,7 @@ object MyHttpClient {
             val esp = MiroConverter().getFormattedUnpublishedEvents(
                 mySharedPreferences.getInt(
                     "IFTTERM2_B0_ID",
-                    696969
+                    0
                 )
             )
 
@@ -355,9 +366,8 @@ object MyHttpClient {
                                 }
                             }
                     if (response != null) {
-                        if (response.bodyAsText()
-                                .contains("\"CODE\":\"0\"") && response.bodyAsText()
-                                .contains("\"NUM_CREAD\":\"${esp.eventList.size}\"")
+                        Timber.d("Sent: ${esp.eventString}")
+                        if (response.bodyAsText().contains("\"CODE\":\"0\"")
                         ) {
                             updateEvents(esp.eventList)
                             Timber.d(
@@ -390,7 +400,10 @@ object MyHttpClient {
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             }
 
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
             if (published) {
                 val e = db.EventDao()
                     .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
@@ -416,12 +429,12 @@ object MyHttpClient {
                 }
                 val event = Event(
                     eventCode = cardResponse.getInt("eCode"), //TODO
-                    eventCode2 = cardResponse.getInt("eCode2", 6968),
+                    eventCode2 = cardResponse.getInt("eCode2", 0),
                     cardNumber = cardResponse.get("CardCode").toString().toInt(),
                     dateTime = cardResponse.get("DateTime").toString(),
                     published = published,
                     uid = 0, //auto-generate
-                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 696969),//TODO
+                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 0),//TODO
                     image = img
                 )
                 db.EventDao().insert(event)

@@ -17,8 +17,8 @@ import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.Calendar
+import java.util.Date
 
 class MiroConverter {
     data class HOLDERS(
@@ -685,19 +685,19 @@ class MiroConverter {
             )
             db.CardDao().insertAll(cardList)
 
-            for (card in cardList) {
-                try {
-                    db.CardDao().deleteByCardNumber(card.cardNumber)
-                } catch (e: java.lang.Exception) {
-                    Timber.d(
-                        "Msg: Exception %s | %s | %s",
-                        e.cause,
-                        e.stackTraceToString(),
-                        e.message
-                    )
-                }
-                db.CardDao().insert(card)
-            }
+//            for (card in cardList) {
+//                try {
+//                    db.CardDao().deleteByCardNumber(card.cardNumber)
+//                } catch (e: java.lang.Exception) {
+//                    Timber.d(
+//                        "Msg: Exception %s | %s | %s",
+//                        e.cause,
+//                        e.stackTraceToString(),
+//                        e.message
+//                    )
+//                }
+//                db.CardDao().insert(card)
+//            }
 
             counter += cardList.size
         } catch (e: Exception) {
@@ -767,6 +767,7 @@ class MiroConverter {
 
     fun pushEventFormat(cardResponse: Bundle): String {
         val eCode = cardResponse.getInt("eCode")
+        var eCode2 = cardResponse.getInt("eCode2", 0)
 
         //TODO zasad je samo jedan uredaj, pa cu dohvatit onaj na indeksu 0 zbog uid-a
 //        val deviceList = mutableListOf<Device>()
@@ -785,8 +786,8 @@ class MiroConverter {
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 666)
+        val dev_b0_id = prefs.getInt("DEV_B0_ID", 666)
 
-        var eCode2 = cardResponse.getInt("eCode2", 696969)
         if (cardResponse.getBoolean("NoOptionPressed")) {
             eCode2 = 0
         }
@@ -798,14 +799,14 @@ class MiroConverter {
 
         val rtr2 = "{\n" +
                 "    \"ACT\": \"NEW_EVENTS\",\n" +
-                "    \"IFTTERM2_B0_ID\": \"nnn\",\n" +
+                "    \"IFTTERM2_B0_ID\": \"${id}\",\n" +
                 "    \"CREAD\": [\n" +
                 "        {\n" +
                 "            \"CN\": \"${cardResponse.getString("CardCode", "")}\",\n" +
                 "            \"GENT\": \"${cardResponse.getString("DateTime", "")}\",\n" +
                 "            \"ECODE\": \"${eCode}\",\n" +
                 "            \"ECODE2\": \"${eCode2}\",\n" +
-                "            \"DEV_B0_ID\": \"${id}\",\n" +
+                "            \"DEV_B0_ID\": \"${dev_b0_id}\",\n" +
                 "            \"IMG_B64\": \"${img}\"\n" +
                 "        }\n" +
                 "    ]\n" +
@@ -842,7 +843,7 @@ class MiroConverter {
             if (unpublishedEvents.size != 0) {
                 for (ue in unpublishedEvents.indices) {
                     if (ue != unpublishedEvents.size - 1) {
-                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}, \"IMG_B64\":\"${unpublishedEvents[ue].image}\"},"
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\", \"IMG_B64\":\"${unpublishedEvents[ue].image}\"},"
                     } else {
                         strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\", \"IMG_B64\":\"${unpublishedEvents[ue].image}\"}]}"
                     }
@@ -860,7 +861,7 @@ class MiroConverter {
                 deleteExistingAlarms(op.uid)
                 //ako je nekontrolirani prolaz, postavit alrm da se relej stavi u HOLD kad to vrijeme pocne
                 //i isto tako ga stavit nazad u PULSE nacin kad to vrijeme zavrsi
-                alarmParser(op)
+//                alarmParser(op)
             }
         }
     }
@@ -1049,13 +1050,6 @@ class MiroConverter {
 
         val alarmManager = ContextProvider.getApplicationContext()
             .getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        //ovo se pali 7 puta odjednom il neki k?? mozda zbog koristenja uid i uid+1?
-//        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(timeStart, pendingIntentHold), pendingIntentHold
-//        )
-//
-//        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(timeEnd, pendingIntentPulse), pendingIntentPulse
-//        )
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,

@@ -16,7 +16,7 @@ interface OperationScheduleDao {
     fun getAll(): List<OperationSchedule>?
 
     @Query("SELECT * FROM OperationSchedule WHERE uid = :uid")
-    fun getById(uid: Int): OperationSchedule??
+    fun getById(uid: Int): OperationSchedule?
 
     @Query("SELECT * FROM OperationSchedule WHERE description = :description")
     fun getByDescription(description: String): OperationSchedule?

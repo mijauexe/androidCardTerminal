@@ -1,8 +1,6 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.opengl.Visibility
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -14,12 +12,8 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
-import com.card.terminal.utils.CameraUtils
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -99,13 +93,17 @@ class CheckoutFragment : Fragment() {
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
         if (prefs.getBoolean("CaptureOnEvent", true)) {
-            CameraUtils.captureImage(ContextProvider.getApplicationContext())
+//            CameraUtils.captureImage(ContextProvider.getApplicationContext())
+//            existingBundle.putString(
+//                "EventImage", prefs.getString(
+//                    "EventImage",
+//                    ""
+//                )
+//            )
+
             existingBundle.putString(
-                "EventImage", prefs.getString(
-                    "EventImage",
-                    ""
-                )
-            )
+                "EventImage", "")
+
             val editor = prefs.edit()
             editor.putString("EventImage", "")
             editor.commit()
