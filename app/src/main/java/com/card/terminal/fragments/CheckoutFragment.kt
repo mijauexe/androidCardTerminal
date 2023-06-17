@@ -89,7 +89,7 @@ class CheckoutFragment : Fragment() {
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
         if (prefs.getBoolean("CaptureOnEvent", true)) {
-            CameraUtils.captureImage(ContextProvider.getApplicationContext())
+//            CameraUtils.captureImage()
             existingBundle.putString(
                 "EventImage", prefs.getString(
                     "EventImage",

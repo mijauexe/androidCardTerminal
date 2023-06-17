@@ -568,7 +568,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext()
+            )
             db.PersonDao().insertAll(personList)
             counter += personList.size
         } catch (e: Exception) {
@@ -592,7 +594,9 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext()
+            )
             db.AccessLevelDao().insertAll(acList)
             counter += acList.size
         } catch (e: Exception) {
@@ -621,17 +625,24 @@ class MiroConverter {
         }
 
         try {
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext()
+            )
             db.CardDao().insertAll(cardList)
 
-            for (card in cardList) {
-                try {
-                    db.CardDao().deleteByCardNumber(card.cardNumber)
-                } catch (e: java.lang.Exception) {
-                    Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                }
-                db.CardDao().insert(card)
-            }
+//            for (card in cardList) {
+//                try {
+//                    db.CardDao().deleteByCardNumber(card.cardNumber)
+//                } catch (e: java.lang.Exception) {
+//                    Timber.d(
+//                        "Msg: Exception %s | %s | %s",
+//                        e.cause,
+//                        e.stackTraceToString(),
+//                        e.message
+//                    )
+//                }
+//                db.CardDao().insert(card)
+//            }
 
             counter += cardList.size
         } catch (e: Exception) {
@@ -652,6 +663,8 @@ class MiroConverter {
             return iftTermResponse(counter = counter, err = "0", msg = "Successful")
         }
     }
+
+
 
     private fun addHoliday(objectic: holidayObject): iftTermResponse {
         var counter = 0
@@ -717,6 +730,7 @@ class MiroConverter {
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
         val id = prefs.getInt("IFTTERM2_B0_ID", 666)
+        val dev_b0_id = prefs.getInt("DEV_B0_ID", 666)
 
         var eCode2 = cardResponse.getInt("eCode2", 696969)
         if (cardResponse.getBoolean("NoOptionPressed")) {
@@ -730,14 +744,14 @@ class MiroConverter {
 
         val rtr2 = "{\n" +
                 "    \"ACT\": \"NEW_EVENTS\",\n" +
-                "    \"IFTTERM2_B0_ID\": \"nnn\",\n" +
+                "    \"IFTTERM2_B0_ID\": \"${id}\",\n" +
                 "    \"CREAD\": [\n" +
                 "        {\n" +
                 "            \"CN\": \"${cardResponse.getString("CardCode", "")}\",\n" +
                 "            \"GENT\": \"${cardResponse.getString("DateTime", "")}\",\n" +
                 "            \"ECODE\": \"${eCode}\",\n" +
                 "            \"ECODE2\": \"${eCode2}\",\n" +
-                "            \"DEV_B0_ID\": \"${id}\",\n" +
+                "            \"DEV_B0_ID\": \"${dev_b0_id}\",\n" +
                 "            \"IMG_B64\": \"${img}\"\n" +
                 "        }\n" +
                 "    ]\n" +
@@ -752,7 +766,9 @@ class MiroConverter {
         val scope = CoroutineScope(Dispatchers.IO)
         //TODO ECODE
         val responseDeferred = scope.async {
-            val db = AppDatabase.getInstance(ContextProvider.getApplicationContext())
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext()
+            )
             db.EventDao().getUnpublishedEvents()?.let { unpublishedEvents.addAll(it) }
             var dev_b0_id = 0
             try {
@@ -771,9 +787,9 @@ class MiroConverter {
             if (unpublishedEvents.size != 0) {
                 for (ue in unpublishedEvents.indices) {
                     if (ue != unpublishedEvents.size - 1) {
-                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"},"
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\", \"IMG_B64\":\"${unpublishedEvents[ue].image}\"},"
                     } else {
-                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\"}]}"
+                        strNew += "{\"CN\":\"${unpublishedEvents[ue].cardNumber}\", \"GENT\":\"${unpublishedEvents[ue].dateTime}\", \"ECODE\": \"${unpublishedEvents[ue].eventCode}\",\"ECODE2\": \"${unpublishedEvents[ue].eventCode2}\", \"DEV_B0_ID\":\"${dev_b0_id}\", \"IMG_B64\":\"${unpublishedEvents[ue].image}\"}]}"
                     }
                 }
             }
@@ -782,4 +798,5 @@ class MiroConverter {
         responseDeferred.await()
         return EventStringPair(unpublishedEvents, strNew)
     }
+
 }

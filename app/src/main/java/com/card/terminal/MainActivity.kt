@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
 
-        CameraUtils.init(this)
+//        CameraUtils.init(this)
 
         val filter = IntentFilter()
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
@@ -127,11 +127,11 @@ class MainActivity : AppCompatActivity() {
 
 
         db = AppDatabase.getInstance((this))
-
+//
 //        val scope3 = CoroutineScope(Dispatchers.IO)
 //        scope3.launch {
 //            try {
-//                db.clearAllTables()
+//                db.EventDao().deleteAll()
 //            } catch (e: Exception) {
 //                Timber.d(
 //                    "Exception while clearing db: %s | %s | %s",
@@ -392,19 +392,19 @@ class MainActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putString("CardCode", it["CardCode"])
         bundle.putString("DateTime", it["DateTime"])
-        if (it.containsKey("Source")) {
-            bundle.putString("Source", it["Source"])
-        }
+        Timber.d("skenirao se: ${it}")
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
         if (lastScanEvent == null || !lastScanEvent.cardNumber.toString()
-                .equals(it["CardCode"]) || LocalDateTime.parse(lastScanEvent.dateTime)
-                .plusSeconds(10).isBefore(LocalDateTime.now())
+                .equals(it["CardCode"]) ||
+            LocalDateTime.parse(lastScanEvent.dateTime).plusSeconds(10)
+                .isBefore(LocalDateTime.now())
         ) {
             try {
                 val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
-                val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
+                val person =
+                    card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
 
                 if (person != null && card != null) {
                     bundle.putString("firstName", person.firstName)
@@ -427,12 +427,16 @@ class MainActivity : AppCompatActivity() {
                         supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
                     navHostFragment.navController
 
-                    val currentTime = LocalTime.parse(
-                        LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                    )
+                    val currentTime =
+                        LocalTime.parse(
+                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        )
+
+//                    val currentTime = LocalTime.parse("14:31:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
 
                     val currentDateString =
-                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        LocalDateTime.now()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
                     val currentDateDate = LocalDate.parse(currentDateString)
 
@@ -471,8 +475,10 @@ class MainActivity : AppCompatActivity() {
 
                     try {
                         val dbSchedule1 = db.OperationScheduleDao().getAll()
+                        Timber.d("dohvatio raspored: ${dbSchedule1}")
                         var conforms = -1 //doesnt conform to anything before checking
-                        var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
+                        var containsIfNotSchedule =
+                            false //if contains IF_NOT_SCHEDULE param
                         var IfNotScheduleMode = 0
                         var isTodayHoliday = false
 
@@ -481,58 +487,75 @@ class MainActivity : AppCompatActivity() {
                             currentDateDate.monthValue,
                             currentDateDate.year
                         )
+                        Timber.d("d1: ${d1?.workDay}, ${d1?.day}, ${d1?.description}")
 
-                        val d2 = db.CalendarDao().getByDate(
-                                currentDateDate.dayOfWeek.value, currentDateDate.monthValue, 0
+                        val d2 = db.CalendarDao()
+                            .getByDate(
+                                currentDateDate.dayOfWeek.value,
+                                currentDateDate.monthValue,
+                                0
                             )
+                        Timber.d("d2: ${d2?.workDay}, ${d2?.day}, ${d2?.description}")
 
                         if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
                             isTodayHoliday = true
+                            Timber.d("Danas je praznik: True")
                         }
 
                         if (dbSchedule1 != null) {
-                            for (sch in dbSchedule1) {
-
-                                val timeConforms =
-                                    currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
-                                        LocalTime.parse(sch.timeTo)
+                            if (dbSchedule1.isEmpty()) {
+                                Timber.d("Raspored prazan!!!")
+                                passageControl(2, it["CardCode"]!!, bundle)
+                                MyHttpClient.pushRequest("IFTTERM2_INIT0")
+                            } else {
+                                for (sch in dbSchedule1) {
+                                    val timeConforms =
+                                        currentTime.isAfter(LocalTime.parse(sch.timeFrom)) && currentTime.isBefore(
+                                            LocalTime.parse(sch.timeTo)
+                                        )
+                                    if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
+                                        containsIfNotSchedule = true
+                                        IfNotScheduleMode = sch.modeId
+                                    } else if (sch.description.contains("SPECIFIC_DAY") && currentDateString.equals(
+                                            sch.description.substring(sch.description.indexOf(":") + 1)
+                                        ) && timeConforms
+                                    ) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("SPECIFIC DAY")
+                                        break
+                                    } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("HOLIDAY")
+                                        break
+                                    } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("WORKING_DAY")
+                                        break
+                                    } else if (sch.description.contains(currentDayString) && timeConforms) {
+                                        conforms =
+                                            db.OperationScheduleDao().getById(sch.uid)?.uid!!
+                                        Timber.d("currentDayString: ${currentDayString}")
+                                        break
+                                    }
+                                }
+                                if (conforms == -1 && containsIfNotSchedule) {
+                                    passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
+                                    Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
+                                } else {
+                                    passageControl(
+                                        db.OperationScheduleDao().getById(conforms)?.modeId!!,
+                                        it["CardCode"]!!,
+                                        bundle
                                     )
-
-                                if (sch.description.equals("IF_NOT_SCHEDULE") && timeConforms) {
-                                    containsIfNotSchedule = true
-                                    IfNotScheduleMode = sch.modeId
-                                } else if (sch.description.contains("SPECIFIC_DAY") && currentDateString.equals(
-                                        sch.description.substring(sch.description.indexOf(":") + 1)
-                                    ) && timeConforms
-                                ) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    break
-                                } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    break
-                                } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    break
-                                } else if (sch.description.contains(currentDayString) && timeConforms) {
-                                    conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    break
                                 }
                             }
-
-                            if (conforms == -1 && containsIfNotSchedule) {
-                                passageControl(IfNotScheduleMode, it["CardCode"]!!, bundle)
-                            } else {
-                                passageControl(
-                                    db.OperationScheduleDao().getById(conforms)?.modeId!!,
-                                    it["CardCode"]!!,
-                                    bundle
-                                )
-                            }
                         } else {
-                            showDialog(
-                                "Nemam raspored kontrole! Kartica ${it["CardCode"]}", false
-                            )
-                            playSound(R.raw.scan_error)
+                            Timber.d("Raspored NULL!!!")
+                            passageControl(3, it["CardCode"]!!, bundle)
+                            MyHttpClient.pushRequest("IFTTERM2_INIT0")
                         }
                     } catch (e: java.lang.Exception) {
                         Timber.d(
@@ -542,23 +565,30 @@ class MainActivity : AppCompatActivity() {
                             e.message
                         )
                         showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
-                        playSound(R.raw.scan_error)
                     }
 
                 } else {
+                    Timber.d("Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka")
                     showDialog(
-                        "Greška u bazi podataka! Kartica ${it["CardCode"]}", false
+                        "Kartica ili osoba ${it["CardCode"]} ne postoji u bazi podataka",
+                        false
                     )
-                    playSound(R.raw.scan_error)
                 }
             } catch (e: java.lang.Exception) {
                 Timber.d(
-                    "Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message
+                    "Msg: Exception %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
                 )
                 showDialog("Dogodila se greška! Kartica ${it["CardCode"]}", false)
+//                passageControl(2, it["CardCode"]!!, bundle)
             }
         }
     }
+
+
+
 
     fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
         val navHostFragment =
@@ -662,7 +692,7 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         MyHttpClient.server.stop(0, 0)
         unregisterReceiver(usbReceiver);
-        CameraUtils.release()
+//        CameraUtils.release()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

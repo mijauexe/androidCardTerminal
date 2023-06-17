@@ -50,38 +50,6 @@ object CameraUtils {
         startBackgroundThread()
     }
 
-    fun captureImage(context: Context) {
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // Camera permission not granted
-            return
-        }
-
-        val cameraId = getCameraId()
-        try {
-            cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
-                override fun onOpened(camera: CameraDevice) {
-                    cameraDevice = camera
-                    createCaptureSession()
-                }
-
-                override fun onDisconnected(camera: CameraDevice) {
-                    cameraDevice?.close()
-                    cameraDevice = null
-                }
-
-                override fun onError(camera: CameraDevice, error: Int) {
-                    cameraDevice?.close()
-                    cameraDevice = null
-                }
-            }, null)
-        } catch (e: CameraAccessException) {
-            Timber.d("Failed to open camera: ${e.message}")
-        }
-    }
-
     private fun createCaptureSession() {
         try {
             captureRequestBuilder =
@@ -105,11 +73,42 @@ object CameraUtils {
         }
     }
 
-    private fun captureImage() {
+    fun captureImage() {
+        val cameraId = getCameraId()
         try {
-            captureSession.capture(captureRequestBuilder.build(), null, null)
-        } catch (e: Exception) {
-            Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            if (ActivityCompat.checkSelfPermission(
+                    ContextProvider.getApplicationContext(),
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            init(ContextProvider.getApplicationContext())
+            cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                    cameraDevice = camera
+                    createCaptureSession()
+                }
+
+                override fun onDisconnected(camera: CameraDevice) {
+                    cameraDevice?.close()
+                    cameraDevice = null
+                }
+
+                override fun onError(camera: CameraDevice, error: Int) {
+                    cameraDevice?.close()
+                    cameraDevice = null
+                }
+            }, null)
+        } catch (e: CameraAccessException) {
+            Timber.d("Failed to open camera: ${e.message}")
         }
     }
 
@@ -123,7 +122,7 @@ object CameraUtils {
             val outputStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
             val imgBytes = outputStream.toByteArray()
-            val base64String = Base64.encodeToString(imgBytes, Base64.DEFAULT)
+            val base64String = Base64.encodeToString(imgBytes, Base64.NO_WRAP)
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             val editor = prefs.edit()

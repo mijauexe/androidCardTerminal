@@ -265,6 +265,7 @@ object MyHttpClient {
                             }
                         }
                 if (response != null) {
+                    Timber.d("Received response: ${response.bodyAsText()}")
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
                     MiroConverter().processRequest(response.bodyAsText())
                 }
@@ -316,17 +317,31 @@ object MyHttpClient {
                             }
                         }
                 if (response != null) {
-                    println(response.bodyAsText())
-                    if (response.bodyAsText().contains("\"CODE\":\"0\""))
+                    Timber.d("Sent: ${body}")
+                    Timber.d("Response received: ${response.bodyAsText()}")
+                    if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
-                    Timber.d(
-                        "Msg: user %s scanned, response sent to server: %b",
-                        cardResponse,
-                        true
-                    )
+                        Timber.d(
+                            "Msg: user %s scanned, response sent to server: %b",
+                            cardResponse.getString("CardCode"),
+                            true
+                        )
+                    } else {
+                        eventToDatabase(cardResponse, false)
+                        Timber.d(
+                            "Msg: user %s scanned, response sent to server: %b",
+                            cardResponse.getString("CardCode"),
+                            false
+                        )
+                    }
                 }
             } catch (ce: ConnectException) {
-                Timber.d("Msg: user %s scanned, response sent to server: %b", cardResponse, false)
+                Timber.d(
+                    "Msg: user %s scanned, response sent to server: %b",
+                    cardResponse.getString("CardCode"),
+                    false
+                )
+                eventToDatabase(cardResponse, false)
             } catch (e: Exception) {
                 Timber.d(
                     "Exception while publishing event(s) to server: %s | %s | %s | %s",
@@ -335,9 +350,17 @@ object MyHttpClient {
                     e.message,
                     body
                 )
+                eventToDatabase(cardResponse, false)
+                Timber.d(
+                    "Msg: user %s scanned, response sent to server: %b",
+                    cardResponse.getString("CardCode"),
+                    false
+                )
             }
         }
     }
+
+
 
     fun publishUnpublishedEvents() {
         val scopeSven = CoroutineScope(Dispatchers.IO)

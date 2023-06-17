@@ -9,7 +9,7 @@ class PublishEventsTask() :
     TimerTask() {
     private var timer: Timer? = null
     val delay = 0L
-    val period = 180000L
+    val period = 1800000L
     var started = false
 
     override fun run() {
