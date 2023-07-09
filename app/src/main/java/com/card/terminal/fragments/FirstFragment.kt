@@ -193,7 +193,7 @@ class FirstFragment : Fragment() {
                     }
 
                     btn.setBackgroundResource(R.drawable.card_button_background)
-                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
+//                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
                     goToCheckoutWithBundle(bundle.deepCopy())
                 }
             }

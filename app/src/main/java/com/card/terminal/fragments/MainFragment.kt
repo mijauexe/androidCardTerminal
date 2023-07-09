@@ -41,7 +41,7 @@ class MainFragment : Fragment() {
                 _binding?.settingsButton?.visibility = View.GONE
             }
 
-            _binding?.ervHepLogo?.setOnClickListener {
+            _binding?.logo1?.setOnClickListener {
                 trackerSettingsIcon[0]++
             }
 

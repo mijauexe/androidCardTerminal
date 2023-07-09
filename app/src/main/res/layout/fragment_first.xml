@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D9D9D9"
+    android:background="@drawable/ina_gradient"
     tools:context=".fragments.FirstFragment">
 
 
@@ -20,12 +20,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
+            android:layout_width="150dp"
+            android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="15dp"
-            android:src="@drawable/erv_hep" />
+            android:src="@drawable/visit_white" />
 
         <TextView
             android:id="@+id/tv_date_clock"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/tv_date"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="30sp"
             android:visibility="gone" />
 
@@ -44,7 +44,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:text="Đuro"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="40sp" />
 
         <TextView
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Đurić"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="40sp" />
 
         <TextView
@@ -62,14 +62,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Firma"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="40sp"
             android:visibility="gone" />
 
         <ImageView
             android:id="@+id/photo"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_unknown_person" />
 
@@ -77,7 +77,7 @@
             android:layout_width="250dp"
             android:layout_height="150dp"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/hep_proizvodnja" />
+            android:src="@drawable/ina_logo" />
     </GridLayout>
 
     <GridLayout
@@ -98,7 +98,7 @@
         android:layout_height="700dp"
         android:layout_below="@+id/glMain"
         android:layout_toStartOf="@+id/glMain"
-        app:cardBackgroundColor="#D9D9D9"
+        app:cardBackgroundColor="#0050B5"
         app:cardCornerRadius="25dp"
         app:cardElevation="4dp"
         app:cardUseCompatPadding="true"
@@ -122,12 +122,13 @@
                 android:layout_marginBottom="50dp"
                 android:text="Molimo unesite razlog izlaska:"
 
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:textSize="30dp" />
 
             <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="600dp">
+                android:layout_height="600dp"
+                >
 
                 <GridLayout
                     android:id="@+id/buttonsGrid"
@@ -145,7 +146,7 @@
                         android:drawableStart="@drawable/pih"
                         android:text=" Poslovni izlaz nalog HEP "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -159,7 +160,7 @@
                         android:drawableStart="@drawable/pit"
                         android:text=" Poslovni izlaz nalog tvrtka "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -173,7 +174,7 @@
                         android:drawableStart="@drawable/piz"
                         android:text=" Privatni izlaz "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -187,7 +188,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 4 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -201,7 +202,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 5 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -215,7 +216,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 6 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -229,7 +230,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 7 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -243,7 +244,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 8 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -257,7 +258,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 9 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -271,7 +272,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Contractor 10 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -286,7 +287,7 @@
                         android:drawableStart="@drawable/pd"
                         android:text=" Privatno uz dozvolu "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -301,7 +302,7 @@
                         android:drawableStart="@drawable/ph"
                         android:text=" Privatno hitno bez dozvole "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -315,7 +316,7 @@
                         android:drawableStart="@drawable/sp"
                         android:text=" Službeno putovanje "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -329,7 +330,7 @@
                         android:drawableStart="@drawable/sb"
                         android:text=" Službeno BETO "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -343,7 +344,7 @@
                         android:drawableStart="@drawable/so"
                         android:text=" Službeno ostalo "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -357,7 +358,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 6 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -371,7 +372,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 7 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -385,7 +386,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 8 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -399,7 +400,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 9 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 
@@ -413,7 +414,7 @@
                         android:drawableStart="@drawable/work_alternative"
                         android:text=" Worker 10 "
                         android:textAllCaps="false"
-                        android:textColor="@android:color/black"
+                        android:textColor="@android:color/white"
                         android:textSize="35dp"
                         android:visibility="gone" />
 

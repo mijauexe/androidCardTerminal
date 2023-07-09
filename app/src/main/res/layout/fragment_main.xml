@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D9D9D9"
-    tools:context=".fragments.MainFragment">
+    android:background="@drawable/ina_gradient"
+    tools:context=".fragments.MainFragment"
+    >
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -14,14 +15,16 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:rowCount="3"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp">
+
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/gridLayout2"
+            android:padding="0dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#D9D9D9"
+            app:cardBackgroundColor="#0050B5"
             app:cardCornerRadius="25dp"
             app:cardElevation="4dp"
             app:cardUseCompatPadding="true"
@@ -29,7 +32,6 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <GridLayout
-
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="50dp"
@@ -47,7 +49,7 @@
                     android:shadowDy="2"
                     android:shadowRadius="4"
                     android:text="@string/tv_date"
-                    android:textColor="@color/black"
+                    android:textColor="@color/white"
                     android:textSize="60sp" />
 
                 <TextClock
@@ -61,18 +63,18 @@
                     android:shadowDy="2"
                     android:shadowRadius="4"
                     android:text="@string/clock"
-                    android:textColor="@color/black"
+                    android:textColor="@color/white"
                     android:textSize="60sp" />
             </GridLayout>
         </androidx.cardview.widget.CardView>
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="380dp"
+            android:layout_width="280dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="50dp"
-            android:src="@drawable/hep_proizvodnja"
+            android:src="@drawable/ina_logo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -99,7 +101,7 @@
             android:shadowDx="3"
             android:shadowDy="3"
             android:shadowRadius="4"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:text="@string/please_scan_card"
             android:textSize="@dimen/menu" />
 
@@ -121,12 +123,12 @@
         tools:layout_editor_absoluteX="0dp">
 
         <ImageView
-            android:id="@+id/erv_hep_logo"
+            android:id="@+id/logo1"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="start"
             android:layout_marginStart="50dp"
-            android:src="@drawable/erv_hep"
+            android:src="@drawable/visit_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -177,7 +179,7 @@
             android:layout_height="200dp"
             android:layout_gravity="start"
             android:layout_marginEnd="50dp"
-            android:src="@drawable/ifsimus_logo"
+            android:src="@drawable/ifsimus_white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
