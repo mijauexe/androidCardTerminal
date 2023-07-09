@@ -2,15 +2,19 @@ package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.os.Handler
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.GridLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
@@ -22,7 +26,14 @@ import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.net.HttpURLConnection
+import java.net.NoRouteToHostException
+import java.net.UnknownHostException
 import java.util.*
 
 
@@ -51,62 +62,17 @@ class FirstFragment : Fragment() {
 
         val existingBundle = requireArguments()
 
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
-
-//        if (existingBundle.containsKey("imagePath")) {
-//
-//            try {
-//                val scope = CoroutineScope(Dispatchers.IO)
-//                scope.launch {
-//                        try {
-//                            val url = URL(
-//                                ("http://" + prefs.getString(
-//                                    "bareIP",
-//                                    "?"
-//                                ) + existingBundle.get("imagePath"))
-//                            )
-//                            Timber.d("url je ${url}")
-//                            val connection = withContext(Dispatchers.IO) {
-//                                url.openConnection()
-//                            } as HttpURLConnection
-//                            connection.doInput = true
-//                            withContext(Dispatchers.IO) {
-//                                connection.connect()
-//                            }
-//                            val input = connection.inputStream
-//                            val bitmap = BitmapFactory.decodeStream(input)
-//                            withContext(Dispatchers.Main) {
-//                                binding.photo.setImageBitmap(bitmap)
-//                                existingBundle.putParcelable("imageB64", bitmap)
-//                            }
-//                            connection.disconnect()
-//                        } catch (e: java.lang.Exception) {
-//                            Timber.d(
-//                                "Msg: Exception %s | %s | %s",
-//                                e.cause,
-//                                e.stackTraceToString(),
-//                                e.message
-//                            )
-//                        }
-//                }
-//            } catch (e: NoRouteToHostException) {
-//                Timber.d(
-//                    "Msg: No route to host while getting photo: %s | %s | %s",
-//                    e.cause,
-//                    e.stackTraceToString(),
-//                    e.message
-//                )
-//            } catch (e: UnknownHostException) {
-//                Timber.d(
-//                    "Msg: Unknown host while getting photo: %s | %s | %s",
-//                    e.cause,
-//                    e.stackTraceToString(),
-//                    e.message
-//                )
-//            }
-//        }
-
+        if (existingBundle.getString("CardCode") != "10037") {
+            val bitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img)
+            binding.photo.setImageBitmap(bitmap)
+        } else {
+            val bitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img2)
+//            binding.photo.scaleType = ImageView.ScaleType.FIT_CENTER
+//            val layoutParams = binding.photo.layoutParams as LinearLayout.LayoutParams
+//            layoutParams.gravity = Gravity.CENTER
+//            binding.photo.layoutParams = layoutParams
+            binding.photo.setImageBitmap(bitmap)
+        }
 
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
@@ -128,17 +94,19 @@ class FirstFragment : Fragment() {
             ubijMe("VEHICLE", binding.buttonsGrid, existingBundle)
         }
 
-        Handler().postDelayed({
-            when (findNavController().currentDestination?.id) {
-                R.id.FirstFragment -> {
-                    existingBundle.putBoolean("NoOptionPressed", true)
-                    MyHttpClient.publishNewEvent(existingBundle)
-                    findNavController().navigate(
-                        R.id.action_FirstFragment_to_mainFragment
-                    )
+        Handler().postDelayed(
+            {
+                when (findNavController().currentDestination?.id) {
+                    R.id.FirstFragment -> {
+                        existingBundle.putBoolean("NoOptionPressed", true)
+                        MyHttpClient.publishNewEvent(existingBundle)
+                        findNavController().navigate(
+                            R.id.action_FirstFragment_to_mainFragment
+                        )
+                    }
                 }
-            }
-        }, delay)
+            }, delay
+        )
     }
 
     fun goToCheckoutWithBundle(bundle: Bundle) {
@@ -160,7 +128,10 @@ class FirstFragment : Fragment() {
         bundle: Bundle
     ) {
 
-        val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+        val db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
         val btnList = db.ButtonDao().getAllByClassType(str)
 
         if (btnList != null) {
