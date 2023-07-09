@@ -120,8 +120,18 @@
                 android:textColor="@color/black"
                 android:textSize="@dimen/menu" />
 
-
-
+            <EditText
+                android:id="@+id/cardText"
+                android:textSize="@dimen/menu"
+                android:visibility="gone"
+                android:shadowColor="#BDBDBD"
+                android:shadowDx="3"
+                android:shadowDy="3"
+                android:shadowRadius="4"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
         </GridLayout>
         <ImageView
             android:id="@+id/please_scan_icon"
