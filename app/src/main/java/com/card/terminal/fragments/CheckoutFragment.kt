@@ -24,6 +24,9 @@ class CheckoutFragment : Fragment() {
     private var _binding: FragmentCheckoutBinding? = null
     private val binding get() = _binding!!
 
+    private var timerHandler: Handler? = null
+    private val delayMillis: Long = 10000
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,7 +56,6 @@ class CheckoutFragment : Fragment() {
         eventImageLogic(existingBundle)
 
         MyHttpClient.publishNewEvent(existingBundle)
-        val delay = 10000L
 
         binding.reasonValue.text = arguments?.getString("selection", "")
 
@@ -73,7 +75,9 @@ class CheckoutFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("CheckoutFragment onViewCreated")
 
-        Handler().postDelayed({
+        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
+        timerHandler = Handler()
+        timerHandler?.postDelayed({
             when (findNavController().currentDestination?.id) {
                 R.id.CheckoutFragment -> {
                     findNavController().navigate(
@@ -81,7 +85,7 @@ class CheckoutFragment : Fragment() {
                     )
                 }
             }
-        }, delay)
+        }, delayMillis)
     }
 
     private fun eventImageLogic(existingBundle: Bundle) {
@@ -112,6 +116,7 @@ class CheckoutFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
         Timber.d("CheckoutFragment onDestroyView")
         _binding = null
     }

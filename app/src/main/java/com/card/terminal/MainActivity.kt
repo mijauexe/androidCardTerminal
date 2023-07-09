@@ -8,6 +8,7 @@ import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
@@ -17,6 +18,7 @@ import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
 import android.util.TypedValue
+import android.view.KeyEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -83,6 +85,8 @@ class MainActivity : AppCompatActivity() {
         const val LOCK_ACTIVITY_KEY = "com.card.terminal.MainActivity"
     }
 
+    private var timerHandler: Handler? = null
+    private val delayMillis: Long = 500 // 0.5 second delay
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,8 +180,21 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer!!.setOnCompletionListener { mediaPlayer -> // Release the MediaPlayer resources
             mediaPlayer.release()
         }
+//         val manager = getSystemService(Context.USB_SERVICE) as UsbManager
+//         val deviceList: HashMap = manager.deviceList
+//         val deviceIterator: Iterator = deviceList.values.iterator()
+//         while (deviceIterator.hasNext()) {
+//         val device: UsbDevice = deviceIterator.next()
+//         manager.requestPermission(device, mPermissionIntent)
+//         val model: String = device.deviceName
+//         val deviceId: Int = device.deviceId
+//         val vendor: Int = device.vendorId
+//         val product: Int = device.productId
+//         val deviceClass: Int = device.deviceClass
+//         val subclass: Int = device.deviceSubclass
+//         }
 
-        rescheduleAlarms()
+//        rescheduleAlarms()
     }
 
     fun isAdmin(): Boolean {
@@ -299,6 +316,181 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startTimer() {
+        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//        dateText.visibility = View.GONE
+
+
+//        val editableCardText = findViewById<EditText>(R.id.cardText)
+//        editableCardText.visibility = View.VISIBLE
+//        editableCardText.requestFocus()
+
+        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
+        timerHandler = Handler()
+        timerHandler?.postDelayed({
+
+            val cn = getSharedPreferences(
+                PREFS_NAME,
+                MODE_PRIVATE
+            ).getString("usbAdapterCardCode", "")!!
+
+            handleCardScan(
+                mapOf(
+                    "CardCode" to cn.trimStart('0'),
+                    "DateTime" to LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
+                    "Source" to "usbAdapter"
+                )
+            )
+            getSharedPreferences(
+                PREFS_NAME,
+                MODE_PRIVATE
+            ).edit().putString("usbAdapterCardCode", "").commit()
+
+
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    dateText.setText(R.string.please_scan_card)
+
+                }
+            }
+
+//            dateText.visibility = View.VISIBLE
+//            editableCardText.visibility = View.GONE
+
+        }, delayMillis)
+    }
+
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        startTimer()
+        return when (keyCode) {
+            KeyEvent.KEYCODE_0 -> {
+                parseCardCodeFromUsbAdapter("0", System.currentTimeMillis())
+                println("0")
+                true
+            }
+
+            KeyEvent.KEYCODE_1 -> {
+                parseCardCodeFromUsbAdapter("1", System.currentTimeMillis())
+                println("1")
+                true
+            }
+
+            KeyEvent.KEYCODE_2 -> {
+                parseCardCodeFromUsbAdapter("2", System.currentTimeMillis())
+                println("2")
+                true
+            }
+
+            KeyEvent.KEYCODE_3 -> {
+                parseCardCodeFromUsbAdapter("3", System.currentTimeMillis())
+                println("3")
+                true
+            }
+
+            KeyEvent.KEYCODE_4 -> {
+                parseCardCodeFromUsbAdapter("4", System.currentTimeMillis())
+                println("4")
+                true
+            }
+
+            KeyEvent.KEYCODE_5 -> {
+                parseCardCodeFromUsbAdapter("5", System.currentTimeMillis())
+                println("5")
+                true
+            }
+
+            KeyEvent.KEYCODE_6 -> {
+                parseCardCodeFromUsbAdapter("6", System.currentTimeMillis())
+                println("6")
+                true
+            }
+
+            KeyEvent.KEYCODE_7 -> {
+                parseCardCodeFromUsbAdapter("7", System.currentTimeMillis())
+                println("7")
+                true
+            }
+
+            KeyEvent.KEYCODE_8 -> {
+                parseCardCodeFromUsbAdapter("8", System.currentTimeMillis())
+                println("8")
+                true
+            }
+
+            KeyEvent.KEYCODE_9 -> {
+                parseCardCodeFromUsbAdapter("9", System.currentTimeMillis())
+                println("9")
+                true
+            }
+
+            else -> {
+                println(keyCode)
+                super.onKeyUp(keyCode, event)
+            }
+        }
+    }
+
+    private fun parseCardCodeFromUsbAdapter(s: String, time: Long) {
+        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//        dateText.visibility = View.GONE
+
+        val rrr = resources.getString(R.string.please_scan_card)
+
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
+
+        when (navHostFragment.navController.currentDestination?.id) {
+            R.id.MainFragment -> {
+                if (dateText.text.equals(rrr)) {
+                    dateText.text = ""
+                }
+                dateText.setText(dateText.text.toString() + s)
+            }
+        }
+
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val editor = prefs.edit()
+
+        val currentTimestamp = time
+
+//        if (lastReadTimestamp - currentTimestamp < 1000) {
+//            var currentString = prefs.getString("usbAdapterCardCode", "")
+//            currentString += s
+//            editor.putString("usbAdapterCardCode", currentString)
+//            editor.commit()
+//        } else {
+//            handleCardScan(
+//                mapOf(
+//                    "CardCode" to prefs.getString("usbAdapterCardCode", "")!!,
+//                    "DateTime" to LocalDateTime.now()
+//                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
+//                )
+//            )
+//            editor.putString("usbAdapterCardCode", "")
+//            editor.commit()
+//        }
+
+        var currentString = prefs.getString("usbAdapterCardCode", "")
+
+//        if(currentString.equals("") && s.equals("0")) {
+//            println("gas")
+//        } else {
+//            currentString += s
+//            editor.putString("usbAdapterCardCode", currentString)
+//            editor.commit()
+//        }
+        currentString += s
+        editor.putString("usbAdapterCardCode", currentString)
+        editor.commit()
+    }
+
     private fun rescheduleAlarms() {
         val scope3 = CoroutineScope(Dispatchers.IO)
         scope3.launch {
@@ -316,6 +508,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun startLogger() {
         try {
