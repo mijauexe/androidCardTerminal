@@ -339,7 +339,19 @@ class MainActivity : AppCompatActivity() {
                 PREFS_NAME,
                 MODE_PRIVATE
             ).edit().putString("usbAdapterCardCode", "").commit()
-            dateText.setText(R.string.please_scan_card)
+
+
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    dateText.setText(R.string.please_scan_card)
+
+                }
+            }
+
 //            dateText.visibility = View.VISIBLE
 //            editableCardText.visibility = View.GONE
 
@@ -352,55 +364,66 @@ class MainActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_0 -> {
                 parseCardCodeFromUsbAdapter("0", System.currentTimeMillis())
+                println("0")
                 true
             }
 
             KeyEvent.KEYCODE_1 -> {
                 parseCardCodeFromUsbAdapter("1", System.currentTimeMillis())
+                println("1")
                 true
             }
 
             KeyEvent.KEYCODE_2 -> {
                 parseCardCodeFromUsbAdapter("2", System.currentTimeMillis())
+                println("2")
                 true
             }
 
             KeyEvent.KEYCODE_3 -> {
                 parseCardCodeFromUsbAdapter("3", System.currentTimeMillis())
+                println("3")
                 true
             }
 
             KeyEvent.KEYCODE_4 -> {
                 parseCardCodeFromUsbAdapter("4", System.currentTimeMillis())
+                println("4")
                 true
             }
 
             KeyEvent.KEYCODE_5 -> {
                 parseCardCodeFromUsbAdapter("5", System.currentTimeMillis())
+                println("5")
                 true
             }
 
             KeyEvent.KEYCODE_6 -> {
                 parseCardCodeFromUsbAdapter("6", System.currentTimeMillis())
+                println("6")
                 true
             }
 
             KeyEvent.KEYCODE_7 -> {
                 parseCardCodeFromUsbAdapter("7", System.currentTimeMillis())
+                println("7")
                 true
             }
 
             KeyEvent.KEYCODE_8 -> {
                 parseCardCodeFromUsbAdapter("8", System.currentTimeMillis())
+                println("8")
                 true
             }
 
             KeyEvent.KEYCODE_9 -> {
                 parseCardCodeFromUsbAdapter("9", System.currentTimeMillis())
+                println("9")
                 true
             }
 
             else -> {
+                println(keyCode)
                 super.onKeyUp(keyCode, event)
             }
         }
@@ -412,11 +435,18 @@ class MainActivity : AppCompatActivity() {
 
         val rrr = resources.getString(R.string.please_scan_card)
 
-        if (dateText.text.equals(rrr)) {
-            dateText.text = ""
-        }
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        dateText.setText(dateText.text.toString() + s)
+
+        when (navHostFragment.navController.currentDestination?.id) {
+            R.id.MainFragment -> {
+                if (dateText.text.equals(rrr)) {
+                    dateText.text = ""
+                }
+                dateText.setText(dateText.text.toString() + s)
+            }
+        }
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val editor = prefs.edit()
