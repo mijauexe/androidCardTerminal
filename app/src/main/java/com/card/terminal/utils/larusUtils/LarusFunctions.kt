@@ -5,17 +5,27 @@ import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import io.ktor.client.*
-import io.ktor.network.selector.*
-import io.ktor.network.sockets.*
-import io.ktor.utils.io.*
-import kotlinx.coroutines.*
+import io.ktor.client.HttpClient
+import io.ktor.network.selector.SelectorManager
+import io.ktor.network.sockets.Socket
+import io.ktor.network.sockets.aSocket
+import io.ktor.network.sockets.openReadChannel
+import io.ktor.network.sockets.openWriteChannel
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
+import java.io.IOException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -44,13 +54,12 @@ class LarusFunctions(
         scope.launch {
             val sharedPreferences = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
-
+            var socket1: Socket? = null
+            val selectorManager = SelectorManager(Dispatchers.IO)
             try {
                 val larusEndpoint = getPortAndIP(sharedPreferences)
 
-                val selectorManager = SelectorManager(Dispatchers.IO)
                 val socket = aSocket(selectorManager).tcp()
-                var socket1: Socket?
 
                 withTimeout(2000) {
                     socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
@@ -65,150 +74,189 @@ class LarusFunctions(
                 buffer.position(0)
 
                 val dataInfo =
-                    MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
-
-                println(LocalTime.now())
-                for (i in dataInfo) {
-                    print("$i ")
-                }
-                println()
-
-                lastRead =
-                    MyHttpClient.byteArrayToInt(
-                        byteArrayOf(
-                            dataInfo[0],
-                            dataInfo[1],
-                            dataInfo[2],
-                            dataInfo[3]
-                        )
-                    )
-
-                lastSave =
-                    MyHttpClient.byteArrayToInt(
-                        byteArrayOf(
-                            dataInfo[4],
-                            dataInfo[5],
-                            dataInfo[6],
-                            dataInfo[7]
-                        )
-                    )
-
-                full = dataInfo[12].toInt()
+                    getSocketResponse("readLatestEvent", sendChannel, receiveChannel, buffer)
 
                 withContext(Dispatchers.IO) {
                     socket1?.close()
                 }
 
-                if (sharedPreferences.getBoolean("Connection", false) == false && lastSave != 0) {
+                if (dataInfo.size == 13) {
+//                    println(LocalTime.now())
+//                    for (i in dataInfo) {
+//                        print("$i ")
+//                    }
+//                    println()
 
-                    //TODO OVO TREBA POPRAVIT
-                    //ako je veza bila pukuta (false), a sad je socket uspio proc ->
-                    //treba stavit lastRead na lastSave i promijeniti connection u true
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
-                    }
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
-
-                    byteArray = "GVA<Dataread>".toByteArray()
-                    buffer = ByteBuffer.allocate(5 + byteArray.size)
-                    buffer.put(byteArray)
-
-                    byteArray = byteArrayOf(
-                        (lastSave shr 0).toByte(),
-                        (lastSave shr 8).toByte(),
-                        (lastSave shr 16).toByte(),
-                        (lastSave shr 24).toByte(),
-                        0
-                    )
-
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    sendChannel.writeAvailable(buffer)
-
-                    withContext(Dispatchers.IO) {
-                        socket1?.close()
-                    }
-
-                    val editor = sharedPreferences.edit()
-                    editor.putBoolean("Connection", true)
-                    editor.apply()
-                    mutableCode.postValue(
-                        mapOf(
-                            "CardCode" to "CONNECTION_RESTORED"
-                        )
-                    )
-                } else if (lastRead < lastSave || full == 1) {
-                    lastRead += 12
-
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
-                    }
-
-                    receiveChannel = socket1!!.openReadChannel()
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
-
-                    byteArray = "GVA<Event>".toByteArray()
-                    buffer = ByteBuffer.allocate(byteArray.size)
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    val event =
-                        MyHttpClient.getSocketResponse(sendChannel, receiveChannel, buffer)
-
-                    val cardCode =
+                    lastRead =
                         MyHttpClient.byteArrayToInt(
                             byteArrayOf(
-                                event[1],
-                                event[2],
-                                event[3],
-                                event[4]
+                                dataInfo[0],
+                                dataInfo[1],
+                                dataInfo[2],
+                                dataInfo[3]
                             )
                         )
 
-                    println("cardCode:$cardCode")
-
-                    val door = event[11] //uvijek 1??
-                    print(door)
-                    val dateTimeString = LocalDateTime.now()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString()
-
-                    println(dateTimeString)
-
-                    withContext(Dispatchers.IO) {
-                        socket1?.close()
-                    }
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
-                    }
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
-
-                    byteArray = "GVA<Dataread>".toByteArray()
-                    buffer = ByteBuffer.allocate(5 + byteArray.size)
-                    buffer.put(byteArray)
-
-                    byteArray = byteArrayOf(
-                        (lastRead shr 0).toByte(),
-                        (lastRead shr 8).toByte(),
-                        (lastRead shr 16).toByte(),
-                        (lastRead shr 24).toByte(),
-                        0
-                    )
-
-                    buffer.put(byteArray)
-                    buffer.position(0)
-
-                    sendChannel.writeAvailable(buffer)
-
-                    withContext(Dispatchers.IO) {
-                        socket1?.close()
-                    }
-
-                    mutableCode.postValue(
-                        mapOf(
-                            "CardCode" to cardCode.toString(),
-                            "DateTime" to dateTimeString
+                    lastSave =
+                        MyHttpClient.byteArrayToInt(
+                            byteArrayOf(
+                                dataInfo[4],
+                                dataInfo[5],
+                                dataInfo[6],
+                                dataInfo[7]
+                            )
                         )
+
+                    full = dataInfo[12].toInt()
+
+                    withContext(Dispatchers.IO) {
+                        socket1?.close()
+                    }
+
+                    if (sharedPreferences.getBoolean(
+                            "Connection",
+                            false
+                        ) == false && lastSave != 0
+                    ) {
+
+                        //TODO OVO TREBA POPRAVIT
+                        //ako je veza bila pukuta (false), a sad je socket uspio proc ->
+                        //treba stavit lastRead na lastSave i promijeniti connection u true
+                        withTimeout(2000) {
+                            socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                        }
+                        sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                        byteArray = "GVA<Dataread>".toByteArray()
+                        buffer = ByteBuffer.allocate(5 + byteArray.size)
+                        buffer.put(byteArray)
+
+                        byteArray = byteArrayOf(
+                            (lastSave shr 0).toByte(),
+                            (lastSave shr 8).toByte(),
+                            (lastSave shr 16).toByte(),
+                            (lastSave shr 24).toByte(),
+                            0
+                        )
+
+                        buffer.put(byteArray)
+                        buffer.position(0)
+
+                        sendChannel.writeAvailable(buffer)
+
+                        withContext(Dispatchers.IO) {
+                            socket1?.close()
+                        }
+
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean("Connection", true)
+                        editor.apply()
+                        mutableCode.postValue(
+                            mapOf(
+                                "CardCode" to "CONNECTION_RESTORED"
+                            )
+                        )
+                    } else if (lastRead < lastSave || full == 1) {
+                        lastRead += 12
+
+                        withTimeout(2000) {
+                            socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                        }
+
+                        receiveChannel = socket1!!.openReadChannel()
+                        sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                        byteArray = "GVA<Event>".toByteArray()
+                        buffer = ByteBuffer.allocate(byteArray.size)
+                        buffer.put(byteArray)
+                        buffer.position(0)
+                        val event =
+                            getSocketResponse(
+                                "readLatestEvent",
+                                sendChannel,
+                                receiveChannel,
+                                buffer
+                            )
+
+                        if (event.size >= 4) {
+                            val cardCode =
+                                MyHttpClient.byteArrayToInt(
+                                    byteArrayOf(
+                                        event[1],
+                                        event[2],
+                                        event[3],
+                                        event[4]
+                                    )
+                                )
+
+                            println("cardCode:$cardCode")
+
+                            val dateTimeString = LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+                                .toString()
+
+                            println(dateTimeString)
+
+                            withContext(Dispatchers.IO) {
+                                socket1?.close()
+                            }
+                            withTimeout(2000) {
+                                socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                            }
+                            sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+
+                            byteArray = "GVA<Dataread>".toByteArray()
+                            buffer = ByteBuffer.allocate(5 + byteArray.size)
+                            buffer.put(byteArray)
+
+                            byteArray = byteArrayOf(
+                                (lastRead shr 0).toByte(),
+                                (lastRead shr 8).toByte(),
+                                (lastRead shr 16).toByte(),
+                                (lastRead shr 24).toByte(),
+                                0
+                            )
+
+                            buffer.put(byteArray)
+                            buffer.position(0)
+
+                            sendChannel.writeAvailable(buffer)
+
+                            withContext(Dispatchers.IO) {
+                                socket1?.close()
+                            }
+
+                            if (cardCode.toString()
+                                    .equals("1094999887") || cardCode.toString().length > 7
+                            ) {
+                                Timber.d("Memorija: ")
+                                for (i in dataInfo) {
+                                    Timber.d("$i ")
+                                }
+                                Timber.d("")
+                            }
+
+                            if(cardCode.toString() != "1094999887") {
+                                mutableCode.postValue(
+                                    mapOf(
+                                        "CardCode" to cardCode.toString(),
+                                        "DateTime" to dateTimeString
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
+                }
+            } catch (e: IOException) {
+                if (sharedPreferences.getBoolean("Connection", false)) {
+                    Timber.d(
+                        "Msg: IOException %s | %s | %s",
+                        e.cause,
+                        e.stackTraceToString(),
+                        e.message
                     )
                 }
             } catch (e: NoRouteToHostException) {
@@ -245,20 +293,27 @@ class LarusFunctions(
                         )
                     )
                 }
+            } catch (e: TimeoutCancellationException) {
+
             } catch (e: Exception) {
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            } finally {
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
+                    selectorManager?.close()
+                }
             }
         }
     }
 
     suspend fun getSocketResponse(
+        fn: String,
         sendChannel: ByteWriteChannel,
         receiveChannel: ByteReadChannel,
         buffer: ByteBuffer
     ): ByteArray {
         sendChannel.writeAvailable(buffer)
 
-        var i = 0
         var byteResponseArray = byteArrayOf()
 
         while (true) {
@@ -266,9 +321,11 @@ class LarusFunctions(
                 val response = receiveChannel.readByte()
                 byteResponseArray += response
             } catch (e: Exception) {
+                if (fn.equals("openDoor")) {
+                    Timber.d("${fn}, | ${e}")
+                }
                 break
             }
-            i += 1
         }
         return byteResponseArray
     }
@@ -276,7 +333,10 @@ class LarusFunctions(
     fun openDoor(doorNum: Int) {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
+            var socket1: Socket? = null
+            val selectorManager = SelectorManager(Dispatchers.IO)
             try {
+                Timber.d("Pokusavam Door ${doorNum} opened.")
                 val sharedPreferences = ContextProvider.getApplicationContext()
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
                 val larusEndpoint = getPortAndIP(sharedPreferences)
@@ -287,6 +347,7 @@ class LarusFunctions(
                 withTimeout(2000) {
                     socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
                 }
+                Timber.d("Pokusavam1 Door ${doorNum} opened.")
 
                 val receiveChannel = socket1?.openReadChannel()
                 val sendChannel = socket1?.openWriteChannel(autoFlush = true)
@@ -295,21 +356,28 @@ class LarusFunctions(
                 val buffer = ByteBuffer.allocate(byteArray.size)
                 buffer.put(byteArray)
                 buffer.position(0)
+                Timber.d("Pokusavam2 Door ${doorNum} opened.")
 
-                val doorOpenResponse = getSocketResponse(sendChannel!!, receiveChannel!!, buffer)
-                println(doorOpenResponse)
+                val doorOpenResponse =
+                    getSocketResponse("openDoor", sendChannel!!, receiveChannel!!, buffer)
+                Timber.d("Pokusavam3 Door ${doorNum} opened.")
                 withContext(Dispatchers.IO) {
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Door ${doorNum} opened.")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
             } catch (e: Exception) {
                 println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+            } finally {
+                withContext(Dispatchers.IO) {
+                    socket1?.close()
+                    selectorManager?.close()
+                }
             }
-            Timber.d("Msg: Door $doorNum opened")
         }
     }
 
@@ -332,7 +400,8 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse(sendChannel, receiveChannel, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("reset", sendChannel, receiveChannel, buffer)
                 println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
@@ -434,7 +503,8 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse(sendChannel!!, receiveChannel!!, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("GVAHoldDoor", sendChannel!!, receiveChannel!!, buffer)
                 println(doorOpenResponse)
                 withContext(Dispatchers.IO) {
                     socket1?.close()
@@ -474,12 +544,14 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse(sendChannel!!, receiveChannel!!, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("stateDoor", sendChannel!!, receiveChannel!!, buffer)
                 println(doorOpenResponse)
                 withContext(Dispatchers.IO) {
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Relay ${doorNum} in state: ${doorOpenResponse}")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
@@ -520,6 +592,7 @@ class LarusFunctions(
                     socket1?.close()
                     selectorManager?.close()
                 }
+                Timber.d("Msg: Relay $doorNum set to ${pulseOrHold}")
             } catch (e: TimeoutCancellationException) {
                 println("TimeoutCancellationException: ${e.message}")
                 Timber.d("Msg: TimeoutCancellationException to larus board")
@@ -527,7 +600,6 @@ class LarusFunctions(
                 println("Exception: ${e.message}")
                 Timber.d("Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
             }
-            Timber.d("Msg: Door $doorNum opened")
         }
     }
 
