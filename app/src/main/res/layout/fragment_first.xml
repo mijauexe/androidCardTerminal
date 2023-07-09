@@ -45,7 +45,7 @@
             android:layout_marginTop="20dp"
             android:text="Đuro"
             android:textColor="@color/black"
-            android:textSize="40sp" />
+            android:textSize="50sp" />
 
         <TextView
             android:id="@+id/last_name"
@@ -54,7 +54,7 @@
             android:layout_gravity="center"
             android:text="Đurić"
             android:textColor="@color/black"
-            android:textSize="40sp" />
+            android:textSize="50sp" />
 
         <TextView
             android:id="@+id/company_name"
@@ -64,15 +64,17 @@
             android:text="Firma"
             android:textColor="@color/black"
             android:textSize="40sp"
+            android:layout_marginBottom="20dp"
             android:visibility="gone" />
 
         <ImageView
             android:id="@+id/photo"
-            android:layout_width="250dp"
-            android:layout_height="250dp"
+            android:layout_width="230dp"
+            android:layout_height="230dp"
             android:scaleType="centerInside"
             android:layout_gravity="center_horizontal"
-            android:src="@drawable/ic_unknown_person" />
+            android:src="@drawable/ic_unknown_person"
+            />
 
         <ImageView
             android:layout_width="250dp"

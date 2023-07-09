@@ -1,6 +1,8 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -59,9 +61,21 @@ class CheckoutFragment : Fragment() {
 
         binding.reasonValue.text = arguments?.getString("selection", "")
 
-        if (existingBundle.containsKey("imageB64")) {
-            binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
+        if (existingBundle.getString("CardCode") != "10037") {
+            val bitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img)
+            binding.photo.setImageBitmap(bitmap)
+        } else {
+            val bitmap: Bitmap = BitmapFactory.decodeResource(resources, R.drawable.img2)
+//            binding.photo.scaleType = ImageView.ScaleType.FIT_CENTER
+//            val layoutParams = binding.photo.layoutParams as LinearLayout.LayoutParams
+//            layoutParams.gravity = Gravity.CENTER
+//            binding.photo.layoutParams = layoutParams
+            binding.photo.setImageBitmap(bitmap)
         }
+
+//        if (existingBundle.containsKey("imageB64")) {
+//            binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
+//        }
 
         if (prefs.contains("IFTTERM2_DESCR")) {
             binding.readoutValue.text =
