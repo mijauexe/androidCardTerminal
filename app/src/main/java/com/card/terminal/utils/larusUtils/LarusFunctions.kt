@@ -122,10 +122,10 @@ class LarusFunctions(
                         //TODO OVO TREBA POPRAVIT
                         //ako je veza bila pukuta (false), a sad je socket uspio proc ->
                         //treba stavit lastRead na lastSave i promijeniti connection u true
-                    withTimeout(2000) {
-                        socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
-                    }
-                    sendChannel = socket1!!.openWriteChannel(autoFlush = true)
+                        withTimeout(2000) {
+                            socket1 = socket.connect(larusEndpoint.ip, larusEndpoint.port)
+                        }
+                        sendChannel = socket1!!.openWriteChannel(autoFlush = true)
 
                         byteArray = "GVA<Dataread>".toByteArray()
                         buffer = ByteBuffer.allocate(5 + byteArray.size)
@@ -171,7 +171,12 @@ class LarusFunctions(
                         buffer.put(byteArray)
                         buffer.position(0)
                         val event =
-                            getSocketResponse("readLatestEvent", sendChannel, receiveChannel, buffer)
+                            getSocketResponse(
+                                "readLatestEvent",
+                                sendChannel,
+                                receiveChannel,
+                                buffer
+                            )
 
                         if (event.size >= 4) {
                             val cardCode =
@@ -221,12 +226,24 @@ class LarusFunctions(
                                 socket1?.close()
                             }
 
-                            mutableCode.postValue(
-                                mapOf(
-                                    "CardCode" to cardCode.toString(),
-                                    "DateTime" to dateTimeString
+                            if (cardCode.toString()
+                                    .equals("1094999887") || cardCode.toString().length > 7
+                            ) {
+                                Timber.d("Memorija: ")
+                                for (i in dataInfo) {
+                                    Timber.d("$i ")
+                                }
+                                Timber.d("")
+                            }
+
+                            if(cardCode.toString() != "1094999887") {
+                                mutableCode.postValue(
+                                    mapOf(
+                                        "CardCode" to cardCode.toString(),
+                                        "DateTime" to dateTimeString
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -304,7 +321,7 @@ class LarusFunctions(
                 val response = receiveChannel.readByte()
                 byteResponseArray += response
             } catch (e: Exception) {
-                if(fn.equals("openDoor")) {
+                if (fn.equals("openDoor")) {
                     Timber.d("${fn}, | ${e}")
                 }
                 break
@@ -341,7 +358,8 @@ class LarusFunctions(
                 buffer.position(0)
                 Timber.d("Pokusavam2 Door ${doorNum} opened.")
 
-                val doorOpenResponse = getSocketResponse("openDoor", sendChannel!!, receiveChannel!!, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("openDoor", sendChannel!!, receiveChannel!!, buffer)
                 Timber.d("Pokusavam3 Door ${doorNum} opened.")
                 withContext(Dispatchers.IO) {
                     socket1?.close()
@@ -382,7 +400,8 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse("reset", sendChannel, receiveChannel, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("reset", sendChannel, receiveChannel, buffer)
                 println(doorOpenResponse)
                 socket.close()
                 selectorManager.close()
@@ -484,7 +503,8 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse("GVAHoldDoor", sendChannel!!, receiveChannel!!, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("GVAHoldDoor", sendChannel!!, receiveChannel!!, buffer)
                 println(doorOpenResponse)
                 withContext(Dispatchers.IO) {
                     socket1?.close()
@@ -524,7 +544,8 @@ class LarusFunctions(
                 buffer.put(byteArray)
                 buffer.position(0)
 
-                val doorOpenResponse = getSocketResponse("stateDoor", sendChannel!!, receiveChannel!!, buffer)
+                val doorOpenResponse =
+                    getSocketResponse("stateDoor", sendChannel!!, receiveChannel!!, buffer)
                 println(doorOpenResponse)
                 withContext(Dispatchers.IO) {
                     socket1?.close()
