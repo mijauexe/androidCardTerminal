@@ -7,14 +7,11 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
-import com.card.terminal.http.MyHttpClient
-import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
 import java.time.LocalDateTime
 import java.time.LocalTime

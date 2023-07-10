@@ -1,21 +1,17 @@
 package com.card.terminal.fragments
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextClock
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.card.terminal.MainActivity
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentMainBinding
 import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -30,6 +26,18 @@ class MainFragment : Fragment() {
 
         act.cardScannerActive = true
         return _binding?.root
+    }
+
+    private var mListener: OnTakePhotoListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        mListener = try {
+            context as OnTakePhotoListener
+        } catch (e: ClassCastException) {
+            throw ClassCastException("$context must implement OnFragmentInteractionListener")
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
