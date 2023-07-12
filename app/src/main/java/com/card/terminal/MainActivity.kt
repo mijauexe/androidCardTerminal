@@ -175,19 +175,19 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
 
         db = AppDatabase.getInstance((this), Thread.currentThread().stackTrace)
 //
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        scope3.launch {
-            try {
-                db.EventDao().deleteAll()
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while clearing db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
+//        val scope3 = CoroutineScope(Dispatchers.IO)
+//        scope3.launch {
+//            try {
+//                db.EventDao().deleteAll()
+//            } catch (e: Exception) {
+//                Timber.d(
+//                    "Exception while clearing db: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            }
+//        }
 
         Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -451,12 +451,13 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
                 MODE_PRIVATE
             ).getString("usbAdapterCardCode", "")!!
 
-            if(cn != "") {
+            if (cn != "") {
                 handleCardScan(
                     mapOf(
                         "CardCode" to cn.trimStart('0'),
                         "DateTime" to LocalDateTime.now()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
+                            .toString(),
                         "Source" to "usbAdapter"
                     )
                 )
@@ -466,7 +467,17 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
                 PREFS_NAME,
                 MODE_PRIVATE
             ).edit().putString("usbAdapterCardCode", "").commit()
-            dateText.setText(R.string.please_scan_card)
+
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
+
+            when (navHostFragment.navController.currentDestination?.id) {
+                R.id.MainFragment -> {
+                    dateText.setText(R.string.please_scan_card)
+
+                }
+            }
+
 //            dateText.visibility = View.VISIBLE
 //            editableCardText.visibility = View.GONE
 
@@ -566,23 +577,23 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
     override fun onResume() {
         super.onResume()
 
-        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
-            if (ContextCompat.checkSelfPermission(
-                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                OmniCard.bindCardBackend(this, mutableCardCode, false)
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
-                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
-                )
-            }
-        } else {
-            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG)
-                .show()
-        }
+//        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
+//            if (ContextCompat.checkSelfPermission(
+//                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
+//                ) == PackageManager.PERMISSION_GRANTED
+//            ) {
+//                OmniCard.bindCardBackend(this, mutableCardCode, false)
+//            } else {
+//                ActivityCompat.requestPermissions(
+//                    this,
+//                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
+//                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
+//                )
+//            }
+//        } else {
+//            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG)
+//                .show()
+//        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
         setObservers()
@@ -760,7 +771,7 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
 
         val prefs = getSharedPreferences("MyPrefsFile", MODE_PRIVATE)
 
-        if(prefs.getBoolean("CaptureOnEvent", false)) {
+        if (prefs.getBoolean("CaptureOnEvent", false)) {
             takePhoto()
         }
 
@@ -942,6 +953,14 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
                         false
                     )
                 }
+            } catch (e: java.lang.NumberFormatException) {
+                Timber.d(
+                    "Msg: NumberFormatException %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+                showDialog("QR kod ${it["CardCode"]} je neispravan!", false)
             } catch (e: java.lang.Exception) {
                 Timber.d(
                     "Msg: Exception %s | %s | %s",
