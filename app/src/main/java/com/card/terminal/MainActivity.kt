@@ -7,32 +7,45 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.hardware.usb.UsbDevice
+import android.graphics.Color
 import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
 import android.provider.Settings
+import android.smartcardio.hidglobal.Constants.PERMISSION_TO_BIND_BACKEND_SERVICE
+import android.smartcardio.hidglobal.PackageManagerQuery
 import android.smartcardio.ipc.ICardService
 import android.util.Log
+import android.util.TypedValue
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.ImageCapture
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.ContextProvider
-import com.card.terminal.utils.MiroConverter
+import com.card.terminal.utils.omniCardUtils.OmniCard
+import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -42,9 +55,32 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
+import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
+import android.util.Size
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.lifecycle.ProcessCameraProvider
+import com.card.terminal.db.entity.OperationSchedule
+import com.card.terminal.fragments.OnTakePhotoListener
+import com.card.terminal.utils.MiroConverter
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.concurrent.CountDownLatch
 
-class MainActivity : AppCompatActivity() {
+typealias LumaListener = (luma: Double) -> Unit
+
+class MainActivity : AppCompatActivity(), OnTakePhotoListener {
 
     private val REQUEST_BIND_BACKEND_SERVICE_PERMISSION = 9000
     private var mutableCardCode = MutableLiveData<Map<String, String>>()
@@ -53,11 +89,10 @@ class MainActivity : AppCompatActivity() {
     var mutableLarusCode = MutableLiveData<Map<String, String>>()
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
     private lateinit var db: AppDatabase
     private val usbReceiver: USBReceiver? = null
-
     private var workBtnClicked = false
+
     private var privateBtnClicked = false
     private var coffeeBtnClicked = false
     private var doctorBtnBlicked = false
@@ -65,17 +100,36 @@ class MainActivity : AppCompatActivity() {
     private var enterBtnClicked = false
     private var exitBtnClicked = false
     var cardScannerActive = true
-
     private var mediaPlayer: MediaPlayer? = null
 
     private lateinit var mAdminComponentName: ComponentName
-    lateinit var mDevicePolicyManager: DevicePolicyManager
 
+    lateinit var mDevicePolicyManager: DevicePolicyManager
     val PREFS_NAME = "MyPrefsFile"
+
     val IS_FIRST_TIME_LAUNCH = "IsFirstTimeLaunch"
+
+    private lateinit var binding: ActivityMainBinding
+
+    private var imageCapture: ImageCapture? = null
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var recording: Recording? = null
+    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var latch: CountDownLatch
 
     companion object {
         const val LOCK_ACTIVITY_KEY = "com.card.terminal.MainActivity"
+        private const val TAG = "MainActivity:CameraX"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+            ).apply {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
     }
 
     private var timerHandler: Handler? = null
@@ -119,21 +173,21 @@ class MainActivity : AppCompatActivity() {
         Timber.d("Msg: setDefaultUncaughtExceptionHandler")
 
 
-        db = AppDatabase.getInstance(this, Thread.currentThread().stackTrace)
-
-//        val scope3 = CoroutineScope(Dispatchers.IO)
-//        scope3.launch {
-//            try {
-//                db.EventDao().deleteAll()
-//            } catch (e: Exception) {
-//                Timber.d(
-//                    "Exception while clearing db: %s | %s | %s",
-//                    e.cause,
-//                    e.stackTraceToString(),
-//                    e.message
-//                )
-//            }
-//        }
+        db = AppDatabase.getInstance((this), Thread.currentThread().stackTrace)
+//
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                db.EventDao().deleteAll()
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while clearing db: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
 
         Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -142,8 +196,8 @@ class MainActivity : AppCompatActivity() {
         var isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
         Timber.d("hello world")
+//        isFirstBoot = true
         val editor = prefs.edit()
-        editor.putBoolean("Connection", false)
         if (isFirstBoot) { //Set the preferences for first time app install...
 
             editor.putBoolean(IS_FIRST_TIME_LAUNCH, false)
@@ -152,16 +206,19 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("larusPort", 8005)
             editor.putString("serverIP", "")
             editor.putInt("serverPort", 80)
-
+            editor.putBoolean("Connection", false)
             editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
             editor.putString("settingsPin", "0")
         }
+        editor.putString("EventImage", "")
+        editor.putString("usbAdapterCardCode", "")
         editor.apply()
-
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         setContentView(binding.root)
+
+
 
         if (isAdmin() && prefs.getBoolean("kioskMode", false)) {
             setKioskPolicies(true, true)
@@ -173,182 +230,149 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer!!.setOnCompletionListener { mediaPlayer -> // Release the MediaPlayer resources
             mediaPlayer.release()
         }
-//         val manager = getSystemService(Context.USB_SERVICE) as UsbManager
-//         val deviceList: HashMap = manager.deviceList
-//         val deviceIterator: Iterator = deviceList.values.iterator()
-//         while (deviceIterator.hasNext()) {
-//         val device: UsbDevice = deviceIterator.next()
-//         manager.requestPermission(device, mPermissionIntent)
-//         val model: String = device.deviceName
-//         val deviceId: Int = device.deviceId
-//         val vendor: Int = device.vendorId
-//         val product: Int = device.productId
-//         val deviceClass: Int = device.deviceClass
-//         val subclass: Int = device.deviceSubclass
-//         }
 
-//        rescheduleAlarms()
-    }
+//        val manager = getSystemService(Context.USB_SERVICE) as UsbManager
+//        val deviceList: HashMap<String, UsbDevice> = manager.deviceList
+//        val deviceIterator: Iterator<UsbDevice> = deviceList.values.iterator()
+//        while (deviceIterator.hasNext()) {
+//            val device: UsbDevice = deviceIterator.next()
+//            manager.requestPermission(device, mPermissionIntent)
+//            val model: String = device.deviceName
+//            val deviceId: Int = device.deviceId
+//            val vendor: Int = device.vendorId
+//            val product: Int = device.productId
+//            val deviceClass: Int = device.deviceClass
+//            val subclass: Int = device.deviceSubclass
+//        }
 
-    fun isAdmin(): Boolean {
-
-        mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
-        val b = mDevicePolicyManager.isDeviceOwnerApp(packageName)
-        Timber.d("isAdmin: %b", b)
-        return b
-    }
-
-    fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
-        setRestrictions(enable)
-        enableStayOnWhilePluggedIn(enable)
-        setUpdatePolicy(enable)
-        setKeyGuardEnabled(enable)
-        setAsHomeApp(enable)
-        setLockTask(enable, isAdmin)
-        setImmersiveMode(enable)
-    }
-
-    override fun onDestroy() {
-        MyHttpClient.server.stop(0, 0)
-        super.onDestroy()
-    }
-
-    private fun setRestrictions(disallow: Boolean) {
-        setUserRestriction(UserManager.DISALLOW_SAFE_BOOT, disallow)
-        setUserRestriction(UserManager.DISALLOW_FACTORY_RESET, disallow)
-        setUserRestriction(UserManager.DISALLOW_ADD_USER, disallow)
-        setUserRestriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, disallow)
-        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)
-        mDevicePolicyManager.setStatusBarDisabled(mAdminComponentName, disallow)
-    }
-
-    private fun setUserRestriction(restriction: String, disallow: Boolean) = if (disallow) {
-        mDevicePolicyManager.addUserRestriction(mAdminComponentName, restriction)
-    } else {
-        mDevicePolicyManager.clearUserRestriction(mAdminComponentName, restriction)
-    }
-// endregion
-
-    private fun enableStayOnWhilePluggedIn(active: Boolean) = if (active) {
-        mDevicePolicyManager.setGlobalSetting(
-            mAdminComponentName,
-            Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
-            (BatteryManager.BATTERY_PLUGGED_AC
-                    or BatteryManager.BATTERY_PLUGGED_USB
-                    or BatteryManager.BATTERY_PLUGGED_WIRELESS).toString()
-        )
-    } else {
-        mDevicePolicyManager.setGlobalSetting(
-            mAdminComponentName,
-            Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
-            "0"
-        )
-    }
-
-    private fun setLockTask(start: Boolean, isAdmin: Boolean) {
-        if (isAdmin) {
-            mDevicePolicyManager.setLockTaskPackages(
-                mAdminComponentName, if (start) arrayOf(packageName) else arrayOf()
-            )
-        }
-        if (start) {
-            startLockTask()
+        if (allPermissionsGranted()) {
+            startCamera()
         } else {
-            stopLockTask()
+            requestCameraPermissions()
         }
+
+        // Set up the listeners for take photo and video capture buttons
+
+//        binding.mainLogo3.setOnClickListener {
+//            takePhoto()
+//        }
+//        binding.videoCaptureButton.setOnClickListener { captureVideo() }
+
+        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    private fun setUpdatePolicy(enable: Boolean) {
-        if (enable) {
-            mDevicePolicyManager.setSystemUpdatePolicy(
-                mAdminComponentName,
-                SystemUpdatePolicy.createWindowedInstallPolicy(60, 120)
-            )
-        } else {
-            mDevicePolicyManager.setSystemUpdatePolicy(mAdminComponentName, null)
-        }
-    }
+    fun takePhoto() {
+        // Get a stable reference of the modifiable image capture use case
+        val imageCapture = imageCapture ?: return
 
-    private fun setAsHomeApp(enable: Boolean) {
-        if (enable) {
-            val intentFilter = IntentFilter(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                addCategory(Intent.CATEGORY_DEFAULT)
+        // Create time stamped name and MediaStore entry.
+        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+            .format(System.currentTimeMillis())
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/")
             }
-            mDevicePolicyManager.addPersistentPreferredActivity(
-                mAdminComponentName,
-                intentFilter,
-                ComponentName(packageName, MainActivity::class.java.name)
-            )
-        } else {
-            mDevicePolicyManager.clearPackagePersistentPreferredActivities(
-                mAdminComponentName, packageName
-            )
         }
+
+        // Create output options object which contains file + metadata
+        val outputOptions = ImageCapture.OutputFileOptions
+            .Builder(
+                contentResolver,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                contentValues
+            )
+            .build()
+
+        // Set up image capture listener, which is triggered after photo has
+        // been taken
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    Timber.tag(TAG).e(exc, "Photo capture failed: " + exc.message)
+                    Timber.d("Photo capture failed: ${exc.message}")
+                }
+
+                override fun
+                        onImageSaved(output: ImageCapture.OutputFileResults) {
+                    val msg = "Photo capture succeeded: ${output.savedUri}"
+                    println("Photo capture succeeded: ${msg}")
+                    Timber.d(TAG, msg)
+                }
+            }
+        )
     }
 
-    private fun setKeyGuardEnabled(enable: Boolean) {
-        mDevicePolicyManager.setKeyguardDisabled(mAdminComponentName, !enable)
-    }
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-    @Suppress("DEPRECATION")
-    private fun setImmersiveMode(enable: Boolean) {
-        if (enable) {
-            val flags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-            window.decorView.systemUiVisibility = flags
-        } else {
-            val flags = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-            window.decorView.systemUiVisibility = flags
-        }
-    }
+        cameraProviderFuture.addListener({
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-    private fun startTimer() {
-        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-//        dateText.visibility = View.GONE
+            // Preview
+//            val preview = Preview.Builder()
+//                .build()
+//                .also {
+//                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+//                }
 
+            imageCapture = ImageCapture.Builder().setTargetResolution(Size(1000, 500))
+                .build()
 
-//        val editableCardText = findViewById<EditText>(R.id.cardText)
-//        editableCardText.visibility = View.VISIBLE
-//        editableCardText.requestFocus()
+            // Select front camera as a default
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
-        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-        timerHandler = Handler()
-        timerHandler?.postDelayed({
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
 
-            val cn = getSharedPreferences(
-                PREFS_NAME,
-                MODE_PRIVATE
-            ).getString("usbAdapterCardCode", "")!!
-
-            if(cn != "") {
-                handleCardScan(
-                    mapOf(
-                        "CardCode" to cn.trimStart('0'),
-                        "DateTime" to LocalDateTime.now()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
-                        "Source" to "usbAdapter"
-                    )
+                // Bind use cases to camera
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, imageCapture
                 )
+
+            } catch (exc: Exception) {
+                Timber.tag(TAG).e(exc, "Use case binding failed")
             }
 
-            getSharedPreferences(
-                PREFS_NAME,
-                MODE_PRIVATE
-            ).edit().putString("usbAdapterCardCode", "").commit()
-            dateText.setText(R.string.please_scan_card)
-//            dateText.visibility = View.VISIBLE
-//            editableCardText.visibility = View.GONE
-
-        }, delayMillis)
+        }, ContextCompat.getMainExecutor(this))
     }
 
+    private fun requestCameraPermissions() {
+        activityResultLauncher.launch(REQUIRED_PERMISSIONS)
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private val activityResultLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        )
+        { permissions ->
+            // Handle Permission granted/rejected
+            var permissionGranted = true
+            permissions.entries.forEach {
+                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                    permissionGranted = false
+            }
+            if (!permissionGranted) {
+                Toast.makeText(
+                    baseContext,
+                    "Permission request denied",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                startCamera()
+            }
+        }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         startTimer()
@@ -409,17 +433,63 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startTimer() {
+        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//        dateText.visibility = View.GONE
+
+
+//        val editableCardText = findViewById<EditText>(R.id.cardText)
+//        editableCardText.visibility = View.VISIBLE
+//        editableCardText.requestFocus()
+
+        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
+        timerHandler = Handler()
+        timerHandler?.postDelayed({
+
+            val cn = getSharedPreferences(
+                PREFS_NAME,
+                MODE_PRIVATE
+            ).getString("usbAdapterCardCode", "")!!
+
+            if(cn != "") {
+                handleCardScan(
+                    mapOf(
+                        "CardCode" to cn.trimStart('0'),
+                        "DateTime" to LocalDateTime.now()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
+                        "Source" to "usbAdapter"
+                    )
+                )
+            }
+
+            getSharedPreferences(
+                PREFS_NAME,
+                MODE_PRIVATE
+            ).edit().putString("usbAdapterCardCode", "").commit()
+            dateText.setText(R.string.please_scan_card)
+//            dateText.visibility = View.VISIBLE
+//            editableCardText.visibility = View.GONE
+
+        }, delayMillis)
+    }
+
     private fun parseCardCodeFromUsbAdapter(s: String, time: Long) {
         val dateText = findViewById<TextView>(R.id.please_scan_card_text)
 //        dateText.visibility = View.GONE
 
         val rrr = resources.getString(R.string.please_scan_card)
 
-        if (dateText.text.equals(rrr)) {
-            dateText.text = ""
-        }
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        dateText.setText(dateText.text.toString() + s)
+        when (navHostFragment.navController.currentDestination?.id) {
+            R.id.MainFragment -> {
+                if (dateText.text.equals(rrr)) {
+                    dateText.text = ""
+                }
+                dateText.setText(dateText.text.toString() + s)
+            }
+        }
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val editor = prefs.edit()
@@ -475,7 +545,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun startLogger() {
         try {
             val logFolder = Environment.getExternalStorageDirectory().absoluteFile
@@ -497,26 +566,25 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-//        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
-//            if (ContextCompat.checkSelfPermission(
-//                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                OmniCard.bindCardBackend(this, mutableCardCode, false)
-//            } else {
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
-//                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
-//                )
-//            }
-//        } else {
-//            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG).show()
-//        }
+        if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
+            if (ContextCompat.checkSelfPermission(
+                    this, PERMISSION_TO_BIND_BACKEND_SERVICE
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                OmniCard.bindCardBackend(this, mutableCardCode, false)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(PERMISSION_TO_BIND_BACKEND_SERVICE),
+                    REQUEST_BIND_BACKEND_SERVICE_PERMISSION
+                )
+            }
+        } else {
+            Toast.makeText(this, "HID OMNIKEY driver is not installed", Toast.LENGTH_LONG)
+                .show()
+        }
 
         MyHttpClient.bindHttpClient(mutableLarusCode)
-
-//        MyHttpClient.larusFunctions?.setDoorTime(3000, 6000, 3000, 6000)
         setObservers()
     }
 
@@ -561,45 +629,117 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        mutableLarusCode.observe(this) {
-            if (it["CardCode"] == "CONNECTION_RESTORED") {
+//        mutableLarusCode.observe(this) {
+//            if (it["CardCode"] == "CONNECTION_RESTORED") {
+//
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Molimo očitajte karticu."
+//                        ddd.visibility = View.VISIBLE
+//                    }
+//                }
+//            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.CheckoutFragment -> {
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.SettingsFragment -> {
+//                        showDialog(
+//                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+//                            false
+//                        )
+//                    }
+//                }
+//            } else if (it["CardCode"] == "CONNECTION_LOST") {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        dateText.text = "Prekinuta LAN mreža."
+//                        ddd.visibility = View.GONE
+//                    }
+//                }
+//            }
+//        }
 
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Molimo očitajte karticu."
-                        ddd.visibility = View.VISIBLE
-                    }
-                }
-            } else if (it["CardCode"] != "CONNECTION_LOST" && !it["CardCode"].equals("0")) {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        handleCardScan(it)
-                    }
-
-                    R.id.CheckoutFragment -> {
-                        handleCardScan(it)
-                    }
-
-                    R.id.SettingsFragment -> {
-                        showDialog(
-                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
-                            false
-                        )
-                    }
-                }
-            } else if (it["CardCode"] == "CONNECTION_LOST") {
-                when (navHostFragment.navController.currentDestination?.id) {
-                    R.id.MainFragment -> {
-                        val dateText = findViewById<TextView>(R.id.please_scan_card_text)
-                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
-                        dateText.text = "Prekinuta LAN mreža."
-                        ddd.visibility = View.GONE
-                    }
-                }
-            }
-        }
+//        mutableCardCode.observe(this) {
+//            if (!cardScannerActive) {
+//                return@observe
+//            }
+//
+//            if (it["CURRENTLY_SCANNING"].equals("TRUE")) {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        scanCardText.setTextSize(
+//                            TypedValue.applyDimension(
+//                                TypedValue.COMPLEX_UNIT_DIP,
+//                                50.0f,
+//                                getResources().getDisplayMetrics()
+//                            )
+//                        )
+//                        scanCardText.setTextColor(Color.parseColor("#FAA61A"))
+//                        scanCardText.text =
+//                            "Molimo držite karticu na čitaču\n do otvaranja slijedećeg ekrana."
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        ddd.visibility = View.GONE
+//                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+//                        dddd.visibility = View.VISIBLE
+//                    }
+//                }
+//            }
+//
+//            if (it["CURRENTLY_SCANNING"].equals("FALSE")) {
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        val scanCardText = findViewById<TextView>(R.id.please_scan_card_text)
+//                        scanCardText.text = "Molimo očitajte karticu."
+//                        scanCardText.setTextColor(Color.BLACK)
+//                        scanCardText.setTextSize(
+//                            TypedValue.applyDimension(
+//                                TypedValue.COMPLEX_UNIT_DIP,
+//                                65.0f,
+//                                getResources().getDisplayMetrics()
+//                            )
+//                        )
+//                        val ddd = findViewById<ImageView>(R.id.please_scan_icon)
+//                        ddd.visibility = View.VISIBLE
+//                        val dddd = findViewById<ProgressBar>(R.id.progressBar)
+//                        dddd.visibility = View.GONE
+//                    }
+//                }
+//            }
+//
+//            if (it["CardCode"] != null) {
+//
+////                Toast.makeText(this, it.toString(), Toast.LENGTH_LONG).show()
+//                when (navHostFragment.navController.currentDestination?.id) {
+//                    R.id.MainFragment -> {
+//                        playSound(R.raw.scan_success)
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.CheckoutFragment -> {
+//                        playSound(R.raw.scan_success)
+//                        handleCardScan(it)
+//                    }
+//
+//                    R.id.SettingsFragment -> {
+//                        showDialog(
+//                            "skenirana kartica ${it["CardCode"]} ali nije inicijaliziran prolaz...",
+//                            false
+//                        )
+//                    }
+//                }
+//            }
+//        }
     }
 
     private fun playSound(i: Int) {
@@ -617,6 +757,12 @@ class MainActivity : AppCompatActivity() {
         bundle.putString("CardCode", it["CardCode"])
         bundle.putString("DateTime", it["DateTime"])
         Timber.d("skenirao se: ${it}")
+
+        val prefs = getSharedPreferences("MyPrefsFile", MODE_PRIVATE)
+
+        if(prefs.getBoolean("CaptureOnEvent", false)) {
+            takePhoto()
+        }
 
         val lastScanEvent = db.EventDao().getLastScanEvent()
 
@@ -655,8 +801,6 @@ class MainActivity : AppCompatActivity() {
                         LocalTime.parse(
                             LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                         )
-
-//                    val currentTime = LocalTime.parse("14:31:00", DateTimeFormatter.ofPattern("HH:mm:ss"))
 
                     val currentDateString =
                         LocalDateTime.now()
@@ -811,88 +955,239 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
-//        MyHttpClient.checkDoor(1)
-//        MyHttpClient.checkDoor(2)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
-        bundle.putInt("eCode", 2) //TODO
 
         if (free == 2) {
-            Timber.d("passageControl: ne treba izbor")
-
             bundle.putBoolean("noButtonClickNeededRegime", true)
-//            val err = switchRelays(cardCode.toInt(), true)
+//                    val err = switchRelays(cardCode.toInt(), true)
 
 //            if (!err) {
-            Timber.d("nema err")
             when (navHostFragment.navController.currentDestination?.id) {
                 R.id.MainFragment -> {
-                    Timber.d("action_mainFragment_to_CheckoutFragment")
-
                     navController.navigate(
-                        R.id.action_mainFragment_to_CheckoutFragment,
-                        bundle
+                        R.id.action_mainFragment_to_CheckoutFragment, bundle
                     )
                 }
 
-//                    R.id.CheckoutFragment -> {
-//                        Timber.d("action_CheckoutFragment_to_MainFragment")
-//
-//                        navController.navigate(
-//                            R.id.action_CheckoutFragment_to_MainFragment,
-//                            bundle
-//                        )
-//                    }
+//                R.id.CheckoutFragment -> {
+//                    navController.navigate(
+//                        R.id.action_CheckoutFragment_to_MainFragment, bundle
+//                    )
+//                }
 
                 R.id.SettingsFragment -> {
                     showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)", false
                     )
                 }
             }
 //            }
         } else if (free == 3) {
-            Timber.d("passageControl: TREBA izbor")
             bundle.putBoolean("noButtonClickNeededRegime", false)
 //            val err = switchRelays(cardCode.toInt(), false)
 //            if (!err) {
-            Timber.d("nema errora")
-
             when (navHostFragment.navController.currentDestination?.id) {
                 //ako se tipke trebaju stisnut
                 R.id.MainFragment -> {
-                    Timber.d("action_mainFragment_to_FirstFragment")
-
                     navController.navigate(
-                        R.id.action_mainFragment_to_FirstFragment,
-                        bundle
+                        R.id.action_mainFragment_to_FirstFragment, bundle
                     )
                 }
 
-                R.id.CheckoutFragment -> {
-                    Timber.d("action_CheckoutFragment_to_FirstFragment")
-                    navController.navigate(
-                        R.id.action_CheckoutFragment_to_FirstFragment,
-                        bundle
-                    )
-                }
+//                R.id.CheckoutFragment -> {
+//                    navController.navigate(
+//                        R.id.action_CheckoutFragment_to_FirstFragment, bundle
+//                    )
+//                }
 
                 R.id.SettingsFragment -> {
                     showDialog(
-                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)",
-                        false
+                        "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz :)", false
                     )
                 }
 //                }
             }
         } else {
             showDialog(
-                "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz",
-                false
+                "skenirana kartica ${cardCode} ali nije inicijaliziran prolaz", false
             )
         }
+    }
+
+    fun switchRelays(cardCode: Int, noButtonClickNeededRegime: Boolean): Boolean {
+        var err = false
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+
+        if (prefs.getInt("IFTTERM2_B0_ID", 0) == 212) {
+            //recepcija Hep sisak
+            //NE RADI NISTA; TEO NE KUPI OCITANJA KAD JE RELEJ UPALJEN PA JE SVE SJEBANO
+//            MyHttpClient.hepReceptionRelayToggle(noButtonClickNeededRegime)
+        } else if (prefs.getInt("IFTTERM2_B0_ID", 0) == 214) {
+            //porta1, vani sisak hep
+            MyHttpClient.hepPort1RelaysToggle(noButtonClickNeededRegime)
+        } else {
+            err = true
+            showDialog(
+                "GREŠKA u id-> ${prefs.getInt("IFTTERM2_B0_ID", 0)} ${cardCode}", false
+            )
+        }
+        return err
+    }
+
+    override fun onPause() {
+        Timber.d("MainActivity onPause")
+        MyHttpClient.stop()
+        cardService?.releaseService()
+        super.onPause()
+    }
+
+    public override fun onStop() {
+        Timber.d("MainActivity onStop")
+        MyHttpClient.stop()
+        OmniCard.release()
+        stopTimber()
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        Timber.d("MainActivity onDestroy")
+        super.onDestroy()
+        MyHttpClient.server.stop(0, 0)
+        unregisterReceiver(usbReceiver);
+//        CameraUtils.release()
+        cameraExecutor.shutdown()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    fun isAdmin(): Boolean {
+
+        mDevicePolicyManager.removeActiveAdmin(mAdminComponentName)
+        val b = mDevicePolicyManager.isDeviceOwnerApp(packageName)
+        Timber.d("isAdmin: %b", b)
+        return b
+    }
+
+    fun setKioskPolicies(enable: Boolean, isAdmin: Boolean) {
+        setRestrictions(enable)
+        enableStayOnWhilePluggedIn(enable)
+        setUpdatePolicy(enable)
+        setKeyGuardEnabled(enable)
+        setAsHomeApp(enable)
+        setLockTask(enable, isAdmin)
+        setImmersiveMode(enable)
+    }
+
+    private fun setRestrictions(disallow: Boolean) {
+        setUserRestriction(UserManager.DISALLOW_SAFE_BOOT, disallow)
+        setUserRestriction(UserManager.DISALLOW_FACTORY_RESET, disallow)
+        setUserRestriction(UserManager.DISALLOW_ADD_USER, disallow)
+        setUserRestriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, disallow)
+//        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)
+        mDevicePolicyManager.setStatusBarDisabled(mAdminComponentName, disallow)
+    }
+
+    private fun setUserRestriction(restriction: String, disallow: Boolean) = if (disallow) {
+        mDevicePolicyManager.addUserRestriction(mAdminComponentName, restriction)
+    } else {
+        mDevicePolicyManager.clearUserRestriction(mAdminComponentName, restriction)
+    }
+// endregion
+
+    private fun enableStayOnWhilePluggedIn(active: Boolean) = if (active) {
+        mDevicePolicyManager.setGlobalSetting(
+            mAdminComponentName,
+            Settings.Global.STAY_ON_WHILE_PLUGGED_IN,
+            (BatteryManager.BATTERY_PLUGGED_AC or BatteryManager.BATTERY_PLUGGED_USB or BatteryManager.BATTERY_PLUGGED_WIRELESS).toString()
+        )
+    } else {
+        mDevicePolicyManager.setGlobalSetting(
+            mAdminComponentName, Settings.Global.STAY_ON_WHILE_PLUGGED_IN, "0"
+        )
+    }
+
+    private fun setLockTask(start: Boolean, isAdmin: Boolean) {
+        if (isAdmin) {
+            mDevicePolicyManager.setLockTaskPackages(
+                mAdminComponentName, if (start) arrayOf(packageName) else arrayOf()
+            )
+        }
+        if (start) {
+            startLockTask()
+        } else {
+            stopLockTask()
+        }
+    }
+
+    private fun setUpdatePolicy(enable: Boolean) {
+        if (enable) {
+            mDevicePolicyManager.setSystemUpdatePolicy(
+                mAdminComponentName, SystemUpdatePolicy.createWindowedInstallPolicy(60, 120)
+            )
+        } else {
+            mDevicePolicyManager.setSystemUpdatePolicy(mAdminComponentName, null)
+        }
+    }
+
+    private fun setAsHomeApp(enable: Boolean) {
+        if (enable) {
+            val intentFilter = IntentFilter(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                addCategory(Intent.CATEGORY_DEFAULT)
+            }
+            mDevicePolicyManager.addPersistentPreferredActivity(
+                mAdminComponentName,
+                intentFilter,
+                ComponentName(packageName, MainActivity::class.java.name)
+            )
+        } else {
+            mDevicePolicyManager.clearPackagePersistentPreferredActivities(
+                mAdminComponentName, packageName
+            )
+        }
+    }
+
+    private fun setKeyGuardEnabled(enable: Boolean) {
+        mDevicePolicyManager.setKeyguardDisabled(mAdminComponentName, !enable)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun setImmersiveMode(enable: Boolean) {
+        if (enable) {
+            val flags =
+                (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            window.decorView.systemUiVisibility = flags
+        } else {
+            val flags =
+                (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            window.decorView.systemUiVisibility = flags
+        }
+    }
+
+    override fun onFragmentInteraction() {
+        takePhoto()
     }
 }
