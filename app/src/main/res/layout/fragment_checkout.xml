@@ -55,18 +55,19 @@
             android:layout_gravity="center"
             android:text="Firma"
             android:visibility="gone"
+            android:layout_marginTop="20dp"
             android:textColor="@color/black"
             android:textSize="40sp" />
 
         <ImageView
             android:id="@+id/photo"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/ic_unknown_person" />
 
         <ImageView
-            android:layout_width="250dp"
+            android:layout_width="280dp"
             android:layout_height="150dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/hep_proizvodnja" />
@@ -99,7 +100,7 @@
         app:layout_constraintTop_toTopOf="parent"
         >
         <GridLayout
-            android:layout_width="850dp"
+            android:layout_width="750dp"
             android:layout_height="600dp"
             android:layout_below="@+id/glMain"
             android:layout_toStartOf="@+id/glMain"
