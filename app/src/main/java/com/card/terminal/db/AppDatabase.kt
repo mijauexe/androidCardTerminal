@@ -18,7 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private var instance: AppDatabase? = null
-        fun getInstance(context: Context): AppDatabase {
+        fun getInstance(context: Context, stackTrace: Array<StackTraceElement>): AppDatabase {
             if (instance == null) {
 
                 instance = Room.databaseBuilder(
@@ -28,7 +28,12 @@ abstract class AppDatabase : RoomDatabase() {
 
                 //TODO MAKNI MAIN THREAD QUERIES...
             }
-            Timber.d("Msg: Instantiating database")
+//            Timber.d("Msg: Instantiating database")
+//            Timber.d("Msg: start stacktrace")
+//            for (element in stackTrace) {
+//                Timber.d("${element.className}.${element.methodName}, ln ${element.lineNumber}")
+//            }
+//            Timber.d("Msg: end stacktrace")
             return instance as AppDatabase
         }
     }

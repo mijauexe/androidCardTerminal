@@ -15,7 +15,6 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream

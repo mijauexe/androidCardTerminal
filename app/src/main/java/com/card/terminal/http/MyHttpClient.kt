@@ -87,7 +87,10 @@ object MyHttpClient {
 //        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
         publishEventsTask = PublishEventsTask()
 
-        database = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        database = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
 
         startNettyServer()
 
@@ -426,7 +429,10 @@ object MyHttpClient {
                     .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             }
 
-            val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+            val db = AppDatabase.getInstance(
+                ContextProvider.getApplicationContext(),
+                Thread.currentThread().stackTrace
+            )
             if (published) {
                 val e = db.EventDao()
                     .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
@@ -481,7 +487,10 @@ object MyHttpClient {
                 )
             )
         }
-        val db = AppDatabase.getInstance((ContextProvider.getApplicationContext()))
+        val db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
         db.EventDao().updateEvents(newEvents)
     }
 }
