@@ -794,7 +794,7 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
                     }
 
                     if (person.imageB64 != "") {
-                        bundle.putString("imageB64", "person.imageB64")
+                        bundle.putString("imageB64", person.imageB64)
                     }
                     if (person.imagePath != "") {
                         bundle.putString("imagePath", person.imagePath)
