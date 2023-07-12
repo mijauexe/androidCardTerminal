@@ -32,6 +32,7 @@ import java.net.URL
 import java.net.UnknownHostException
 import java.util.*
 
+
 class FirstFragment : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
@@ -60,41 +61,58 @@ class FirstFragment : Fragment() {
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
-        if (existingBundle.containsKey("imagePath")) {
-
+        if (existingBundle.containsKey("imageB64")) {
+            try {
+                val decodedString: ByteArray =
+                    android.util.Base64.decode(
+                        existingBundle.getString("imageB64"),
+                        android.util.Base64.NO_WRAP
+                    )
+                val decodedBitmap =
+                    BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+                binding.photo.setImageBitmap(decodedBitmap)
+            } catch (e: java.lang.Exception) {
+                Timber.d(
+                    "Msg: Exception %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        } else if (existingBundle.containsKey("imagePath")) {
             try {
                 val scope = CoroutineScope(Dispatchers.IO)
                 scope.launch {
-                        try {
-                            val url = URL(
-                                ("http://" + prefs.getString(
-                                    "bareIP",
-                                    "?"
-                                ) + existingBundle.get("imagePath"))
-                            )
-                            Timber.d("url je ${url}")
-                            val connection = withContext(Dispatchers.IO) {
-                                url.openConnection()
-                            } as HttpURLConnection
-                            connection.doInput = true
-                            withContext(Dispatchers.IO) {
-                                connection.connect()
-                            }
-                            val input = connection.inputStream
-                            val bitmap = BitmapFactory.decodeStream(input)
-                            withContext(Dispatchers.Main) {
-                                binding.photo.setImageBitmap(bitmap)
-                                existingBundle.putParcelable("imageB64", bitmap)
-                            }
-                            connection.disconnect()
-                        } catch (e: java.lang.Exception) {
-                            Timber.d(
-                                "Msg: Exception %s | %s | %s",
-                                e.cause,
-                                e.stackTraceToString(),
-                                e.message
-                            )
+                    try {
+                        val url = URL(
+                            ("http://" + prefs.getString(
+                                "bareIP",
+                                "?"
+                            ) + existingBundle.get("imagePath"))
+                        )
+                        Timber.d("url je ${url}")
+                        val connection = withContext(Dispatchers.IO) {
+                            url.openConnection()
+                        } as HttpURLConnection
+                        connection.doInput = true
+                        withContext(Dispatchers.IO) {
+                            connection.connect()
                         }
+                        val input = connection.inputStream
+                        val bitmap = BitmapFactory.decodeStream(input)
+                        withContext(Dispatchers.Main) {
+                            binding.photo.setImageBitmap(bitmap)
+                            existingBundle.putParcelable("imageB64", bitmap)
+                        }
+                        connection.disconnect()
+                    } catch (e: java.lang.Exception) {
+                        Timber.d(
+                            "Msg: Exception %s | %s | %s",
+                            e.cause,
+                            e.stackTraceToString(),
+                            e.message
+                        )
+                    }
                 }
             } catch (e: NoRouteToHostException) {
                 Timber.d(
@@ -165,7 +183,10 @@ class FirstFragment : Fragment() {
         bundle: Bundle
     ) {
 
-        val db = AppDatabase.getInstance(ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace)
+        val db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
         val btnList = db.ButtonDao().getAllByClassType(str)
 
         if (btnList != null) {
