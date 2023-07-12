@@ -179,7 +179,7 @@ class FirstFragment : Fragment() {
                     .beginConfig()
                     .width(70).height(70)
                     .withBorder(2)
-                    .textColor(Color.BLACK)
+                    .textColor(Color.WHITE)
                     .endConfig()
                     .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
 
