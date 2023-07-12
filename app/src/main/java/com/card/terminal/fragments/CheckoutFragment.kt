@@ -2,6 +2,7 @@ package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,8 @@ import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
 import java.util.*
 
 /**
@@ -57,7 +60,7 @@ class CheckoutFragment : Fragment() {
 
         MyHttpClient.publishNewEvent(existingBundle)
 
-        binding.reasonValue.text = arguments?.getString("reasonValue", "")
+        binding.reasonValue.text = arguments?.getString("selection", "")
 
         if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
@@ -89,28 +92,34 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun eventImageLogic(existingBundle: Bundle) {
-        /*
-        if (existingBundle.containsKey("Source") && existingBundle.getString("Source")
-                .equals("Omnikey")
-         */
-        val prefs = ContextProvider.getApplicationContext()
-            .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
+        val folder =
+            File(Environment.getExternalStorageDirectory().absoluteFile.toString() + "/Pictures/")
 
-        if (prefs.getBoolean("CaptureOnEvent", true)) {
-//            CameraUtils.captureImage(ContextProvider.getApplicationContext())
-//            existingBundle.putString(
-//                "EventImage", prefs.getString(
-//                    "EventImage",
-//                    ""
-//                )
-//            )
+        val files = folder.listFiles()
+        var mostRecentFile: File? = null
+        var lastModifiedTime: Long = 0
 
+        for (file in files!!) {
+            if (file.isFile && file.lastModified() > lastModifiedTime) {
+                mostRecentFile = file
+                lastModifiedTime = file.lastModified()
+            }
+        }
+
+        try {
+            val inputStream = FileInputStream(mostRecentFile)
+            val buffer = mostRecentFile?.length()?.let { ByteArray(it.toInt()) }
+            inputStream.read(buffer)
+            inputStream.close()
+            val b64Img = android.util.Base64.encodeToString(buffer, android.util.Base64.NO_WRAP)
             existingBundle.putString(
-                "EventImage", "")
-
-            val editor = prefs.edit()
-            editor.putString("EventImage", "")
-            editor.commit()
+                "EventImage", b64Img
+            )
+        } catch (e: Exception) {
+            Timber.d(e)
+            existingBundle.putString(
+                "EventImage", ""
+            )
         }
     }
 
