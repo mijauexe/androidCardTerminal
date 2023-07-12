@@ -70,7 +70,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
+import com.card.terminal.db.entity.OperationSchedule
+import com.card.terminal.fragments.MainFragment
 import com.card.terminal.fragments.OnTakePhotoListener
+import com.card.terminal.utils.MiroConverter
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -171,21 +174,24 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
         Timber.d("Msg: setDefaultUncaughtExceptionHandler")
 
 
-        db = AppDatabase.getInstance((this))
+        db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(),
+            Thread.currentThread().stackTrace
+        )
 //
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        scope3.launch {
-            try {
-                db.EventDao().deleteAll()
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while clearing db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
+//        val scope3 = CoroutineScope(Dispatchers.IO)
+//        scope3.launch {
+//            try {
+//                db.EventDao().deleteAll()
+//            } catch (e: Exception) {
+//                Timber.d(
+//                    "Exception while clearing db: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            }
+//        }
 
         Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -599,6 +605,24 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
         }
     }
 
+    private fun rescheduleAlarms() {
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                MiroConverter().setRelayTimes(
+                    db.OperationScheduleDao().getAll() as MutableList<OperationSchedule>
+                )
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while rescheduling alarms: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+    }
+
     private fun setObservers() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
@@ -734,7 +758,7 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
 
         val prefs = getSharedPreferences("MyPrefsFile", MODE_PRIVATE)
 
-        if(prefs.getBoolean("CaptureOnEvent", false)) {
+        if (prefs.getBoolean("CaptureOnEvent", false)) {
             takePhoto()
         }
 
@@ -916,6 +940,14 @@ class MainActivity : AppCompatActivity(), OnTakePhotoListener {
                         false
                     )
                 }
+            } catch (e: java.lang.NumberFormatException) {
+                Timber.d(
+                    "Msg: NumberFormatException %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+                showDialog("QR kod ${it["CardCode"]} je neispravan!", false)
             } catch (e: java.lang.Exception) {
                 Timber.d(
                     "Msg: Exception %s | %s | %s",
