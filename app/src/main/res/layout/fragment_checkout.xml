@@ -101,7 +101,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <GridLayout
-            android:layout_width="850dp"
+            android:layout_width="750dp"
             android:layout_height="600dp"
             android:layout_below="@+id/glMain"
             android:layout_marginBottom="30dp"
