@@ -327,14 +327,17 @@ class MainActivity : AppCompatActivity() {
                 MODE_PRIVATE
             ).getString("usbAdapterCardCode", "")!!
 
-            handleCardScan(
-                mapOf(
-                    "CardCode" to cn.trimStart('0'),
-                    "DateTime" to LocalDateTime.now()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
-                    "Source" to "usbAdapter"
+            if(cn != "") {
+                handleCardScan(
+                    mapOf(
+                        "CardCode" to cn.trimStart('0'),
+                        "DateTime" to LocalDateTime.now()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")).toString(),
+                        "Source" to "usbAdapter"
+                    )
                 )
-            )
+            }
+
             getSharedPreferences(
                 PREFS_NAME,
                 MODE_PRIVATE
