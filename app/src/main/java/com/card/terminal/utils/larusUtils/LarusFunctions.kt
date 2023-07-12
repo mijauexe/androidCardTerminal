@@ -240,7 +240,8 @@ class LarusFunctions(
                                 mutableCode.postValue(
                                     mapOf(
                                         "CardCode" to cardCode.toString(),
-                                        "DateTime" to dateTimeString
+                                        "DateTime" to dateTimeString,
+                                        "Source" to "larusBoard"
                                     )
                                 )
                             }
