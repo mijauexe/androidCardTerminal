@@ -208,7 +208,7 @@
                     <TextView
                         android:id="@+id/reason_value"
                         android:textColor="@color/black"
-                        android:layout_width="530dp"
+                        android:layout_width="480dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="start"
                         android:layout_marginStart="30dp"

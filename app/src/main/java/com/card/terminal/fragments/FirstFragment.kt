@@ -70,6 +70,7 @@ class FirstFragment : Fragment() {
                 val decodedBitmap =
                     BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
                 binding.photo.setImageBitmap(decodedBitmap)
+                existingBundle.putParcelable("imageB64", decodedBitmap)
             } catch (e: java.lang.Exception) {
                 Timber.d(
                     "Msg: Exception %s | %s | %s",

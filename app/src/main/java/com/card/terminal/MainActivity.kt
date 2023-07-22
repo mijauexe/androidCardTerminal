@@ -38,7 +38,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
-import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
@@ -72,8 +71,8 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.fragments.OnTakePhotoListener
+import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.utils.MiroConverter
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.CountDownLatch
