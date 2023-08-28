@@ -1,6 +1,5 @@
 package com.card.terminal.db.dao
 
-import androidx.annotation.WorkerThread
 import androidx.room.*
 import com.card.terminal.db.entity.Card
 
@@ -33,7 +32,7 @@ interface CardDao {
     @Delete
     fun deleteMany(list: List<Card>)
 
-//    @WorkerThread
+    //    @WorkerThread
     @Query("DELETE FROM Card")
     fun deleteAll()
 }

@@ -12,7 +12,11 @@ import timber.log.Timber
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        Timber.d("Msg: BootReceiver started the app: %s | %s", context.toString(), intent.toString())
+        Timber.d(
+            "Msg: BootReceiver started the app: %s | %s",
+            context.toString(),
+            intent.toString()
+        )
 
         // Create a Handler with the main thread's Looper
         val handler = Handler(Looper.getMainLooper())

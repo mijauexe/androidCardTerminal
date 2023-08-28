@@ -2,7 +2,8 @@ package com.card.terminal.http.tasks
 
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import timber.log.Timber
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 
 class LarusCheckScansTask(val larusFunctions: LarusFunctions) :
     TimerTask() {

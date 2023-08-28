@@ -63,7 +63,11 @@ object OmniCard {
     }
 
 
-    fun bindCardBackend(context: Activity, code: MutableLiveData<Map<String, String>>, isInit: Boolean) {
+    fun bindCardBackend(
+        context: Activity,
+        code: MutableLiveData<Map<String, String>>,
+        isInit: Boolean
+    ) {
         mutableCode = code
         if (!isServiceConnected) {
             cardService = CardService.getInstance(context, object : ServiceConnection {

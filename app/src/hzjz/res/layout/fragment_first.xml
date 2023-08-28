@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9D9D9"
+    tools:context=".fragments.FirstFragment">
+
+
+    <GridLayout
+        android:id="@+id/glMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        app:layout_constraintBottom_toTopOf="@+id/glDown"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="300dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/erv_hzjz_gray" />
+
+        <TextClock
+            android:id="@+id/tv_date_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:format24Hour="d. MMMM yyyy, HH:mm"
+            android:text="@string/tv_date"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/first_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Đuro"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/last_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Đurić"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Firma"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:visibility="gone" />
+
+
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_unknown_person"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/card_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Broj kartice: "
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50dp"
+            android:src="@drawable/hzjz" />
+    </GridLayout>
+
+    <GridLayout
+        android:id="@+id/glDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/glMain"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
+
+    </GridLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/glRight"
+        android:layout_width="wrap_content"
+        android:layout_height="700dp"
+        android:layout_below="@+id/glMain"
+        android:layout_toStartOf="@+id/glMain"
+        app:cardBackgroundColor="#D9D9D9"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="4dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/glMain"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <GridLayout
+            android:layout_width="700dp"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:useDefaultMargins="true">
+
+            <!--            <TextView-->
+            <!--                android:id="@+id/reason_text"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_gravity="center"-->
+            <!--                android:layout_marginBottom="10dp"-->
+            <!--                android:text="Molimo unesite razlog izlaska:"-->
+
+            <!--                android:textColor="@color/black"-->
+            <!--                android:textSize="30dp" />-->
+
+
+            <GridLayout
+                android:id="@+id/buttonsGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="1">
+
+                <Button
+                    android:id="@+id/ina_button"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="45dp"
+                    android:background="@android:color/transparent"
+                    android:drawableStart="@drawable/touch"
+                    android:text=" INA GuardLess "
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="35dp"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/button_enter"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginBottom="70dp"
+                    android:background="@android:color/transparent"
+                    android:drawableStart="@drawable/enter"
+                    android:text="   Ulaz   "
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/black"
+                    android:textSize="40dp" />
+
+                <GridLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:columnCount="1">
+
+                    <Button
+                        android:id="@+id/button_1"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginBottom="35dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/business_alternative"
+                        android:text="   Izlaz - Poslovno   "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
+
+                    <Button
+                        android:id="@+id/button_2"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginBottom="35dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/home_alternative"
+                        android:text="   Izlaz - Privatno   "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
+
+                    <Button
+                        android:id="@+id/button_3"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_gravity="start"
+                        android:layout_marginBottom="35dp"
+                        android:background="@android:color/transparent"
+                        android:drawableStart="@drawable/break_alternative"
+                        android:text="   Izlaz - Pauza   "
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/black"
+                        android:textSize="35dp" />
+                </GridLayout>
+
+                <Button
+                    android:id="@+id/button_exit"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:drawableStart="@drawable/exit"
+                    android:text="   Izlaz   "
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/black"
+                    android:textSize="40dp  " />
+
+
+            </GridLayout>
+        </GridLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

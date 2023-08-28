@@ -5,7 +5,6 @@ plugins {
 }
 
 android {
-
     namespace 'com.card.terminal'
     compileSdk 33
 
@@ -26,7 +25,6 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -34,6 +32,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
         }
     }
     compileOptions {
@@ -45,6 +46,42 @@ android {
     }
     buildFeatures {
         viewBinding true
+    }
+
+    flavorDimensions "version"
+    productFlavors {
+        INA {
+            dimension "version"
+            applicationIdSuffix ".ina"
+        }
+        HEP {
+            dimension "version"
+            applicationIdSuffix ".hep"
+        }
+        HZJZ {
+            dimension "version"
+            applicationIdSuffix ".hzjz"
+        }
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+        }
+
+        HEP {
+            res.srcDirs = ['src/hep/res']
+        }
+
+        INA {
+            res.srcDirs = ['src/ina/res']
+        }
+
+        HZJZ {
+            res.srcDirs = ['src/hzjz/res']
+        }
     }
 }
 

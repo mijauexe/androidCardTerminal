@@ -15,8 +15,6 @@ import com.card.terminal.R
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.FragmentSecondBinding
 import timber.log.Timber
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -52,7 +50,7 @@ class SecondFragment : Fragment() {
     }
 
     fun setPinText(tv: TextView, text: String) {
-        if(resetPin){
+        if (resetPin) {
             resetPin = false
             binding.pinPreviewText.setTextColor(Color.WHITE)
             binding.tvErrMsg.visibility = View.GONE
@@ -114,7 +112,7 @@ class SecondFragment : Fragment() {
         }
 
         binding.delDialButton.setOnClickListener {
-            if(resetPin) {
+            if (resetPin) {
                 resetPin = false
                 binding.pinPreviewText.setTextColor(Color.WHITE)
                 binding.tvErrMsg.visibility = View.GONE
@@ -128,7 +126,7 @@ class SecondFragment : Fragment() {
             val act = activity as MainActivity
             //TODO ????
 //            if (act.checkPin(binding.pinPreviewText.text)) {
-            if(binding.pinPreviewText.text == "0000"){
+            if (binding.pinPreviewText.text == "0000") {
                 findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
 //                showDialog()
             } else {

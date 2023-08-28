@@ -15,6 +15,9 @@
             android:id="@+id/action_FirstFragment_to_mainFragment"
             app:destination="@id/MainFragment" />
         <action
+            android:id="@+id/action_FirstFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+        <action
             android:id="@+id/action_FirstFragment_to_CheckoutFragment"
             app:destination="@id/CheckoutFragment" />
     </fragment>
@@ -47,6 +50,9 @@
         <action
             android:id="@+id/action_CheckoutFragment_to_MainFragment"
             app:destination="@id/MainFragment" />
+        <action
+            android:id="@+id/action_CheckoutFragment_to_CheckoutFragment"
+            app:destination="@id/CheckoutFragment" />
         <action
             android:id="@+id/action_CheckoutFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />

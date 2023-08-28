@@ -24,6 +24,7 @@ class UsbEventsReceiver(
                     isConnected = true
                 }
             }
+
             READER_DETACH_ACTION -> {
                 if (!isHasReader && isConnected) {
                     onReaderDetach.invoke()

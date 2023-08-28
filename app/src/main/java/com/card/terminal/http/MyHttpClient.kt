@@ -1,6 +1,5 @@
 package com.card.terminal.http
 
-import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
@@ -40,36 +39,30 @@ import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.util.TimerTask
+import kotlin.math.pow
 
 object MyHttpClient {
     private var client: HttpClient? = null
-
     private var mutableCode = MutableLiveData<Map<String, String>>()
-    private var mContext: Application? = null
-
     private var database: AppDatabase? = null
     private lateinit var scope: CoroutineScope
-
     private var larusCheckScansTask: TimerTask? = null
-
     private var publishEventsTask: TimerTask? = null
-
     private var larusFunctions: LarusFunctions? = null
-
     lateinit var server: NettyApplicationEngine
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
-        client = HttpClient() {
+        client = HttpClient {
             install(ContentNegotiation) {
                 json()
             }
             install(HttpRequestRetry) {
                 retryOnServerErrors(maxRetries = 3)
                 exponentialDelay()
-                retryIf { request, response ->
+                retryIf { _, response ->
                     !response.status.isSuccess()
                 }
-                retryOnExceptionIf { request, cause ->
+                retryOnExceptionIf { _, cause ->
                     cause is Exception
                 }
                 delayMillis { retry ->
@@ -85,8 +78,7 @@ object MyHttpClient {
         publishEventsTask = PublishEventsTask()
 
         database = AppDatabase.getInstance(
-            ContextProvider.getApplicationContext(),
-            Thread.currentThread().stackTrace
+            ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
         )
 
         startNettyServer()
@@ -127,14 +119,6 @@ object MyHttpClient {
         larusFunctions?.reset()
     }
 
-    fun hepPort1RelaysToggle(noButtonClickNeededRegime: Boolean) {
-        if (noButtonClickNeededRegime) {
-            larusFunctions?.changeRelayMode(2, 1) //1 je hold
-        } else {
-            larusFunctions?.changeRelayMode(2, 0) //0 je pulse
-        }
-    }
-
     fun relayMode(doorNum: Int, pulseOrHold: Int) {
         //0 - vrata su normalnom modu rada  - prolaz s karticama, 1 - vrata nisu kontrolirana
         larusFunctions?.changeRelayMode(doorNum, pulseOrHold)
@@ -144,7 +128,7 @@ object MyHttpClient {
         var result = 0
         var ctr = 0
         for (b in byteArray) {
-            result += Math.pow(2.0, ctr.toDouble()).toInt() * b.toUByte().toInt()
+            result += 2.0.pow(ctr.toDouble()).toInt() * b.toUByte().toInt()
             ctr += 8
         }
         return result
@@ -203,44 +187,34 @@ object MyHttpClient {
     fun pushRequest(type: String) {
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
-            val mySharedPreferences =
-                ContextProvider.getApplicationContext()
-                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+            val mySharedPreferences = ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 
             try {
-                val response =
-                    mySharedPreferences.getString(
-                        "serverIP",
-                        ""
-                    )
-                        ?.let {
-                            client?.post(it) {
-                                contentType(ContentType.Application.Json)
-                                if (type.contains("PHOTOS")) {
-                                    setBody(
-                                        "{ \n" +
-                                                "    \"ACT\": \"${type}\", \n" +
-                                                "    \"IFTTERM2_B0_ID\": \"${
-                                                    mySharedPreferences.getInt(
-                                                        "IFTTERM2_B0_ID",
-                                                        4
-                                                    )
-                                                }\",\n" +
-                                                "    \"BASE64\":\"OFF\"\n" +
-                                                "}"
+                val response = mySharedPreferences.getString(
+                    "serverIP", ""
+                )?.let {
+                    client?.post(it) {
+                        contentType(ContentType.Application.Json)
+                        if (type.contains("PHOTOS")) {
+                            setBody(
+                                "{ \n" + "    \"ACT\": \"${type}\", \n" + "    \"IFTTERM2_B0_ID\": \"${
+                                    mySharedPreferences.getInt(
+                                        "IFTTERM2_B0_ID", 4
                                     )
-                                } else {
-                                    setBody(
-                                        "{\"ACT\": \"${type}\",\"IFTTERM2_B0_ID\": \"${
-                                            mySharedPreferences.getInt(
-                                                "IFTTERM2_B0_ID",
-                                                4
-                                            )
-                                        }\"}"
+                                }\",\n" + "    \"BASE64\":\"OFF\"\n" + "}"
+                            )
+                        } else {
+                            setBody(
+                                "{\"ACT\": \"${type}\",\"IFTTERM2_B0_ID\": \"${
+                                    mySharedPreferences.getInt(
+                                        "IFTTERM2_B0_ID", 4
                                     )
-                                }
-                            }
+                                }\"}"
+                            )
                         }
+                    }
+                }
                 if (response != null) {
                     Timber.d("Response received: ${response.bodyAsText()}")
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
@@ -262,10 +236,7 @@ object MyHttpClient {
                 )
             } catch (e: Exception) {
                 Timber.d(
-                    "Exception: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
+                    "Exception: %s | %s | %s", e.cause, e.stackTraceToString(), e.message
                 )
             }
         }
@@ -274,28 +245,23 @@ object MyHttpClient {
     fun publishNewEvent(cardResponse: Bundle) {
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
-            eventToDatabase(cardResponse, false)
             val body = withContext(Dispatchers.Main) {
                 MiroConverter().pushEventFormat(cardResponse)
             }
-            val mySharedPreferences =
-                ContextProvider.getApplicationContext()
-                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+            val mySharedPreferences = ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             try {
-                val response =
-                    mySharedPreferences.getString(
-                        "serverIP",
-                        ""
-                    )
-                        ?.let {
-                            client?.post(it) {
-                                contentType(ContentType.Application.Json)
-                                setBody(body)
-                            }
-                        }
+                val response = mySharedPreferences.getString(
+                    "serverIP", ""
+                )?.let {
+                    client?.post(it) {
+                        contentType(ContentType.Application.Json)
+                        setBody(body)
+                    }
+                }
                 if (response != null) {
-                    Timber.d("Sent: ${body}")
-                    Timber.d("Response received: ${response.bodyAsText()}")
+//                    Timber.d("Sent: ${body}")
+//                    Timber.d("Response received: ${response.bodyAsText()}")
                     if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
                         Timber.d(
@@ -304,7 +270,7 @@ object MyHttpClient {
                             true
                         )
                     } else {
-                        eventToDatabase(cardResponse, false)
+//                        eventToDatabase(cardResponse, false)
                         Timber.d(
                             "Msg: user %s scanned, response sent to server: %b",
                             cardResponse.getString("CardCode"),
@@ -318,7 +284,7 @@ object MyHttpClient {
                     cardResponse.getString("CardCode"),
                     false
                 )
-                eventToDatabase(cardResponse, false)
+//                eventToDatabase(cardResponse, false)
             } catch (e: Exception) {
                 Timber.d(
                     "Exception while publishing event(s) to server: %s | %s | %s | %s",
@@ -327,7 +293,7 @@ object MyHttpClient {
                     e.message,
                     body
                 )
-                eventToDatabase(cardResponse, false)
+//                eventToDatabase(cardResponse, false)
                 Timber.d(
                     "Msg: user %s scanned, response sent to server: %b",
                     cardResponse.getString("CardCode"),
@@ -347,36 +313,31 @@ object MyHttpClient {
 
             val esp = MiroConverter().getFormattedUnpublishedEvents(
                 mySharedPreferences.getInt(
-                    "IFTTERM2_B0_ID",
-                    0
+                    "IFTTERM2_B0_ID", 0
                 )
             )
 
             if (esp.eventList.isNotEmpty()) {
                 try {
-                    val response =
-                        mySharedPreferences.getString(
-                            "serverIP",
-                            ""
-                        )
-                            ?.let {
-                                client?.post(it) {
-                                    contentType(ContentType.Application.Json)
-                                    setBody(esp.eventString)
-                                }
-                            }
+                    val response = mySharedPreferences.getString(
+                        "serverIP", ""
+                    )?.let {
+                        client?.post(it) {
+                            contentType(ContentType.Application.Json)
+                            setBody(esp.eventString)
+                        }
+                    }
                     if (response != null) {
                         Timber.d("Sent: ${esp.eventString}")
-                        if (response.bodyAsText().contains("\"CODE\":\"0\"")
-                        ) {
+                        if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                             updateEvents(esp.eventList)
                             Timber.d(
-                                "Msg: Event list updated and published: %s", esp.eventString
+                                "Msg: Event list updated and published: %s", esp.eventString.length
                             )
                         }
                     }
                 } catch (ce: ConnectException) {
-                    Timber.d("Msg: Event list not updated or published: %s", esp.eventString)
+                    Timber.d("Msg: Event list not updated or published: %s", esp.eventString.length)
                 } catch (e: Exception) {
                     Timber.d(
                         "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
@@ -391,58 +352,59 @@ object MyHttpClient {
     }
 
     fun eventToDatabase(cardResponse: Bundle, published: Boolean) {
+        if (cardResponse["CardCode"] != null) {
+            val scope1 = CoroutineScope(Dispatchers.IO)
+            scope1.launch {
 
-        val scope1 = CoroutineScope(Dispatchers.IO)
-        scope1.launch {
+                val mySharedPreferences = withContext(Dispatchers.Main) {
+                    ContextProvider.getApplicationContext()
+                        .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                }
 
-            val mySharedPreferences = withContext(Dispatchers.Main) {
-                ContextProvider.getApplicationContext()
-                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
-            }
-
-            val db = AppDatabase.getInstance(
-                ContextProvider.getApplicationContext(),
-                Thread.currentThread().stackTrace
-            )
-            if (published) {
-                val e = db.EventDao()
-                    .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
-                val newE = e?.let {
-                    Event(
-                        uid = it.uid,
-                        eventCode = it.eventCode,
-                        eventCode2 = it.eventCode2,
-                        cardNumber = it.cardNumber,
-                        dateTime = it.dateTime,
-                        published = true,
-                        deviceId = it.deviceId,
-                        image = it.image
-                    )
-                }
-                if (newE != null) {
-                    db.EventDao().update(newE)
-                }
-            } else {
-                var img = ""
-                if (cardResponse.containsKey("EventImage")) {
-                    img = cardResponse.getString("EventImage")!!
-                }
-                val event = Event(
-                    eventCode = cardResponse.getInt("eCode"), //TODO
-                    eventCode2 = cardResponse.getInt("eCode2", 0),
-                    cardNumber = cardResponse.get("CardCode").toString().toInt(),
-                    dateTime = cardResponse.get("DateTime").toString(),
-                    published = published,
-                    uid = 0, //auto-generate
-                    deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 0),//TODO
-                    image = img
+                val db = AppDatabase.getInstance(
+                    ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
                 )
-                db.EventDao().insert(event)
+                if (published) {
+                    val e = db.EventDao()
+                        .getLastScanEventWithCardNumber(Integer.valueOf(cardResponse.get("CardCode") as String))
+                    val newE = e?.let {
+                        Event(
+                            uid = it.uid,
+                            eventCode = it.eventCode,
+                            eventCode2 = it.eventCode2,
+                            cardNumber = it.cardNumber,
+                            dateTime = it.dateTime,
+                            published = true,
+                            deviceId = it.deviceId,
+                            image = it.image
+                        )
+                    }
+                    if (newE != null) {
+                        db.EventDao().update(newE)
+                    }
+                } else {
+                    var img = ""
+                    if (cardResponse.containsKey("EventImage")) {
+                        img = cardResponse.getString("EventImage")!!
+                    }
+                    val event = Event(
+                        eventCode = cardResponse.getInt("eCode"), //TODO
+                        eventCode2 = cardResponse.getInt("eCode2", 0),
+                        cardNumber = cardResponse.get("CardCode").toString().toInt(),
+                        dateTime = cardResponse.get("DateTime").toString(),
+                        published = false,
+                        uid = 0, //auto-generate
+                        deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 0),//TODO
+                        image = img
+                    )
+                    db.EventDao().insert(event)
+                }
             }
         }
+
     }
 
-    fun updateEvents(list: List<Event>) {
+    private fun updateEvents(list: List<Event>) {
         val newEvents = mutableListOf<Event>()
         for (e in list) {
             newEvents.add(
@@ -459,8 +421,7 @@ object MyHttpClient {
             )
         }
         val db = AppDatabase.getInstance(
-            ContextProvider.getApplicationContext(),
-            Thread.currentThread().stackTrace
+            ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
         )
         db.EventDao().updateEvents(newEvents)
     }

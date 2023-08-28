@@ -1,7 +1,6 @@
 package com.card.terminal.db.dao
 
 import androidx.room.*
-import com.card.terminal.db.entity.Card
 import com.card.terminal.db.entity.Event
 
 @Dao

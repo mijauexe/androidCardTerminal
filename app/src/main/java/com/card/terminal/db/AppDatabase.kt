@@ -7,7 +7,6 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.card.terminal.db.dao.*
 import com.card.terminal.db.entity.*
-import timber.log.Timber
 
 @Database(
     entities = [Card::class, Event::class, Person::class, Calendar::class, AccessLevel::class, Device::class, OperationSchedule::class, OperationMode::class, Button::class],

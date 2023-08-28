@@ -26,6 +26,7 @@ interface OperationScheduleDao {
 
     @Query("SELECT * FROM OperationSchedule WHERE timeTo = :timeTo")
     fun getByTimeTo(timeTo: String): List<OperationSchedule>?
+
     @Query("DELETE FROM OperationSchedule")
     fun deleteAll()
 }

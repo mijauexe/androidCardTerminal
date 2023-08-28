@@ -236,7 +236,7 @@ class LarusFunctions(
                                 Timber.d("")
                             }
 
-                            if(cardCode.toString() != "1094999887") {
+                            if (cardCode.toString() != "1094999887") {
                                 mutableCode.postValue(
                                     mapOf(
                                         "CardCode" to cardCode.toString(),

@@ -2,7 +2,6 @@ package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
@@ -14,26 +13,20 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
+import com.card.terminal.utils.Utils
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
 import java.util.*
 
-/**
- * An example full-screen fragment that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
+
 class CheckoutFragment : Fragment() {
     private var _binding: FragmentCheckoutBinding? = null
     private val binding get() = _binding!!
 
     private var timerHandler: Handler? = null
-    private val delayMillis: Long = 10000
+    private val delayToMain: Long = 6000L
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentCheckoutBinding.inflate(inflater, container, false)
         Timber.d("CheckoutFragment onCreateView")
@@ -42,6 +35,34 @@ class CheckoutFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Timber.d("CheckoutFragment onViewCreated")
+
+        setupUI()
+
+        val existingBundle = requireArguments()
+
+        MyHttpClient.openDoor(1)
+
+        Utils.updateEvent(existingBundle)
+        MyHttpClient.publishNewEvent(existingBundle)
+
+        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
+        timerHandler = Handler()
+        timerHandler?.postDelayed({
+            when (findNavController().currentDestination?.id) {
+                R.id.CheckoutFragment -> {
+                    findNavController().navigate(
+                        R.id.action_CheckoutFragment_to_MainFragment
+                    )
+                }
+            }
+        }, delayToMain)
+
+        setupUiText(existingBundle)
+    }
+
+    private fun setupUiText(existingBundle: Bundle) {
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
 
@@ -52,13 +73,6 @@ class CheckoutFragment : Fragment() {
             binding.companyName.visibility = View.VISIBLE
             binding.companyName.text = arguments?.getString("companyName")
         }
-
-        val existingBundle = requireArguments()
-        MyHttpClient.openDoor(1)
-
-        eventImageLogic(existingBundle)
-
-        MyHttpClient.publishNewEvent(existingBundle)
 
         binding.reasonValue.text = arguments?.getString("selection", "")
 
@@ -74,53 +88,21 @@ class CheckoutFragment : Fragment() {
         if (arguments?.getString("reasonValue").equals("Ulaz")) {
             binding.reasonKey.text = "Razlog ulaza: "
         }
-
-        super.onViewCreated(view, savedInstanceState)
-        Timber.d("CheckoutFragment onViewCreated")
-
-        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-        timerHandler = Handler()
-        timerHandler?.postDelayed({
-            when (findNavController().currentDestination?.id) {
-                R.id.CheckoutFragment -> {
-                    findNavController().navigate(
-                        R.id.action_CheckoutFragment_to_MainFragment
-                    )
-                }
-            }
-        }, delayMillis)
     }
 
-    private fun eventImageLogic(existingBundle: Bundle) {
-        val folder =
-            File(Environment.getExternalStorageDirectory().absoluteFile.toString() + "/Pictures/")
+    private fun setupUI() {
+        //this is needed if a connected device is a physical keyboard, it would type text inside views and disrupt app flow
+        val readoutValueTextView = _binding?.readoutValue
+        readoutValueTextView?.isFocusable = false
+        readoutValueTextView?.isFocusableInTouchMode = false
 
-        val files = folder.listFiles()
-        var mostRecentFile: File? = null
-        var lastModifiedTime: Long = 0
+        val reasonValueTextView = _binding?.reasonValue
+        reasonValueTextView?.isFocusable = false
+        reasonValueTextView?.isFocusableInTouchMode = false
 
-        for (file in files!!) {
-            if (file.isFile && file.lastModified() > lastModifiedTime) {
-                mostRecentFile = file
-                lastModifiedTime = file.lastModified()
-            }
-        }
-
-        try {
-            val inputStream = FileInputStream(mostRecentFile)
-            val buffer = mostRecentFile?.length()?.let { ByteArray(it.toInt()) }
-            inputStream.read(buffer)
-            inputStream.close()
-            val b64Img = android.util.Base64.encodeToString(buffer, android.util.Base64.NO_WRAP)
-            existingBundle.putString(
-                "EventImage", b64Img
-            )
-        } catch (e: Exception) {
-            Timber.d(e)
-            existingBundle.putString(
-                "EventImage", ""
-            )
-        }
+        val smile = _binding?.smile
+        smile?.isFocusable = false
+        smile?.isFocusableInTouchMode = false
     }
 
     override fun onDestroyView() {
