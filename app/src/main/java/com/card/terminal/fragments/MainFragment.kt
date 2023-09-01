@@ -13,6 +13,11 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.BuildConfig
 import com.card.terminal.MainActivity
 import com.card.terminal.databinding.FragmentMainBinding
+import com.card.terminal.utils.adamUtils.Adam6050D
+import com.card.terminal.utils.adamUtils.DigitalOutput
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -90,6 +95,44 @@ class MainFragment : Fragment() {
                         }, 5000)
                     }
                     trackerSettingsIcon = IntArray(3)
+                }
+            }
+
+            val btn = _binding?.mainLogo2
+            btn?.setOnClickListener {
+                //make a basic demo switch
+                val scope3 = CoroutineScope(Dispatchers.IO)
+                scope3.launch {
+                    val ip = "192.168.0.105"
+                    val username = "root"
+                    val password = "00000000"
+
+                    val adam = Adam6050D(ip, username, password)
+                    val doOutput = DigitalOutput()
+
+                    try {
+                        val out = adam.output()
+
+                        val stateOfD0 = (out as DigitalOutput).asDict().get("DO1")
+                        if(stateOfD0 == 1) {
+                            doOutput[1] = 0
+                        } else {
+                            doOutput[1] = 1
+                        }
+                        adam.output(doOutput)
+                    } catch (e: Exception) {
+                        println(e)
+                    }
+
+//                    for (i in 0..50) {
+//                        gas += 1
+//                        doOutput[1] = gas % 2
+//                        try {
+//                            adam.output(doOutput)
+//                        } catch (e: Exception) {
+//                            println(e)
+//                        }
+//                    }
                 }
             }
 
