@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <uses-permission android:name="com.hidglobal.ia.omnikey.service.permission.SMARTCARDIO" />
 
     <uses-permission android:name="android.permission.USB_PERMISSION" />
