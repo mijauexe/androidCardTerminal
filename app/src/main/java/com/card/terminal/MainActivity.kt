@@ -43,9 +43,11 @@ import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
+import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.USBReceiver
+import com.card.terminal.utils.AlarmUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.Utils
 import com.card.terminal.utils.omniCardUtils.OmniCard
@@ -96,8 +98,6 @@ class MainActivity : AppCompatActivity() {
         private val REQUIRED_PERMISSIONS = mutableListOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            READ_EXTERNAL_STORAGE,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE
         ).apply {
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                 add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -193,6 +193,10 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         setContentView(binding.root)
+
+        if(BuildConfig.RelayAlarm) {
+            rescheduleRelayAlarms()
+        }
 
         mediaPlayer = MediaPlayer.create(this, R.raw.scan_success)
         mediaPlayer!!.setOnCompletionListener { mediaPlayer ->
@@ -406,6 +410,24 @@ class MainActivity : AppCompatActivity() {
         editor.commit()
     }
 
+    private fun rescheduleRelayAlarms() {
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                AlarmUtils().setRelayTimes(
+                    db.OperationScheduleDao().getAll() as MutableList<OperationSchedule>
+                )
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while rescheduling alarms: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+    }
+
     private fun startLogger() {
         try {
             val logFolder = Environment.getExternalStorageDirectory().absoluteFile
@@ -427,7 +449,9 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (BuildConfig.FLAVOR == "HZJZ") {
+        if (BuildConfig.Omnikey) {
+            Toast.makeText(this, "Omnikey", Toast.LENGTH_LONG)
+                .show()
             if (PackageManagerQuery().isCardManagerAppInstalled(this)) {
                 if (ContextCompat.checkSelfPermission(
                         this, PERMISSION_TO_BIND_BACKEND_SERVICE
@@ -468,7 +492,7 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
 
-        if (BuildConfig.FLAVOR == "HEP") {
+        if (BuildConfig.Larus) {
             mutableLarusCode.observe(this) {
                 if (it["CardCode"] == "CONNECTION_RESTORED") {
 
@@ -510,7 +534,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (BuildConfig.FLAVOR == "HZJZ") {
+        if (BuildConfig.Omnikey) {
             mutableCardCode.observe(this) {
                 if (!cardScannerActive) {
                     return@observe

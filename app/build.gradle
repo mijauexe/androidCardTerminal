@@ -32,9 +32,15 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "adamUsername", "\"root\""
+            buildConfigField "String", "adamPassword", "\"00000000\""
+            buildConfigField "String", "adamIP", "\"192.168.0.105\""
         }
         debug {
             debuggable true
+            buildConfigField "String", "adamUsername", "\"root\""
+            buildConfigField "String", "adamPassword", "\"00000000\""
+            buildConfigField "String", "adamIP", "\"192.168.0.105\""
         }
     }
     compileOptions {
@@ -53,14 +59,30 @@ android {
         INA {
             dimension "version"
             applicationIdSuffix ".ina"
+            buildConfigField "Boolean", "PromoVideo", "true"
+            buildConfigField "Boolean", "RelayAlarm", "false"
+            buildConfigField "Boolean", "Adam", "true"
+            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Omnikey", "false"
+
         }
         HEP {
             dimension "version"
             applicationIdSuffix ".hep"
+            buildConfigField "Boolean", "PromoVideo", "true"
+            buildConfigField "Boolean", "RelayAlarm", "false"
+            buildConfigField "Boolean", "Adam", "false"
+            buildConfigField "Boolean", "Larus", "true"
+            buildConfigField "Boolean", "Omnikey", "true"
         }
         HZJZ {
             dimension "version"
             applicationIdSuffix ".hzjz"
+            buildConfigField "Boolean", "PromoVideo", "false"
+            buildConfigField "Boolean", "RelayAlarm", "false"
+            buildConfigField "Boolean", "Adam", "false"
+            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Omnikey", "true"
         }
     }
 

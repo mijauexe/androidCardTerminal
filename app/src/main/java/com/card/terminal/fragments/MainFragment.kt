@@ -103,9 +103,9 @@ class MainFragment : Fragment() {
                 //make a basic demo switch
                 val scope3 = CoroutineScope(Dispatchers.IO)
                 scope3.launch {
-                    val ip = "192.168.0.105"
-                    val username = "root"
-                    val password = "00000000"
+                    val ip = BuildConfig.adamIP
+                    val username = BuildConfig.adamUsername
+                    val password = BuildConfig.adamPassword
 
                     val adam = Adam6050D(ip, username, password)
                     val doOutput = DigitalOutput()
@@ -121,7 +121,7 @@ class MainFragment : Fragment() {
                         }
                         adam.output(doOutput)
                     } catch (e: Exception) {
-                        println(e)
+                        Timber.d(e)
                     }
 
 //                    for (i in 0..50) {
@@ -149,7 +149,7 @@ class MainFragment : Fragment() {
     }
 
     fun deactivatePromo() {
-        if (BuildConfig.FLAVOR == "INA" && videoUriList.size != 0) {
+        if (BuildConfig.PromoVideo && videoUriList.size != 0) {
             _binding?.promoView?.visibility = View.GONE
             _binding?.mainLogo1?.visibility = View.VISIBLE
             _binding?.mainLogo3?.visibility = View.VISIBLE
@@ -162,7 +162,7 @@ class MainFragment : Fragment() {
     }
 
     fun activatePromo() {
-        if (BuildConfig.FLAVOR == "INA" && videoUriList.size != 0) {
+        if (BuildConfig.PromoVideo && videoUriList.size != 0) {
             promoHandler?.removeCallbacksAndMessages(null)
             promoHandler = Handler()
 
