@@ -3,6 +3,11 @@
 
 Android (Kotlin & Java) application for embedded devices that controls the flow of workers and contractors in and out of authorized-only places.
 
+## Demo
+
+[Youtube Demo](https://youtu.be/edjsjlia19U)
+
+
 ## Features
 
 - [x] Responsive
@@ -15,9 +20,7 @@ Android (Kotlin & Java) application for embedded devices that controls the flow 
 - [x] Database 
 - [x] REST API for management and data input/output
 
-## Contact
 
-Sven - sven.nekic@hotmail.com
 
 ![image](/screenshots/1.png)
 ![image](/screenshots/2.png)
