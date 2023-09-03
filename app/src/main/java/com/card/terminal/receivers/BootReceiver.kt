@@ -22,7 +22,7 @@ class BootReceiver : BroadcastReceiver() {
         val handler = Handler(Looper.getMainLooper())
 
         // Define the delay in milliseconds
-        val delayMillis = 45000L
+        val delayMillis = 5000L
 
         // Define the action to be performed after the delay
         val runnable = Runnable {
