@@ -1,9 +1,9 @@
 
 # Android Card Terminal
 
-![image](screenshots/1.jpg)
-![image](screenshots/2.jpg)
-![image](screenshots/3.jpg)
+![image](/screenshots/1.jpg)
+![image](/screenshots/2.jpg)
+![image](/screenshots/3.jpg)
   
 Android (Kotlin & Java) application for embedded devices that control the flow of workers and contractors in and out of authorized buildings.
 
