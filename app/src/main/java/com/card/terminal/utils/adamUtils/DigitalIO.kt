@@ -7,6 +7,7 @@ import org.xml.sax.InputSource
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
+import timber.log.Timber
 import java.io.EOFException
 import java.io.IOException
 import java.io.StringReader
@@ -70,9 +71,9 @@ class DigitalOutput(quantity: Int = 6, array: List<Int>? = null, xmlString: Stri
                 }
             }
         } catch (e: XmlPullParserException) {
-            e.printStackTrace()
+            Timber.d(e.printStackTrace().toString())
         } catch (e: IOException) {
-            e.printStackTrace()
+            Timber.d(e.printStackTrace().toString())
         }
 
         return mutableMapOf<String, Int?>().apply {

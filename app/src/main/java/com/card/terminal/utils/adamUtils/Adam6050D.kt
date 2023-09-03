@@ -3,6 +3,7 @@ package com.card.terminal.utils.adamUtils
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
+import timber.log.Timber
 import java.io.EOFException
 import java.io.IOException
 import java.io.StringReader
@@ -18,12 +19,10 @@ class Adam6050D(ip: String, username: String, password: String) {
     fun output(digitalOutput: DigitalOutput? = null): Any {
             if (digitalOutput != null) {
             val currentState = requestor.output()
-                if(currentState == "")
-                    throw AdamException("nema konekšna")
-            println(currentState)
+            if(currentState == "")
+                throw AdamException("nema konekšna")
             val currentDO = DigitalOutput(xmlString = currentState)
             for ((key, value) in digitalOutput.asDict()) {
-                println("$key -> $value")
                 val intKey = key.replace("DO", "").toInt()
                 if (value != null) {
                     currentDO[intKey] = value
@@ -54,9 +53,9 @@ class Adam6050D(ip: String, username: String, password: String) {
                     }
                 }
             } catch (e: XmlPullParserException) {
-                e.printStackTrace()
+                Timber.d(e.printStackTrace().toString())
             } catch (e: IOException) {
-                e.printStackTrace()
+                Timber.d(e.printStackTrace().toString())
             }
             return true
         } else {

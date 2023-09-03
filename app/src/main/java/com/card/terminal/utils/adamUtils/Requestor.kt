@@ -29,7 +29,6 @@ class Requestor(ip: String, username: String, password: String) {
     }
 
     fun input(inputChannelId: Int? = null): String {
-        println("inputChannelId " + inputChannelId)
         val url = if (inputChannelId != null) {
             "$baseUrl${URI.DIGITAL_INPUT}/$inputChannelId${URI.VALUE}"
         } else {
@@ -77,8 +76,13 @@ class Requestor(ip: String, username: String, password: String) {
             val connection = URL(host).openConnection() as HttpURLConnection
 
             // Set headers if needed
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-            connection.setRequestProperty("Authorization", "Basic cm9vdDowMDAwMDAwMA==")
+//            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+//            connection.setRequestProperty("Authorization", "Basic cm9vdDowMDAwMDAwMA==") //TODO AKO SE SIFRA PROMIJENI, OVO TREBA MIJENJATI
+
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
+
 
             if (data != "") {
                 // Set the request method to POST
