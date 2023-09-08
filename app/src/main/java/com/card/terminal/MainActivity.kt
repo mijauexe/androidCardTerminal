@@ -43,9 +43,9 @@ import androidx.navigation.ui.navigateUp
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
+import com.card.terminal.receivers.AdminReceiver
 import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.AlarmUtils
 import com.card.terminal.utils.ContextProvider
@@ -195,7 +195,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if(BuildConfig.RelayAlarm) {
-            rescheduleRelayAlarms()
+            AlarmUtils().rescheduleRelayAlarms()
         }
 
         mediaPlayer = MediaPlayer.create(this, R.raw.scan_success)
@@ -410,23 +410,7 @@ class MainActivity : AppCompatActivity() {
         editor.commit()
     }
 
-    private fun rescheduleRelayAlarms() {
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        scope3.launch {
-            try {
-                AlarmUtils().setRelayTimes(
-                    db.OperationScheduleDao().getAll() as MutableList<OperationSchedule>
-                )
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while rescheduling alarms: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
-    }
+
 
     private fun startLogger() {
         try {

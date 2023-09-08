@@ -7,6 +7,9 @@ import android.content.Intent
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.receivers.RelayReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -16,6 +19,26 @@ import java.util.Calendar
 import java.util.Date
 
 class AlarmUtils {
+    fun rescheduleRelayAlarms() {
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                setRelayTimes(
+                    AppDatabase.getInstance(
+                        ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+                    ).OperationScheduleDao().getAll() as MutableList<OperationSchedule>
+                )
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while rescheduling alarms: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
+    }
+
     fun setRelayTimes(operationMode: MutableList<OperationSchedule>) {
         for (op in operationMode) {
             if (op.modeId == 2) {

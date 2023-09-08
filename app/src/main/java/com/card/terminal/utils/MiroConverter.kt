@@ -2,6 +2,7 @@ package com.card.terminal.utils
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.card.terminal.BuildConfig
 import com.card.terminal.MainActivity
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.*
@@ -449,6 +450,10 @@ class MiroConverter {
                 e.stackTraceToString(),
                 e.message
             )
+        }
+
+        if(BuildConfig.RelayAlarm) {
+            AlarmUtils().rescheduleRelayAlarms()
         }
 
         parseButtons(objectic.EVENT_CODE2)
