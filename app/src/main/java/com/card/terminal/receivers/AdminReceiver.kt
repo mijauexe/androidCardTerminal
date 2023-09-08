@@ -1,4 +1,4 @@
-package com.card.terminal
+package com.card.terminal.receivers
 
 import android.app.admin.DeviceAdminReceiver
 import android.content.ComponentName
