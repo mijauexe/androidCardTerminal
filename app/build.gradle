@@ -69,11 +69,11 @@ android {
         HEP {
             dimension "version"
             applicationIdSuffix ".hep"
-            buildConfigField "Boolean", "PromoVideo", "true"
-            buildConfigField "Boolean", "RelayAlarm", "false"
-            buildConfigField "Boolean", "Adam", "false"
-            buildConfigField "Boolean", "Larus", "true"
-            buildConfigField "Boolean", "Omnikey", "true"
+            buildConfigField "Boolean", "PromoVideo", "false"
+            buildConfigField "Boolean", "RelayAlarm", "true"
+            buildConfigField "Boolean", "Adam", "true"
+            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Omnikey", "false"
         }
         HZJZ {
             dimension "version"
