@@ -12,6 +12,7 @@ Android (Kotlin & Java) application for embedded devices that controls the flow 
 
 - [x] Responsive
 - [x] Online/Offline functionality
+- [x] Alarm system for triggering relays (e.g. for opening doors) and other events
 - [x] Ability to lock app in fullscreen mode
 - [x] Start up on device boot-up
 - [x] Android build flavors for different design and connected devices
