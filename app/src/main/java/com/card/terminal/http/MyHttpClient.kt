@@ -285,10 +285,8 @@ object MyHttpClient {
             }
             if (cardResponse.containsKey("imageUUID")) {
                 try {
-                    cardResponse.putString(
-                        "EventImage",
-                        cardResponse.getString("imageUUID")?.let { Utils.findImage(it) }
-                    )
+                    cardResponse.putString("EventImage",
+                        cardResponse.getString("imageUUID")?.let { Utils.findImage(it) })
                 } catch (e: Exception) {
                     Timber.d(e.stackTraceToString())
                 }
@@ -426,7 +424,7 @@ object MyHttpClient {
                             dateTime = it.dateTime,
                             published = true,
                             deviceId = it.deviceId,
-                            image = it.image
+                            image = cardResponse.getString("imageUUID", "")
                         )
                     }
                     if (newE != null) {
@@ -447,7 +445,6 @@ object MyHttpClient {
                 }
             }
         }
-
     }
 
     private fun updateEvents(list: List<Event>) {
