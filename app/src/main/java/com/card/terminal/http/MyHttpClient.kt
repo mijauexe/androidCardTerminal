@@ -2,7 +2,9 @@ package com.card.terminal.http
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
 import androidx.lifecycle.MutableLiveData
+import com.card.terminal.BuildConfig
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Event
 import com.card.terminal.http.plugins.configureRouting
@@ -12,6 +14,9 @@ import com.card.terminal.http.tasks.PublishEventsTask
 import com.card.terminal.main
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
+import com.card.terminal.utils.Utils
+import com.card.terminal.utils.adamUtils.Adam6050D
+import com.card.terminal.utils.adamUtils.DigitalOutput
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
@@ -32,6 +37,7 @@ import io.ktor.server.netty.NettyApplicationEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,6 +56,9 @@ object MyHttpClient {
     private var publishEventsTask: TimerTask? = null
     private var larusFunctions: LarusFunctions? = null
     lateinit var server: NettyApplicationEngine
+
+    private var adamDelayHandler: Handler? = null
+    private var adamDelay = 10000L
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
         client = HttpClient {
@@ -73,8 +82,7 @@ object MyHttpClient {
 
         mutableCode = code
 
-        larusFunctions = LarusFunctions(client!!, mutableCode)
-        larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+
         publishEventsTask = PublishEventsTask()
 
         database = AppDatabase.getInstance(
@@ -83,15 +91,13 @@ object MyHttpClient {
 
         startNettyServer()
 
-        (larusCheckScansTask as LarusCheckScansTask).startTask()
+        if (BuildConfig.Larus) {
+            larusFunctions = LarusFunctions(client!!, mutableCode)
+            larusCheckScansTask = LarusCheckScansTask(larusFunctions!!)
+            (larusCheckScansTask as LarusCheckScansTask).startTask()
+        }
+
         (publishEventsTask as PublishEventsTask).startTask()
-//        val prefs = ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
-//        val editor = prefs.edit()
-//        editor.putInt("relay2State", 0)
-//        editor.commit()
-//        larusFunctions?.changeRelayMode(1, 0)
-//        larusFunctions?.changeRelayMode(2, ContextProvider.getApplicationContext().getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getInt("relay2State", 0))
-//        larusFunctions?.changeRelayMode(2, 0)
     }
 
     fun stopLarusSocket() {
@@ -107,8 +113,37 @@ object MyHttpClient {
         }
     }
 
-    fun openDoor(doorNum: Int) {
+    fun openDoorLarus(doorNum: Int) {
         larusFunctions?.openDoor(doorNum)
+    }
+
+    fun openDoorAdam(doorNum: Int) {
+        adamDelayHandler?.removeCallbacksAndMessages(null) // Reset the timer
+        adamAction(doorNum, 1)
+
+        adamDelayHandler = Handler()
+        adamDelayHandler?.postDelayed({
+            adamAction(doorNum, 0)
+        }, adamDelay)
+    }
+
+    private fun adamAction(doorNum: Int, action: Int) {
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            val ip = BuildConfig.adamIP
+            val username = BuildConfig.adamUsername
+            val password = BuildConfig.adamPassword
+
+            val adam = Adam6050D(ip, username, password)
+            val doOutput = DigitalOutput()
+
+            try {
+                doOutput[doorNum] = action
+                adam.output(doOutput)
+            } catch (e: Exception) {
+                Timber.d(e)
+            }
+        }
     }
 
     fun checkDoor(doorNum: Int) {
@@ -245,6 +280,21 @@ object MyHttpClient {
     fun publishNewEvent(cardResponse: Bundle) {
         val scope1 = CoroutineScope(Dispatchers.IO)
         scope1.launch {
+            if (cardResponse["noButtonClickNeededRegime"] == true) { //this is needed to avoid null pointer when the flow is fast (no button press needed on the first fragment)
+                delay(10000)
+            }
+            if (cardResponse.containsKey("imageUUID")) {
+                try {
+                    cardResponse.putString(
+                        "EventImage",
+                        cardResponse.getString("imageUUID")?.let { Utils.findImage(it) }
+                    )
+                } catch (e: Exception) {
+                    Timber.d(e.stackTraceToString())
+                }
+            }
+            eventToDatabase(cardResponse, false)
+
             val body = withContext(Dispatchers.Main) {
                 MiroConverter().pushEventFormat(cardResponse)
             }
@@ -383,10 +433,6 @@ object MyHttpClient {
                         db.EventDao().update(newE)
                     }
                 } else {
-                    var img = ""
-                    if (cardResponse.containsKey("EventImage")) {
-                        img = cardResponse.getString("EventImage")!!
-                    }
                     val event = Event(
                         eventCode = cardResponse.getInt("eCode"), //TODO
                         eventCode2 = cardResponse.getInt("eCode2", 0),
@@ -395,7 +441,7 @@ object MyHttpClient {
                         published = false,
                         uid = 0, //auto-generate
                         deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 0),//TODO
-                        image = img
+                        image = cardResponse.getString("EventImage", "")
                     )
                     db.EventDao().insert(event)
                 }

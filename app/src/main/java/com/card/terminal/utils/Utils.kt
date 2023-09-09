@@ -5,15 +5,17 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import androidx.appcompat.app.AppCompatActivity
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.Event
 import com.card.terminal.http.MyHttpClient
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 object Utils {
-    fun newEventImageLogic(context: Context, imageUriString: String?): String? {
+    fun newEventImageLogic(context: Context, imageUriString: String?): String? { //unused for now
         val imageUri = Uri.parse(imageUriString)
         var base64String: String? = null
         try {
@@ -32,7 +34,31 @@ object Utils {
         return base64String
     }
 
-    fun publishOldBundleEventAndRemoveIt() {
+    fun findImage(imageUUID: String): String? {
+        var base64String: String? = null
+        try {
+            val bitmap = Bitmap.createBitmap(
+                BitmapFactory.decodeFile(
+                    "${
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    }" + "/" + imageUUID + ".jpg"
+                )
+            )
+
+            val byteArrayOutputStream = ByteArrayOutputStream()
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            base64String =
+                android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
+        } catch (e: IOException) {
+            Timber.d(e.stackTraceToString())
+        }
+
+        return base64String
+    }
+
+    fun publishOldBundleEventAndRemoveIt() { //unused for now
         val oldBundle = Bundle()
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
@@ -68,7 +94,7 @@ object Utils {
         MyHttpClient.publishNewEvent(oldBundle)
     }
 
-    fun commitOldBundleToSharedPrefs(bundle: Bundle) {
+    fun commitOldBundleToSharedPrefs(bundle: Bundle) { //unused for now
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
         val editor = prefs.edit()

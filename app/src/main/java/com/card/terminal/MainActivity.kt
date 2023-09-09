@@ -49,14 +49,12 @@ import com.card.terminal.receivers.AdminReceiver
 import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.AlarmUtils
 import com.card.terminal.utils.ContextProvider
-import com.card.terminal.utils.Utils
 import com.card.terminal.utils.omniCardUtils.OmniCard
 import fr.bipi.tressence.context.GlobalContext.stopTimber
 import fr.bipi.tressence.file.FileLoggerTree
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -106,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var timerHandler: Handler? = null
-    private val delayMillis: Long = 500
+    private val usbTimerDelayMilis: Long = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -141,8 +139,6 @@ class MainActivity : AppCompatActivity() {
                 this, MainActivity::class.java
             )
         )
-        Timber.d("Msg: setDefaultUncaughtExceptionHandler")
-
 
         db = AppDatabase.getInstance((this), Thread.currentThread().stackTrace)
 
@@ -160,13 +156,11 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
 
-        Timber.d("Msg: database instanced in MainActivity")
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val isFirstBoot = prefs.getBoolean(IS_FIRST_TIME_LAUNCH, true)
 
-        Timber.d("hello world")
         val editor = prefs.edit()
         editor.putBoolean("Connection", false)
 
@@ -217,10 +211,8 @@ class MainActivity : AppCompatActivity() {
     ) {
         val imageCapture = imageCapture ?: return
 
-        // Create time stamped name and MediaStore entry.
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.DISPLAY_NAME, bundle.getString("imageUUID"))
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/")
@@ -231,19 +223,21 @@ class MainActivity : AppCompatActivity() {
             contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
         ).build()
 
-        imageCapture.takePicture(outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Timber.d("Photo capture failed: ${exc.message}")
-                    continueHandleCardScan(cardCode, bundle, "")
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            imageCapture.takePicture(outputOptions,
+                ContextCompat.getMainExecutor(ContextProvider.getApplicationContext()),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Timber.d("Photo capture failed: ${exc.message}")
+//                        continueHandleCardScan(cardCode, bundle, "")
+                    }
 
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Timber.d("Photo capture succeeded: ${output.savedUri}")
-                    continueHandleCardScan(cardCode, bundle, output.savedUri.toString())
-                }
-            })
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+//                        Timber.d("Photo capture succeeded: ${output.savedUri}")
+//                        continueHandleCardScan(cardCode, bundle, output.savedUri.toString())
+                    }
+                })
+        }
     }
 
     private fun startCamera() {
@@ -381,7 +375,7 @@ class MainActivity : AppCompatActivity() {
                     findViewById<TextView>(R.id.please_scan_card_text)?.setText(R.string.please_scan_card)
                 }
             }
-        }, delayMillis)
+        }, usbTimerDelayMilis)
     }
 
     private fun parseCardCodeFromUsbAdapter(s: String) {
@@ -605,22 +599,21 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("MyPrefsFile", MODE_PRIVATE)
 
         if (prefs.getBoolean("CaptureOnEvent", false)) {
+            bundle.putString("imageUUID", UUID.randomUUID().toString()) //used to find captured image later
             takePhoto(cardCode, bundle)
-        } else {
-            continueHandleCardScan(cardCode, bundle, "")
         }
+        continueHandleCardScan(cardCode, bundle, "")
     }
 
     private fun continueHandleCardScan(
         it: Map<String, String>, bundle: Bundle, imageUri: String
     ) {
-
-        bundle.putString("ImageUri", imageUri)
-        bundle.putString("EventImage", this.let {
-            Utils.newEventImageLogic(
-                it, bundle.getString("ImageUri")
-            )
-        })
+//        bundle.putString("ImageUri", imageUri)
+//        bundle.putString("EventImage", this.let {
+//            Utils.newEventImageLogic(
+//                it, bundle.getString("ImageUri")
+//            )
+//        })
         try {
             val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
             val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
@@ -690,7 +683,7 @@ class MainActivity : AppCompatActivity() {
 
                 try {
                     val dbSchedule1 = db.OperationScheduleDao().getAll()
-                    Timber.d("dohvatio raspored: $dbSchedule1")
+//                    Timber.d("dohvatio raspored: $dbSchedule1")
                     var conforms = -1 //doesnt conform to anything before checking
                     var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
                     var ifNotScheduleMode = 0
@@ -701,12 +694,12 @@ class MainActivity : AppCompatActivity() {
                         currentDateDate.monthValue,
                         currentDateDate.year
                     )
-                    Timber.d("d1: ${d1?.workDay}, ${d1?.day}, ${d1?.description}")
+//                    Timber.d("d1: ${d1?.workDay}, ${d1?.day}, ${d1?.description}")
 
                     val d2 = db.CalendarDao().getByDate(
                         currentDateDate.dayOfWeek.value, currentDateDate.monthValue, 0
                     )
-                    Timber.d("d2: ${d2?.workDay}, ${d2?.day}, ${d2?.description}")
+//                    Timber.d("d2: ${d2?.workDay}, ${d2?.day}, ${d2?.description}")
 
                     if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
                         isTodayHoliday = true
@@ -732,25 +725,25 @@ class MainActivity : AppCompatActivity() {
                                     ) && timeConforms
                                 ) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("SPECIFIC DAY")
+//                                    Timber.d("SPECIFIC DAY")
                                     break
                                 } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("HOLIDAY")
+//                                    Timber.d("HOLIDAY")
                                     break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("WORKING_DAY")
+//                                    Timber.d("WORKING_DAY")
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-                                    Timber.d("currentDayString: $currentDayString")
+//                                    Timber.d("currentDayString: $currentDayString")
                                     break
                                 }
                             }
                             if (conforms == -1 && containsIfNotSchedule) {
                                 passageControl(ifNotScheduleMode, it["CardCode"]!!, bundle)
-                                Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
+//                                Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
                             } else {
                                 passageControl(
                                     db.OperationScheduleDao().getById(conforms)?.modeId!!,
@@ -795,9 +788,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
-        MyHttpClient.eventToDatabase(
-            bundle, false
-        ) //ovo stavlja event u bazu prije nego je korisnik izabrao razlog pa su eventCode = 0 i eventCode2 = 0, kasnije se ovaj isti event updatea u checkout fragmentu
+//        MyHttpClient.eventToDatabase(
+//            bundle, false
+//        ) //ovo stavlja event u bazu prije nego je korisnik izabrao razlog pa su eventCode = 0 i eventCode2 = 0, kasnije se ovaj isti event updatea u checkout fragmentu
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController

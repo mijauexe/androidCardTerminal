@@ -9,11 +9,11 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.card.terminal.BuildConfig
 import com.card.terminal.R
 import com.card.terminal.databinding.FragmentCheckoutBinding
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.utils.ContextProvider
-import com.card.terminal.utils.Utils
 import timber.log.Timber
 import java.util.*
 
@@ -42,9 +42,13 @@ class CheckoutFragment : Fragment() {
 
         val existingBundle = requireArguments()
 
-        MyHttpClient.openDoor(1)
+        if(BuildConfig.Larus) {
+            MyHttpClient.openDoorLarus(1)
+        } else if(BuildConfig.Adam) {
+            MyHttpClient.openDoorAdam(1)
+        }
 
-        Utils.updateEvent(existingBundle)
+//        Utils.updateEvent(existingBundle)
         MyHttpClient.publishNewEvent(existingBundle)
 
         timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
