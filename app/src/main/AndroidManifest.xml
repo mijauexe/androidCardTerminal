@@ -95,11 +95,20 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".receivers.RelayReceiver"
+        <receiver
+            android:name=".receivers.RelayReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.relay.hold" />
                 <action android:name="com.relay.pulse" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receivers.CleanUpReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.cleanup.pics" />
             </intent-filter>
         </receiver>
 
@@ -112,8 +121,6 @@
                 <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
             </intent-filter>
         </receiver>
-
-
     </application>
 
 </manifest>

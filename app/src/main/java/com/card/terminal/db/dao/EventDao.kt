@@ -38,6 +38,12 @@ interface EventDao {
     @Query("SELECT * FROM Event WHERE published = false")
     fun getUnpublishedEvents(): List<Event>?
 
+    @Query("SELECT * FROM Event WHERE published = true")
+    fun getPublishedEvents(): List<Event>?
+
+    @Query("DELETE FROM Event WHERE image = :targetImage")
+    fun deleteEventByImageUUID(targetImage: String)
+
     @Query("DELETE FROM Event")
     fun deleteAll()
 }

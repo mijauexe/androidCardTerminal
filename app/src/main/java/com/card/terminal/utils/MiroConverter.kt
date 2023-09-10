@@ -453,7 +453,7 @@ class MiroConverter {
         }
 
         if(BuildConfig.RelayAlarm) {
-            AlarmUtils().rescheduleRelayAlarms()
+            AlarmUtils().rescheduleAlarms()
         }
 
         parseButtons(objectic.EVENT_CODE2)

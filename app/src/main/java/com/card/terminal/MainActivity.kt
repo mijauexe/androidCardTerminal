@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if(BuildConfig.RelayAlarm) {
-            AlarmUtils().rescheduleRelayAlarms()
+            AlarmUtils().rescheduleAlarms()
         }
 
         mediaPlayer = MediaPlayer.create(this, R.raw.scan_success)

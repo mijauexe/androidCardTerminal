@@ -299,6 +299,8 @@ object MyHttpClient {
             val mySharedPreferences = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
             try {
+//                delay(2000) FOR TESTING ONLY
+//                eventToDatabase(cardResponse, true)
                 val response = mySharedPreferences.getString(
                     "serverIP", ""
                 )?.let {

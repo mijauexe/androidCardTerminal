@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.OperationSchedule
+import com.card.terminal.receivers.CleanUpReceiver
 import com.card.terminal.receivers.RelayReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +18,14 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.TimeZone
 
 class AlarmUtils {
-    fun rescheduleRelayAlarms() {
+    fun rescheduleAlarms() {
         val scope3 = CoroutineScope(Dispatchers.IO)
         scope3.launch {
             try {
-                setRelayTimes(
+                setAlarms(
                     AppDatabase.getInstance(
                         ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
                     ).OperationScheduleDao().getAll() as MutableList<OperationSchedule>
@@ -36,10 +38,12 @@ class AlarmUtils {
                     e.message
                 )
             }
+
+
         }
     }
 
-    fun setRelayTimes(operationMode: MutableList<OperationSchedule>) {
+    fun setAlarms(operationMode: MutableList<OperationSchedule>) {
         for (op in operationMode) {
             if (op.modeId == 2) {
                 deleteExistingAlarms(op.uid)
@@ -47,6 +51,76 @@ class AlarmUtils {
                 //i isto tako ga stavit nazad u PULSE nacin kad to vrijeme zavrsi
                 alarmParser(op)
             }
+        }
+
+        //for cleaning up published events and their captured images if they exist
+        deleteExistingCleanUpAlarms()
+        createCleanUpAlarm()
+    }
+
+    private fun createCleanUpAlarm() {
+
+        val localDateTime = LocalDateTime.now().toString()
+
+        val timeStart = SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(
+            localDateTime.substring(
+                0, localDateTime.indexOf('T')
+            ) + 'T' + "14:27:00"
+        )!!.time
+
+        for (i in 1..7) {
+            val cal1 = Calendar.getInstance()
+
+            cal1.time = Date(timeStart)
+
+            cal1.set(Calendar.DAY_OF_WEEK, i);
+
+            if (cal1.before(Calendar.getInstance())) {
+                cal1.add(Calendar.WEEK_OF_YEAR, 1)
+            }
+
+            val cleanUpIntent =
+                Intent(ContextProvider.getApplicationContext(), CleanUpReceiver::class.java)
+            cleanUpIntent.action = "com.cleanup.pics"
+
+            val pendingCleanUpIntent = PendingIntent.getBroadcast(
+                ContextProvider.getApplicationContext(),
+                cleanUpIntent.hashCode() + i,
+                cleanUpIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val alarmManager = ContextProvider.getApplicationContext()
+                .getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, timeStart, pendingCleanUpIntent
+            )
+
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            dateFormat.timeZone = TimeZone.getTimeZone("GMT+2")
+
+            val start = Date(cal1.timeInMillis) // Convert Unix time to milliseconds
+            Timber.d("cleanUpStart: ${dateFormat.format(start)}")
+        }
+    }
+
+    private fun deleteExistingCleanUpAlarms() {
+        val alarmManager = ContextProvider.getApplicationContext()
+            .getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val cleanUpIntent =
+            Intent(ContextProvider.getApplicationContext(), CleanUpReceiver::class.java)
+        cleanUpIntent.action = "com.cleanup.pics"
+
+        for (i in 1..7) {
+            val pendingCleanUpIntent = PendingIntent.getBroadcast(
+                ContextProvider.getApplicationContext(),
+                cleanUpIntent.hashCode() + i,
+                cleanUpIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            alarmManager.cancel(pendingCleanUpIntent)
         }
     }
 
@@ -94,8 +168,6 @@ class AlarmUtils {
                 0, localDateTime.indexOf('T')
             ) + 'T' + op.timeTo
         )!!.time
-
-        Timber.d("timeStart: ${Date(timeStart)}, timeEnd: ${Date(timeEnd)}")
 
         if (op.description.equals("WORKING_DAY") || op.description.equals("HOLIDAY")) {
             for (i in 2..6) {
