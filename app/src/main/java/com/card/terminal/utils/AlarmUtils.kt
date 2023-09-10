@@ -65,7 +65,7 @@ class AlarmUtils {
         val timeStart = SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(
             localDateTime.substring(
                 0, localDateTime.indexOf('T')
-            ) + 'T' + "14:27:00"
+            ) + 'T' + "00:00:00"
         )!!.time
 
         for (i in 1..7) {

@@ -53,7 +53,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:format24Hour="EEEE, d. MMMM yyyy"
+                    android:format24Hour="EE, d. MMMM yyyy"
                     android:shadowColor="#BDBDBD"
                     android:shadowDx="2"
                     android:shadowDy="2"
