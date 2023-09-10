@@ -206,7 +206,6 @@ class MainFragment : Fragment() {
                 if (index >= videoCount) index = 0
 
                 _binding?.promoView?.setOnCompletionListener { mediaPlayer ->
-                    Timber.d("onCompletionListener je aktiviran")
                     if (index >= videoCount) index = 0
                     _binding?.promoView?.setVideoURI(videoUriList[index])
                     index++
