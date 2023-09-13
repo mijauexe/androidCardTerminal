@@ -52,7 +52,7 @@ class MainFragment : Fragment() {
         Timber.d("MainFragment onCreateView")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        act.cardScannerActive = false
+        act.cardScannerActive = true
         return _binding?.root
     }
 
