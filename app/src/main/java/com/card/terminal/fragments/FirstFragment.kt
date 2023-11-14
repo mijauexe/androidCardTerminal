@@ -1,7 +1,6 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -15,6 +14,8 @@ import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.amulyakhare.textdrawable.TextDrawable
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.GlideException
 import com.card.terminal.BuildConfig
 import com.card.terminal.MainActivity
 import com.card.terminal.R
@@ -27,11 +28,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.net.HttpURLConnection
-import java.net.NoRouteToHostException
 import java.net.URL
-import java.net.UnknownHostException
 import java.util.*
+import kotlin.Exception
 
 
 class FirstFragment : Fragment() {
@@ -56,28 +55,12 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Timber.d("FirstFragment onViewCreated")
 
+        timerHandler?.removeCallbacksAndMessages(null)
         val bundle = requireArguments()
-
-        timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-
-        //ovo je potrebno ako se trenutno skeniranje prekine s drugim, osigurava da svi eventi skeniranja ostanu spremljeni
-//        if (bundle.containsKey("refresh") && bundle.getBoolean("refresh")) {
-//            timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-//            publishOldBundleEventAndRemoveIt()
-//        }
-//        else {
-//            commitOldBundleToSharedPrefs(bundle)
-//        }
 
         if (bundle.containsKey("imageB64")) {
             try {
-                val decodedString: ByteArray = android.util.Base64.decode(
-                    bundle.getString("imageB64"), android.util.Base64.NO_WRAP
-                )
-                val decodedBitmap =
-                    BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-                binding.photo.setImageBitmap(decodedBitmap)
-                bundle.putParcelable("imageB64", decodedBitmap)
+                binding.photo.setImageBitmap(bundle.getParcelable("imageB64"))
             } catch (e: java.lang.Exception) {
                 Timber.d(
                     "Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message
@@ -87,53 +70,42 @@ class FirstFragment : Fragment() {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
             try {
+                val url = URL(
+                    ("http://" + prefs.getString(
+                        "bareIP", "?"
+                    ) + bundle.get("imagePath"))
+                )
+                Timber.d("url je $url")
+
                 val scope = CoroutineScope(Dispatchers.IO)
                 scope.launch {
                     try {
-                        val url = URL(
-                            ("http://" + prefs.getString(
-                                "bareIP", "?"
-                            ) + bundle.get("imagePath"))
-                        )
-                        Timber.d("url je $url")
-                        val connection = withContext(Dispatchers.IO) {
-                            url.openConnection()
-                        } as HttpURLConnection
-                        connection.doInput = true
-                        withContext(Dispatchers.IO) {
-                            connection.connect()
-                        }
-                        val input = connection.inputStream
-                        val bitmap = BitmapFactory.decodeStream(input)
+                        val bitmap =
+                            getView()?.let { Glide.with(it).asBitmap().load(url.toString()).submit().get() }
                         withContext(Dispatchers.Main) {
                             binding.photo.setImageBitmap(bitmap)
                             bundle.putParcelable("imageB64", bitmap)
                         }
-                        connection.disconnect()
-                    } catch (e: java.lang.Exception) {
-                        Timber.d(
-                            "Msg: Exception %s | %s | %s",
-                            e.cause,
-                            e.stackTraceToString(),
-                            e.message
-                        )
+                    } catch (e : GlideException) {
+                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                    } catch (e : java.lang.Exception) {
+                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                    }catch (e : Exception) {
+                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
                     }
                 }
-            } catch (e: NoRouteToHostException) {
+            } catch (e : java.lang.Exception) {
                 Timber.d(
-                    "Msg: No route to host while getting photo: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            } catch (e: UnknownHostException) {
-                Timber.d(
-                    "Msg: Unknown host while getting photo: %s | %s | %s",
+                    "Msg: Exception getting photo: %s | %s | %s",
                     e.cause,
                     e.stackTraceToString(),
                     e.message
                 )
             }
+        } else {
+            Timber.d(
+                "No picture for " + bundle.getString("userId") + " " + bundle.getString("classType")
+            )
         }
 
         binding.firstName.text = arguments?.getString("firstName")

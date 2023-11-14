@@ -40,9 +40,12 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.GlideException
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
+import com.card.terminal.db.entity.Person
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.AdminReceiver
@@ -104,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var timerHandler: Handler? = null
-    private val usbTimerDelayMilis: Long = 200
+    private val usbTimerDelayMilis: Long = 1200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -590,7 +593,7 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer!!.start()
     }
 
-    private fun handleCardScan(cardCode: Map<String, String>) {
+    fun handleCardScan(cardCode: Map<String, String>) {
         val bundle = Bundle()
         bundle.putString("CardCode", cardCode["CardCode"])
         bundle.putString("DateTime", cardCode["DateTime"])
@@ -602,18 +605,12 @@ class MainActivity : AppCompatActivity() {
             bundle.putString("imageUUID", UUID.randomUUID().toString()) //used to find captured image later
             takePhoto(cardCode, bundle)
         }
-        continueHandleCardScan(cardCode, bundle, "")
+        continueHandleCardScan(prefs, cardCode, bundle, "")
     }
 
     private fun continueHandleCardScan(
-        it: Map<String, String>, bundle: Bundle, imageUri: String
+        prefs: SharedPreferences, it: Map<String, String>, bundle: Bundle, imageUri: String
     ) {
-//        bundle.putString("ImageUri", imageUri)
-//        bundle.putString("EventImage", this.let {
-//            Utils.newEventImageLogic(
-//                it, bundle.getString("ImageUri")
-//            )
-//        })
         try {
             val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
             val person = card?.let { it1 -> db.PersonDao().get(it1.owner, card.classType) }
@@ -633,6 +630,29 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (person.imagePath != "") {
                     bundle.putString("imagePath", person.imagePath)
+                    try {
+                        val scope = CoroutineScope(Dispatchers.IO)
+                        scope.launch {
+                            try {
+                                val url = "http://" + prefs.getString(
+                                    "bareIP", "?"
+                                ) + person.imagePath
+                                val bitmap =
+                                    Glide.with(this@MainActivity).asBitmap().load(url).submit().get()
+                                withContext(Dispatchers.Main) {
+                                    bundle.putParcelable("imageB64", bitmap)
+                                }
+                            } catch (e : GlideException) {
+                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                            } catch (e : java.lang.Exception) {
+                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                            }catch (e : Exception) {
+                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                            }
+                        }
+                    } catch (e : Exception) {
+                        Timber.d("Msg: Exception while getting image: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                    }
                 }
 
                 val navHostFragment =
