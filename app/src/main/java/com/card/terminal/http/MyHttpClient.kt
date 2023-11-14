@@ -46,6 +46,16 @@ import java.net.ConnectException
 import java.net.NoRouteToHostException
 import java.util.TimerTask
 import kotlin.math.pow
+import io.ktor.client.engine.android.*
+import io.ktor.client.engine.okhttp.OkHttpConfig
+import io.netty.handler.ssl.SslContextBuilder
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -59,6 +69,27 @@ object MyHttpClient {
 
     private var adamDelayHandler: Handler? = null
     private var adamDelay = 10000L
+
+    internal class AllCertsTrustManager : X509TrustManager {
+
+        @Suppress("TrustAllX509TrustManager")
+        override fun checkServerTrusted(
+            chain: Array<X509Certificate>,
+            authType: String
+        ) {
+            // no-op
+        }
+
+        @Suppress("TrustAllX509TrustManager")
+        override fun checkClientTrusted(
+            chain: Array<X509Certificate>,
+            authType: String
+        ) {
+            // no-op
+        }
+
+        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+    }
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
         client = HttpClient {
@@ -76,12 +107,21 @@ object MyHttpClient {
                 }
                 delayMillis { retry ->
                     retry * 3000L
-                } // retries in 3, 6, 9, etc. seconds
+                }
+            }
+            engine {
+                this as OkHttpConfig
+                config {
+                    val trustAllCert = AllCertsTrustManager()
+                    val sslContext = SSLContext.getInstance("SSL")
+                    sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
+                    sslSocketFactory(sslContext.socketFactory, trustAllCert)
+                    hostnameVerifier { _, _ -> true }
+                }
             }
         }
 
         mutableCode = code
-
 
         publishEventsTask = PublishEventsTask()
 
@@ -311,7 +351,9 @@ object MyHttpClient {
                 }
                 if (response != null) {
 //                    Timber.d("Sent: ${body}")
-//                    Timber.d("Response received: ${response.bodyAsText()}")
+                    Timber.d("Response received: ${response.bodyAsText()}")
+                    Timber.d("Response received status: ${response.status}")
+                    Timber.d("Response received all: ${response}")
                     if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
                         Timber.d(
@@ -370,7 +412,7 @@ object MyHttpClient {
             if (esp.eventList.isNotEmpty()) {
                 try {
                     val response = mySharedPreferences.getString(
-                        "serverIP", ""
+                        "serverI", "https://192.168.77.50:443/b0pass/b0pass_iftp2.php"
                     )?.let {
                         client?.post(it) {
                             contentType(ContentType.Application.Json)
@@ -378,7 +420,12 @@ object MyHttpClient {
                         }
                     }
                     if (response != null) {
-                        Timber.d("Sent: ${esp.eventString}")
+//                        Timber.d("Sent: ${esp.eventString}")
+                        Timber.d("Unpublished events sent to " +  mySharedPreferences.getString(
+                            "serverIP", ""))
+                        Timber.d("Unpublished events response: ${response.bodyAsText()}")
+                        Timber.d("Unpublished events Response received status: ${response.status}")
+                        Timber.d("Unpublished events Response received headers: ${response.headers}")
                         if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                             updateEvents(esp.eventList)
                             Timber.d(
