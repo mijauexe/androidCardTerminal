@@ -64,7 +64,7 @@ android {
             buildConfigField "Boolean", "Adam", "true"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
-
+            buildConfigField "Boolean", "https", "false"
         }
         HEP {
             dimension "version"
@@ -74,6 +74,7 @@ android {
             buildConfigField "Boolean", "Adam", "true"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
+            buildConfigField "Boolean", "https", "false"
         }
         HZJZ {
             dimension "version"
@@ -83,6 +84,7 @@ android {
             buildConfigField "Boolean", "Adam", "false"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "true"
+            buildConfigField "Boolean", "https", "true"
         }
     }
 
