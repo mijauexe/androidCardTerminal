@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var timerHandler: Handler? = null
-    private val usbTimerDelayMilis: Long = 1200
+    private val usbTimerDelayMilis: Long = 200
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
