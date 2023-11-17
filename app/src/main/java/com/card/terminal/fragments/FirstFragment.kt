@@ -228,7 +228,7 @@ class FirstFragment : Fragment() {
             for (i in btnList.indices) {
                 val btn = layout[i] as Button
                 if (resources.getResourceEntryName(btn.getId()).contains("contractor")) {
-                    bundle.putInt(btnList[i].title, btnList[i].eCode2)
+                    //bundle.putInt(btnList[i].title, btnList[i].eCode2)
                     btn.setText("   " + btnList[i].title)
                     btn.visibility = View.VISIBLE
 
@@ -240,15 +240,18 @@ class FirstFragment : Fragment() {
                     btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                     btn.setOnClickListener {
                         bundle.putString("selection", btnList[i].title)
+
                         if (bundle.getBoolean("noButtonClickNeededRegime")) {
                             bundle.putInt("eCode2", 0)
+                            bundle.putInt("eCode", 0)
                         } else {
+                            bundle.putInt("eCode", btnList[i].eCode)
                             bundle.putInt("eCode2", btnList[i].eCode2)
                         }
 
                         btn.setBackgroundResource(R.drawable.card_button_background)
 //                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
-                        goToCheckoutWithBundle(bundle.deepCopy())
+                        goToCheckoutWithBundle(bundle)
                     }
                 }
             }

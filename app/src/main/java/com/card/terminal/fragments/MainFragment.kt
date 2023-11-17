@@ -98,6 +98,14 @@ class MainFragment : Fragment() {
                 }
             }
 
+//            _binding?.mainLogo3?.setOnClickListener {
+//
+//                for (i in 0..5000) {
+//                    println("reschedule")
+//                    AlarmUtils().rescheduleAlarms()
+//                }
+//            }
+
             /* val btn = _binding?.mainLogo3
              btn?.setOnClickListener {
                  val intent =
