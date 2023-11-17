@@ -64,7 +64,7 @@ android {
             buildConfigField "Boolean", "Adam", "true"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
-
+            buildConfigField "Boolean", "https", "false"
         }
         HEP {
             dimension "version"
@@ -74,6 +74,7 @@ android {
             buildConfigField "Boolean", "Adam", "true"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
+            buildConfigField "Boolean", "https", "false"
         }
         HZJZ {
             dimension "version"
@@ -83,6 +84,7 @@ android {
             buildConfigField "Boolean", "Adam", "false"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "true"
+            buildConfigField "Boolean", "https", "true"
         }
     }
 
@@ -123,8 +125,10 @@ dependencies {
 
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-client-core:$ktor_version")
-
     implementation("io.ktor:ktor-client-okhttp:$ktor_version")
+
+    implementation("io.ktor:ktor-client-android:$ktor_version")
+
     implementation("androidx.room:room-runtime:$room_version")
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
     implementation 'androidx.core:core-ktx:1.9.0'
