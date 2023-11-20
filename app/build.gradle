@@ -86,6 +86,26 @@ android {
             buildConfigField "Boolean", "Omnikey", "true"
             buildConfigField "Boolean", "https", "true"
         }
+        DUKAT {
+            dimension "version"
+            applicationIdSuffix ".dukat"
+            buildConfigField "Boolean", "PromoVideo", "false"
+            buildConfigField "Boolean", "RelayAlarm", "false"
+            buildConfigField "Boolean", "Adam", "false"
+            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Omnikey", "false"
+            buildConfigField "Boolean", "https", "false"
+        }
+        JANAF {
+            dimension "version"
+            applicationIdSuffix ".janaf"
+            buildConfigField "Boolean", "PromoVideo", "false"
+            buildConfigField "Boolean", "RelayAlarm", "false"
+            buildConfigField "Boolean", "Adam", "false"
+            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Omnikey", "false"
+            buildConfigField "Boolean", "https", "false"
+        }
     }
 
     sourceSets {
@@ -94,17 +114,20 @@ android {
             res.srcDirs = ['src/main/res']
             manifest.srcFile 'src/main/AndroidManifest.xml'
         }
-
         HEP {
             res.srcDirs = ['src/hep/res']
         }
-
         INA {
             res.srcDirs = ['src/ina/res']
         }
-
         HZJZ {
             res.srcDirs = ['src/hzjz/res']
+        }
+        DUKAT {
+            res.srcDirs = ['src/dukat/res']
+        }
+        JANAF {
+            res.srcDirs = ['src/janaf/res']
         }
     }
 }
