@@ -23,9 +23,8 @@
         <ImageView
             android:id="@+id/checkout_logo_1"
             android:layout_width="300dp"
-            android:layout_height="200dp"
+            android:layout_height="120dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="15dp"
             android:src="@drawable/erv_dukat" />
 
@@ -68,8 +67,8 @@
 
         <ImageView
             android:id="@+id/checkout_logo_2"
-            android:layout_width="200dp"
-            android:layout_height="150dp"
+            android:layout_width="250dp"
+            android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/dukat_logo" />
     </GridLayout>

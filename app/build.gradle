@@ -92,7 +92,7 @@ android {
             buildConfigField "Boolean", "PromoVideo", "false"
             buildConfigField "Boolean", "RelayAlarm", "false"
             buildConfigField "Boolean", "Adam", "false"
-            buildConfigField "Boolean", "Larus", "false"
+            buildConfigField "Boolean", "Larus", "true"
             buildConfigField "Boolean", "Omnikey", "false"
             buildConfigField "Boolean", "https", "false"
         }

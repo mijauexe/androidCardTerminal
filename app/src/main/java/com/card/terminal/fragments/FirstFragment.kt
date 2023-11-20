@@ -118,7 +118,7 @@ class FirstFragment : Fragment() {
 
         val ct = bundle.getString("classType")
 
-        if (BuildConfig.FLAVOR == "HZJZ") {
+        if (BuildConfig.FLAVOR == "HZJZ" || BuildConfig.FLAVOR == "DUKAT") {
             binding.button1.visibility = View.VISIBLE
             binding.button1.setOnClickListener {
                 binding.button1.setBackgroundResource(R.drawable.card_button_background)
