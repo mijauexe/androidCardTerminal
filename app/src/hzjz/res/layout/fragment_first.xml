@@ -20,12 +20,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="350dp"
+            android:layout_width="300dp"
             android:layout_height="200dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="15dp"
-            android:src="@drawable/erv_dukat" />
+            android:src="@drawable/erv_hzjz_gray" />
 
         <TextClock
             android:id="@+id/tv_date_clock"
@@ -75,23 +75,23 @@
             android:src="@drawable/ic_unknown_person"
             android:visibility="gone" />
 
-<!--        <TextView-->
-<!--            android:id="@+id/card_number"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="center"-->
-<!--            android:layout_marginTop="20dp"-->
-<!--            android:text="Broj kartice: "-->
-<!--            android:textColor="@color/black"-->
-<!--            android:textSize="40sp"-->
-<!--            android:visibility="gone" />-->
+        <TextView
+            android:id="@+id/card_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Broj kartice: "
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:visibility="gone" />
 
         <ImageView
-            android:layout_width="300dp"
-            android:layout_height="150dp"
+            android:layout_width="250dp"
+            android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="50dp"
-            android:src="@drawable/dukat_logo" />
+            android:src="@drawable/hzjz" />
     </GridLayout>
 
     <GridLayout
