@@ -23,7 +23,7 @@
         <ImageView
             android:id="@+id/checkout_logo_1"
             android:layout_width="300dp"
-            android:layout_height="150dp"
+            android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="15dp"
@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:text="Đuro"
             android:textColor="@color/black"
             android:textSize="40sp" />
@@ -68,8 +68,8 @@
 
         <ImageView
             android:id="@+id/checkout_logo_2"
-            android:layout_width="250dp"
-            android:layout_height="150dp"
+            android:layout_width="200dp"
+            android:layout_height="80dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/janaf_logo" />
     </GridLayout>

@@ -1,6 +1,7 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -60,6 +61,14 @@ class FirstFragment : Fragment() {
 
         if (bundle.containsKey("imageB64")) {
             try {
+                //for testing with local images
+//                val decodedString: ByteArray = android.util.Base64.decode(
+//                    bundle.getString("imageB64"), android.util.Base64.NO_WRAP
+//                )
+//                val decodedBitmap =
+//                    BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+//                binding.photo.setImageBitmap(decodedBitmap)
+//                bundle.putParcelable("imageB64", decodedBitmap)
                 binding.photo.setImageBitmap(bundle.getParcelable("imageB64"))
             } catch (e: java.lang.Exception) {
                 Timber.d(
@@ -118,14 +127,14 @@ class FirstFragment : Fragment() {
 
         val ct = bundle.getString("classType")
 
-        if (BuildConfig.FLAVOR == "HZJZ" || BuildConfig.FLAVOR == "DUKAT") {
+        if (BuildConfig.FLAVOR == "HZJZ" || BuildConfig.FLAVOR == "DUKAT"  || BuildConfig.FLAVOR == "JANAF") {
             binding.button1.visibility = View.VISIBLE
             binding.button1.setOnClickListener {
                 binding.button1.setBackgroundResource(R.drawable.card_button_background)
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 3) //TODO
                 bundle.putString("reasonValue", "Poslovno")
-                bundle.putString("readoutValue", "Izlaz")
+                bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
             }
             binding.button2.visibility = View.VISIBLE
@@ -134,7 +143,7 @@ class FirstFragment : Fragment() {
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 4) //TODO
                 bundle.putString("reasonValue", "Privatno")
-                bundle.putString("readoutValue", "Izlaz")
+                bundle.putString("selection", "Privatno")
                 goToCheckoutWithBundle(bundle)
             }
             binding.button3.visibility = View.VISIBLE
@@ -143,7 +152,7 @@ class FirstFragment : Fragment() {
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 2) //TODO
                 bundle.putString("reasonValue", "Pauza")
-                bundle.putString("readoutValue", "Izlaz")
+                bundle.putString("selection", "Pauza")
                 goToCheckoutWithBundle(bundle)
             }
             binding.buttonEnter.visibility = View.VISIBLE
@@ -152,7 +161,7 @@ class FirstFragment : Fragment() {
                 bundle.putInt("eCode", 1) //TODO
                 bundle.putInt("eCode2", 1) //TODO
                 bundle.putString("reasonValue", "Ulaz")
-                bundle.putString("readoutValue", "Ulaz")
+                bundle.putString("selection", "Ulaz")
                 goToCheckoutWithBundle(bundle)
             }
             binding.buttonExit.visibility = View.VISIBLE
@@ -161,7 +170,7 @@ class FirstFragment : Fragment() {
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 0) //TODO nema pomocnog koda pa je 0
                 bundle.putString("reasonValue", "Izlaz")
-                bundle.putString("readoutValue", "Izlaz")
+                bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
             }
         } else if (BuildConfig.FLAVOR == "HEP") {
