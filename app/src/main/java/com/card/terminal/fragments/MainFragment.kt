@@ -98,56 +98,6 @@ class MainFragment : Fragment() {
                 }
             }
 
-//            _binding?.mainLogo3?.setOnClickListener {
-//
-//                for (i in 0..5000) {
-//                    println("reschedule")
-//                    AlarmUtils().rescheduleAlarms()
-//                }
-//            }
-
-            /* val btn = _binding?.mainLogo3
-             btn?.setOnClickListener {
-                 val intent =
-                     Intent(ContextProvider.getApplicationContext(), CleanUpReceiver::class.java)
-                 intent.action = "com.cleanup.pics"
-
-                 ContextProvider.getApplicationContext().sendBroadcast(intent)
-                 make a basic demo switch
-                 val scope3 = CoroutineScope(Dispatchers.IO)
-                 scope3.launch {
-                     val ip = BuildConfig.adamIP
-                     val username = BuildConfig.adamUsername
-                     val password = BuildConfig.adamPassword
-
-                     val adam = Adam6050D(ip, username, password)
-                     val doOutput = DigitalOutput()
-
-                     try {
-                         val out = adam.output()
-
-                         val stateOfD0 = (out as DigitalOutput).asDict().get("DO1")
-                         if(stateOfD0 == 1) {
-                             doOutput[1] = 0
-                         } else {
-                             doOutput[1] = 1
-                         }
-                         adam.output(doOutput)
-                     } catch (e: Exception) {
-                         Timber.d(e)
-                     }
-                     for (i in 0..50) {
-                         gas += 1
-                         doOutput[1] = gas % 2
-                         try {
-                             adam.output(doOutput)
-                         } catch (e: Exception) {
-                             println(e)
-                         }
-                     }
-                 }
-             }*/
-
             _binding?.settingsButton?.setOnClickListener {
                 findNavController().navigate(com.card.terminal.R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")

@@ -45,7 +45,7 @@ class CheckoutFragment : Fragment() {
         if(BuildConfig.Larus) {
             MyHttpClient.openDoorLarus(1)
         } else if(BuildConfig.Adam) {
-            MyHttpClient.openDoorAdam(1)
+            MyHttpClient.openDoorAdam()
         }
 
 //        Utils.updateEvent(existingBundle)

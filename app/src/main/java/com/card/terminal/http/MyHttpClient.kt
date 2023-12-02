@@ -12,11 +12,10 @@ import com.card.terminal.http.plugins.configureSerialization
 import com.card.terminal.http.tasks.LarusCheckScansTask
 import com.card.terminal.http.tasks.PublishEventsTask
 import com.card.terminal.main
+import com.card.terminal.receivers.AdamRelayReceiver
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
 import com.card.terminal.utils.Utils
-import com.card.terminal.utils.adamUtils.Adam6050D
-import com.card.terminal.utils.adamUtils.DigitalOutput
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpRequestRetry
@@ -152,33 +151,18 @@ object MyHttpClient {
         larusFunctions?.openDoor(doorNum)
     }
 
-    fun openDoorAdam(doorNum: Int) {
+    fun openDoorAdam() {
         adamDelayHandler?.removeCallbacksAndMessages(null) // Reset the timer
-        adamAction(doorNum, 1)
+        adamAction(1)
 
         adamDelayHandler = Handler()
         adamDelayHandler?.postDelayed({
-            adamAction(doorNum, 0)
+            adamAction(0)
         }, adamDelay)
     }
 
-    private fun adamAction(doorNum: Int, action: Int) {
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        scope3.launch {
-            val ip = BuildConfig.adamIP
-            val username = BuildConfig.adamUsername
-            val password = BuildConfig.adamPassword
-
-            val adam = Adam6050D(ip, username, password)
-            val doOutput = DigitalOutput()
-
-            try {
-                doOutput[doorNum] = action
-                adam.output(doOutput)
-            } catch (e: Exception) {
-                Timber.d(e)
-            }
-        }
+    private fun adamAction(action: Int) {
+        AdamRelayReceiver().performAction(action)
     }
 
     fun checkDoor(doorNum: Int) {
@@ -449,11 +433,8 @@ object MyHttpClient {
                     Timber.d("Msg: Event list not updated or published: %s", esp.eventString.length)
                 } catch (e: Exception) {
                     Timber.d(
-                        "Exception while publishing unpublished event(s) to server: %s | %s | %s | %s",
-                        e.cause,
-                        e.stackTraceToString(),
-                        e.message,
-                        esp.eventString
+                        "Exception while publishing unpublished event(s) to server: %s",
+                        e.stackTraceToString()
                     )
                 }
             }

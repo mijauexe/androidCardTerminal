@@ -93,6 +93,30 @@ class SettingsFragment : Fragment() {
             )
         )
 
+        val adamUsernameEditText = binding.adamUsername
+        adamUsernameEditText.setText(
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("adamUsername", ""))
+
+        val adamPasswordEditText = binding.adamPassword
+        adamPasswordEditText.setText(
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("adamPassword", ""))
+
+        val adamIPEditText = binding.adamIP
+        adamIPEditText.setText(
+            ContextProvider.getApplicationContext()
+                .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE).getString("adamIP", ""))
+
+        val adamRelayNumEditText = binding.adamRelayNum
+        adamRelayNumEditText.setText(
+            Integer.toString(
+                ContextProvider.getApplicationContext()
+                    .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
+                    .getInt("adamRelayNum", 0)
+            )
+        )
+
         val settingsPinEditText = binding.settingsPin
         settingsPinEditText.setText(
             ContextProvider.getApplicationContext()
@@ -162,15 +186,22 @@ class SettingsFragment : Fragment() {
             editor.putString("larusIP", larusIPEditText.text.toString())
             editor.putInt("larusPort", larusPortEditText.text.toString().toInt())
 
-            editor.putString("bareIP", serverIPEditText.text.toString())
-            editor.putString(
-                "serverIP",
-                "http://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
-            )
-            editor.putString(
-                "serverIP_s",
-                "https://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
-            )
+            if (!serverIPEditText.text.contains("http")) {
+                editor.putString("bareIP", serverIPEditText.text.toString())
+                editor.putString(
+                    "serverIP",
+                    "http://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
+                )
+                editor.putString(
+                    "serverIP_s",
+                    "https://" + serverIPEditText.text.toString() + "/b0pass/b0pass_iftp2.php"
+                )
+            }
+
+            editor.putString("adamUsername", adamUsernameEditText.text.toString())
+            editor.putString("adamPassword", adamPasswordEditText.text.toString())
+            editor.putString("adamIP", adamIPEditText.text.toString())
+            editor.putInt("adamRelayNum", adamRelayNumEditText.text.toString().toInt())
 
             editor.putInt("serverPort", serverPortEditText.text.toString().toInt())
             editor.putInt("IFTTERM2_B0_ID", iftTermIdEditText.text.toString().toInt())
@@ -181,6 +212,10 @@ class SettingsFragment : Fragment() {
             Timber.d("larusPort is now %s", larusPortEditText.text.toString())
             Timber.d("serverIP is now %s", serverIPEditText.text.toString())
             Timber.d("serverPort is now %s", serverPortEditText.text.toString())
+            Timber.d("adamUsername is now %s", adamUsernameEditText.text.toString())
+            Timber.d("adamPassword is now %s", adamPasswordEditText.text.toString())
+            Timber.d("adamIP is now %s", adamIPEditText.text.toString())
+            Timber.d("adamRelayNum is now %s", adamRelayNumEditText.text.toString())
             Timber.d("IFTTERM2_B0_ID is now %s", iftTermIdEditText.text.toString())
         }
     }

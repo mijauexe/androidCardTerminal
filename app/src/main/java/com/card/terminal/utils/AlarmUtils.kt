@@ -7,7 +7,7 @@ import android.content.Intent
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.db.entity.OperationSchedule
 import com.card.terminal.receivers.CleanUpReceiver
-import com.card.terminal.receivers.RelayReceiver
+import com.card.terminal.receivers.AdamRelayReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -129,7 +129,7 @@ class AlarmUtils {
             .getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val relayHoldIntent =
-            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+            Intent(ContextProvider.getApplicationContext(), AdamRelayReceiver::class.java)
         relayHoldIntent.action = "com.relay.hold"
 
         val pendingIntentHold = PendingIntent.getBroadcast(
@@ -140,7 +140,7 @@ class AlarmUtils {
         )
 
         val relayPulseIntent =
-            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+            Intent(ContextProvider.getApplicationContext(), AdamRelayReceiver::class.java)
         relayPulseIntent.action = "com.relay.pulse"
 
         val pendingIntentPulse = PendingIntent.getBroadcast(
@@ -250,7 +250,7 @@ class AlarmUtils {
         uid: Int, timeStart: Long, timeEnd: Long
     ) {
         val relayHoldIntent =
-            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+            Intent(ContextProvider.getApplicationContext(), AdamRelayReceiver::class.java)
         relayHoldIntent.action = "com.relay.hold"
 
         val pendingIntentHold = PendingIntent.getBroadcast(
@@ -261,7 +261,7 @@ class AlarmUtils {
         )
 
         val relayPulseIntent =
-            Intent(ContextProvider.getApplicationContext(), RelayReceiver::class.java)
+            Intent(ContextProvider.getApplicationContext(), AdamRelayReceiver::class.java)
         relayPulseIntent.action = "com.relay.pulse"
 
         val pendingIntentPulse = PendingIntent.getBroadcast(

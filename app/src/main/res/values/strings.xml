@@ -41,5 +41,11 @@
     <string name="admin_receiver_status_disabled">admin_disabled</string>
     <string name="contractor_fragent_label">Contractor Fragment</string>
     <string name="iftterm_id">IFTTERM2_B0_ID</string>
+    <string name="adamuserename_port">Adam username</string>
+    <string name="adampassword">Adam password\n</string>
+    <string name="adamusername">Adam username</string>
+    <string name="adamIP">Adam IP</string>
+    <string name="adam_relay_num">0</string>
+    <string name="adamrelaynum">Adam relay number</string>
 
 </resources>
