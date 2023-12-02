@@ -169,8 +169,6 @@ class MiroConverter {
             (operation.contains("ADD_HCAL") || operation.contains("ADD_INIT1")) -> {
                 val responseDeferred = scope.async {
                     val objectic = Gson().fromJson(operation, initHcalObject::class.java)
-//                    Timber.d("Msg: Got server request: ${objectic.ACT} | " + objectic.toString())
-                    println(objectic.toString())
                     addHcal(objectic)
                 }
                 val response = responseDeferred.await()
@@ -452,7 +450,7 @@ class MiroConverter {
             )
         }
 
-        if(BuildConfig.RelayAlarm) {
+        if (BuildConfig.RelayAlarm) {
             AlarmUtils().rescheduleAlarms()
         }
 
@@ -469,11 +467,13 @@ class MiroConverter {
         }
     }
 
-    private fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
+    private suspend fun parseButtons(eventCode2: ArrayList<EVENT_CODE2>) {
         val mut = mutableListOf<Button>()
+        val classesSet = mutableSetOf<String>()
         var counter = 0
 
         for (btn in eventCode2) {
+            classesSet.add(btn.CLASESS)
             mut.add(
                 Button(
                     uid = 0,
@@ -485,6 +485,17 @@ class MiroConverter {
                 )
             )
         }
+
+        if (classesSet.size > 0) {
+            withContext(Dispatchers.Main) {
+                val prefs = ContextProvider.getApplicationContext()
+                    .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+                val editor = prefs.edit()
+                editor.putStringSet("classes", classesSet)
+                editor.commit()
+            }
+        }
+
         try {
             val db = AppDatabase.getInstance(
                 ContextProvider.getApplicationContext(),
@@ -596,12 +607,14 @@ class MiroConverter {
         }
     }
 
-    fun addHcal(objectic: initHcalObject): iftTermResponse {
+    suspend fun addHcal(objectic: initHcalObject): iftTermResponse {
         var counter = 0
 
         val personList = mutableListOf<Person>()
+        val classesSet = mutableSetOf<String>()
 
         for (person in objectic.HOLDERS) {
+            classesSet.add(person.B0_CLASS)
             personList.add(
                 Person(
                     uid = person.B0_ID.toInt(),
@@ -613,6 +626,26 @@ class MiroConverter {
                     companyName = person.COMP_SHORT_NAME
                 )
             )
+        }
+
+        //ako za pojedinu klasu ne postoji tipka
+        withContext(Dispatchers.Main) {
+            val prefs = ContextProvider.getApplicationContext()
+                .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+
+            val init0Classes: MutableSet<String> = prefs.getStringSet("classes", mutableSetOf<String>())!!
+
+            if(init0Classes.size > 0) {
+                val difference = classesSet.subtract(init0Classes)
+                if (difference.isNotEmpty()) {
+                    val editor = prefs.edit()
+                    //ove klase nemaju tipke
+                    for (diff in difference) {
+                        editor.putBoolean("${diff}_noButtons", true)
+                        editor.commit()
+                    }
+                }
+            }
         }
 
         try {

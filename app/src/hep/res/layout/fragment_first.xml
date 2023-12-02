@@ -72,6 +72,7 @@
             android:layout_width="280dp"
             android:layout_height="280dp"
             android:layout_gravity="center_horizontal"
+            android:visibility="visible"
             android:src="@drawable/ic_unknown_person" />
 
         <ImageView

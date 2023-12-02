@@ -182,6 +182,10 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("IFTTERM2_B0_ID", 4)
             editor.putString("IFTTERM2_DESCR", "")
             editor.putString("settingsPin", "0")
+            editor.putString("adamUsername", "root")
+            editor.putString("adamPassword", "00000000")
+            editor.putString("adamIP", "192.168.0.105")
+            editor.putInt("adamRelayNum", 0)
         }
 
         editor.putString("EventImage", "")
@@ -703,7 +707,6 @@ class MainActivity : AppCompatActivity() {
 
                 try {
                     val dbSchedule1 = db.OperationScheduleDao().getAll()
-//                    Timber.d("dohvatio raspored: $dbSchedule1")
                     var conforms = -1 //doesnt conform to anything before checking
                     var containsIfNotSchedule = false //if contains IF_NOT_SCHEDULE param
                     var ifNotScheduleMode = 0
@@ -714,12 +717,10 @@ class MainActivity : AppCompatActivity() {
                         currentDateDate.monthValue,
                         currentDateDate.year
                     )
-//                    Timber.d("d1: ${d1?.workDay}, ${d1?.day}, ${d1?.description}")
 
                     val d2 = db.CalendarDao().getByDate(
                         currentDateDate.dayOfWeek.value, currentDateDate.monthValue, 0
                     )
-//                    Timber.d("d2: ${d2?.workDay}, ${d2?.day}, ${d2?.description}")
 
                     if ((d1 != null && !d1.workDay) || (d2 != null && !d2.workDay)) {
                         isTodayHoliday = true
@@ -745,25 +746,20 @@ class MainActivity : AppCompatActivity() {
                                     ) && timeConforms
                                 ) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-//                                    Timber.d("SPECIFIC DAY")
                                     break
                                 } else if (sch.description.contains("HOLIDAY") && isTodayHoliday && timeConforms) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-//                                    Timber.d("HOLIDAY")
                                     break
                                 } else if (sch.description.contains("WORKING_DAY") && currentDayString != "SATURDAY" && currentDayString != "SUNDAY" && timeConforms && !isTodayHoliday) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-//                                    Timber.d("WORKING_DAY")
                                     break
                                 } else if (sch.description.contains(currentDayString) && timeConforms) {
                                     conforms = db.OperationScheduleDao().getById(sch.uid)?.uid!!
-//                                    Timber.d("currentDayString: $currentDayString")
                                     break
                                 }
                             }
                             if (conforms == -1 && containsIfNotSchedule) {
                                 passageControl(ifNotScheduleMode, it["CardCode"]!!, bundle)
-//                                Timber.d("passageControl(IfNotScheduleMode, it[\"CardCode\"]!!, bundle)")
                             } else {
                                 passageControl(
                                     db.OperationScheduleDao().getById(conforms)?.modeId!!,
@@ -808,14 +804,19 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
-//        MyHttpClient.eventToDatabase(
-//            bundle, false
-//        ) //ovo stavlja event u bazu prije nego je korisnik izabrao razlog pa su eventCode = 0 i eventCode2 = 0, kasnije se ovaj isti event updatea u checkout fragmentu
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+
+        //sto ako nisu definirane tipke za neku klasu -> sibaj na checkout fragment
+        var passageType = free
+        if(prefs.getBoolean("${bundle.getString("classType")}_noButtons", false)) {
+            passageType = 2
+        }
+
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as NavHostFragment
         val navController = navHostFragment.navController
 
-        when (free) {
+        when (passageType) {
             2 -> {
                 bundle.putBoolean("noButtonClickNeededRegime", true)
                 when (navHostFragment.navController.currentDestination?.id) {

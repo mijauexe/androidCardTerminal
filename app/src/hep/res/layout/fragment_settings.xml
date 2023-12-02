@@ -87,6 +87,54 @@
                     tools:layout_editor_absoluteX="104dp"
                     tools:layout_editor_absoluteY="207dp" />
 
+                <TextView android:text="@string/adamusername" />
+
+                <EditText
+                    android:id="@+id/adamUsername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="root"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adampassword" />
+
+                <EditText
+                    android:id="@+id/adamPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="00000000"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adamIP" />
+
+                <EditText
+                    android:id="@+id/adamIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.105"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adamrelaynum" />
+
+                <EditText
+                    android:id="@+id/adamRelayNum"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="@string/adam_relay_num"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
                 <TextView android:text="Settings menu PIN" />
 
                 <EditText
@@ -108,7 +156,7 @@
 
             </GridLayout>
 
-            <GridLayout android:columnCount="1">
+            <GridLayout android:columnCount="2">
 
                 <Button
                     android:id="@+id/kioskToggle"
@@ -163,6 +211,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/constraintLayout"
+        android:visibility="visible"
         app:layout_constraintTop_toTopOf="parent">
 
         <GridLayout
