@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">HZJZ</string>
+    <string name="please_scan_card">Molimo očitajte karticu na čitaču</string>
+    <string name="please_scan_card_2">Odaberite vrstu očitanja</string>
 </resources>

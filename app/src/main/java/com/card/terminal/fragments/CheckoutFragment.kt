@@ -42,9 +42,9 @@ class CheckoutFragment : Fragment() {
 
         val existingBundle = requireArguments()
 
-        if(BuildConfig.Larus) {
+        if (BuildConfig.Larus) {
             MyHttpClient.openDoorLarus(1)
-        } else if(BuildConfig.Adam) {
+        } else if (BuildConfig.Adam) {
             MyHttpClient.openDoorAdam()
         }
 
@@ -86,7 +86,7 @@ class CheckoutFragment : Fragment() {
 
         if (prefs.contains("IFTTERM2_DESCR")) {
             binding.readoutValue.text =
-                binding.readoutValue.text.toString() + ": " + prefs.getString("IFTTERM2_DESCR", "")
+                binding.readoutValue.text.toString() + prefs.getString("IFTTERM2_DESCR", "")
         }
 
         if (arguments?.getString("reasonValue").equals("Ulaz")) {

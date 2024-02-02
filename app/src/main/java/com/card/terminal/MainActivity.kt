@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var db: AppDatabase
-    private val usbReceiver: USBReceiver? = null
+//    private val usbReceiver: USBReceiver? = null
 
     var cardScannerActive = true
     private var mediaPlayer: MediaPlayer? = null
@@ -113,10 +113,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
 
-        val filter = IntentFilter()
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
-        registerReceiver(usbReceiver, filter)
+//        val filter = IntentFilter()
+//        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+//        registerReceiver(usbReceiver, filter)
 
         val croatianLocale = Locale("hr", "HR")
         Locale.setDefault(croatianLocale)
@@ -145,19 +145,19 @@ class MainActivity : AppCompatActivity() {
 
         db = AppDatabase.getInstance((this), Thread.currentThread().stackTrace)
 
-//        val scope3 = CoroutineScope(Dispatchers.IO)
-//        scope3.launch {
-//            try {
-//                db.EventDao().deleteAll()
-//            } catch (e: Exception) {
-//                Timber.d(
-//                    "Exception while clearing db: %s | %s | %s",
-//                    e.cause,
-//                    e.stackTraceToString(),
-//                    e.message
-//                )
-//            }
-//        }
+        val scope3 = CoroutineScope(Dispatchers.IO)
+        scope3.launch {
+            try {
+                db.EventDao().deleteAll()
+            } catch (e: Exception) {
+                Timber.d(
+                    "Exception while clearing db: %s | %s | %s",
+                    e.cause,
+                    e.stackTraceToString(),
+                    e.message
+                )
+            }
+        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
 
@@ -896,7 +896,7 @@ class MainActivity : AppCompatActivity() {
         Timber.d("MainActivity onDestroy")
         super.onDestroy()
         MyHttpClient.server.stop(0, 0)
-        unregisterReceiver(usbReceiver)
+//        unregisterReceiver(usbReceiver)
         cameraExecutor.shutdown()
     }
 

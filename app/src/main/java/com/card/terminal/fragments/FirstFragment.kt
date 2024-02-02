@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.GridLayout
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.fragment.app.Fragment
@@ -129,44 +130,51 @@ class FirstFragment : Fragment() {
 
         if (BuildConfig.FLAVOR == "HZJZ" || BuildConfig.FLAVOR == "DUKAT"  || BuildConfig.FLAVOR == "JANAF") {
             binding.button1.visibility = View.VISIBLE
+            binding.button2.visibility = View.VISIBLE
+            binding.button3.visibility = View.VISIBLE
+            binding.buttonEnter.visibility = View.VISIBLE
+            binding.buttonExit.visibility = View.VISIBLE
+
+            binding.button1.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button2.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button3.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_shadow)
+
             binding.button1.setOnClickListener {
-                binding.button1.setBackgroundResource(R.drawable.card_button_background)
+                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 3) //TODO
                 bundle.putString("reasonValue", "Poslovno")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button2.visibility = View.VISIBLE
             binding.button2.setOnClickListener {
-                binding.button2.setBackgroundResource(R.drawable.card_button_background)
+                binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 4) //TODO
                 bundle.putString("reasonValue", "Privatno")
                 bundle.putString("selection", "Privatno")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button3.visibility = View.VISIBLE
             binding.button3.setOnClickListener {
-                binding.button3.setBackgroundResource(R.drawable.card_button_background)
+                binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 2) //TODO
                 bundle.putString("reasonValue", "Pauza")
                 bundle.putString("selection", "Pauza")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.buttonEnter.visibility = View.VISIBLE
             binding.buttonEnter.setOnClickListener {
-                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background)
+                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 1) //TODO
                 bundle.putInt("eCode2", 1) //TODO
                 bundle.putString("reasonValue", "Ulaz")
                 bundle.putString("selection", "Ulaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.buttonExit.visibility = View.VISIBLE
             binding.buttonExit.setOnClickListener {
-                binding.buttonExit.setBackgroundResource(R.drawable.card_button_background)
+                binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2) //TODO
                 bundle.putInt("eCode2", 0) //TODO nema pomocnog koda pa je 0
                 bundle.putString("reasonValue", "Izlaz")
@@ -184,17 +192,17 @@ class FirstFragment : Fragment() {
                 drawButtons("VEHICLE", binding.buttonsGrid, bundle)
             }
         } else if (BuildConfig.FLAVOR == "INA") {
-            binding.inaButton.visibility = View.VISIBLE
-            binding.inaButton.setOnClickListener {
-                bundle.putString("selection", "INA GuardLess Demo")
-                if (bundle.getBoolean("noButtonClickNeededRegime")) {
-                    bundle.putInt("eCode2", 0)
-                } else {
-                    bundle.putInt("eCode2", 1)
-                }
-                binding.inaButton.setBackgroundResource(R.drawable.card_button_background)
-                goToCheckoutWithBundle(bundle.deepCopy())
-            }
+//            binding.inaButton.visibility = View.VISIBLE
+//            binding.inaButton.setOnClickListener {
+//                bundle.putString("selection", "INA GuardLess Demo")
+//                if (bundle.getBoolean("noButtonClickNeededRegime")) {
+//                    bundle.putInt("eCode2", 0)
+//                } else {
+//                    bundle.putInt("eCode2", 1)
+//                }
+//                binding.inaButton.setBackgroundResource(R.drawable.card_button_background)
+//                goToCheckoutWithBundle(bundle.deepCopy())
+//            }
         }
 
         timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
