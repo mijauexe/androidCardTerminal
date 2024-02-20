@@ -145,19 +145,19 @@ class MainActivity : AppCompatActivity() {
 
         db = AppDatabase.getInstance((this), Thread.currentThread().stackTrace)
 
-        val scope3 = CoroutineScope(Dispatchers.IO)
-        scope3.launch {
-            try {
-                db.EventDao().deleteAll()
-            } catch (e: Exception) {
-                Timber.d(
-                    "Exception while clearing db: %s | %s | %s",
-                    e.cause,
-                    e.stackTraceToString(),
-                    e.message
-                )
-            }
-        }
+//        val scope3 = CoroutineScope(Dispatchers.IO)
+//        scope3.launch {
+//            try {
+//                db.EventDao().deleteAll()
+//            } catch (e: Exception) {
+//                Timber.d(
+//                    "Exception while clearing db: %s | %s | %s",
+//                    e.cause,
+//                    e.stackTraceToString(),
+//                    e.message
+//                )
+//            }
+//        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
 
