@@ -207,10 +207,18 @@ class FirstFragment : Fragment() {
             binding.buttonEnter.visibility = View.VISIBLE
             binding.buttonExit.visibility = View.VISIBLE
 
+            binding.buttonEnter.setOnClickListener {
+                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
+                bundle.putInt("eCode", 1)
+                bundle.putInt("eCode2", 10)
+                bundle.putString("reasonValue", "Ulaz")
+                bundle.putString("selection", "Ulaz")
+                goToCheckoutWithBundle(bundle)
+            }
             binding.button1.setOnClickListener {
                 binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
-                bundle.putInt("eCode2", 3)
+                bundle.putInt("eCode2", 11)
                 bundle.putString("reasonValue", "Poslovno")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
@@ -218,7 +226,7 @@ class FirstFragment : Fragment() {
             binding.button2.setOnClickListener {
                 binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
-                bundle.putInt("eCode2", 4)
+                bundle.putInt("eCode2", 12)
                 bundle.putString("reasonValue", "Privatno")
                 bundle.putString("selection", "Privatno")
                 goToCheckoutWithBundle(bundle)
@@ -226,23 +234,16 @@ class FirstFragment : Fragment() {
             binding.button3.setOnClickListener {
                 binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
-                bundle.putInt("eCode2", 2)
+                bundle.putInt("eCode2", 13)
                 bundle.putString("reasonValue", "Pauza")
                 bundle.putString("selection", "Pauza")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.buttonEnter.setOnClickListener {
-                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
-                bundle.putInt("eCode", 1)
-                bundle.putInt("eCode2", 1)
-                bundle.putString("reasonValue", "Ulaz")
-                bundle.putString("selection", "Ulaz")
-                goToCheckoutWithBundle(bundle)
-            }
+
             binding.buttonExit.setOnClickListener {
                 binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
-                bundle.putInt("eCode2", 0)
+                bundle.putInt("eCode2", 14)
                 bundle.putString("reasonValue", "Izlaz")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
