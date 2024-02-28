@@ -290,6 +290,8 @@ class MiroConverter {
 
     private suspend fun init0(objectic: init0Object): iftTermResponse {
         var counter = 0
+        //REMOVE THIS SHIT, samo dukat tablet ima ovo
+//        return iftTermResponse(counter = counter, err = "0", msg = "Maintenance, request ignored")
 
         try {
             val db = AppDatabase.getInstance(
@@ -473,17 +475,39 @@ class MiroConverter {
         var counter = 0
 
         for (btn in eventCode2) {
-            classesSet.add(btn.CLASESS)
-            mut.add(
-                Button(
-                    uid = 0,
-                    classType = btn.CLASESS,
-                    label = btn.LABEL,
-                    title = btn.TITLE,
-                    eCode2 = btn.ID.toInt(),
-                    eCode = btn.B0_DEV_E_CODE.toInt()
+            val classes = btn.CLASESS
+
+            if(classes.contains(",")) {
+                val multipleClasses = classes.split(",")
+                val trimmedArray = multipleClasses.map { it.trim() }
+                classesSet.addAll(trimmedArray)
+
+                for (i in trimmedArray) {
+                    mut.add(
+                        Button(
+                            uid = 0,
+                            classType = i,
+                            label = btn.LABEL,
+                            title = btn.TITLE,
+                            eCode2 = btn.ID.toInt(),
+                            eCode = btn.B0_DEV_E_CODE.toInt()
+                        )
+                    )
+                }
+
+            } else {
+                classesSet.add(btn.CLASESS)
+                mut.add(
+                    Button(
+                        uid = 0,
+                        classType = btn.CLASESS,
+                        label = btn.LABEL,
+                        title = btn.TITLE,
+                        eCode2 = btn.ID.toInt(),
+                        eCode = btn.B0_DEV_E_CODE.toInt()
+                    )
                 )
-            )
+            }
         }
 
         if (classesSet.size > 0) {
@@ -632,13 +656,33 @@ class MiroConverter {
         withContext(Dispatchers.Main) {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences(MainActivity().PREFS_NAME, AppCompatActivity.MODE_PRIVATE)
+            val editor = prefs.edit()
+
+            //remove old button crap
+            try {
+                for ((key, value) in prefs.all) {
+                    if (key.contains("noButtons")) {
+                        when (value) {
+                            is String -> {}
+
+                            is Int -> {}
+
+                            is Boolean -> { editor.remove(key) }
+
+                            else -> {}
+                        }
+                    }
+                }
+                editor.commit()
+            } catch (e: Exception) {
+                Timber.d(e.stackTraceToString())
+            }
 
             val init0Classes: MutableSet<String> = prefs.getStringSet("classes", mutableSetOf<String>())!!
 
             if(init0Classes.size > 0) {
                 val difference = classesSet.subtract(init0Classes)
                 if (difference.isNotEmpty()) {
-                    val editor = prefs.edit()
                     //ove klase nemaju tipke
                     for (diff in difference) {
                         editor.putBoolean("${diff}_noButtons", true)
