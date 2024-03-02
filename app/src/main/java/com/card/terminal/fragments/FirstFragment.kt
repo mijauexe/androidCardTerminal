@@ -207,6 +207,12 @@ class FirstFragment : Fragment() {
             binding.buttonEnter.visibility = View.VISIBLE
             binding.buttonExit.visibility = View.VISIBLE
 
+            binding.button1.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button2.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button3.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_shadow)
+
             binding.buttonEnter.setOnClickListener {
                 binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 1)
