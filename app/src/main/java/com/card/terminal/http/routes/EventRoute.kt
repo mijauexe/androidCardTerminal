@@ -29,6 +29,20 @@ fun Route.eventRouting() {
             }
         }
 
+        post("/addList") {
+            Timber.d("Msg: POST request on /event/addList")
+            val eventList = call.receive<List<Event>>()
+            try {
+                database?.EventDao()?.insertAll(eventList)
+                call.respondText("Event list stored correctly", status = HttpStatusCode.Created)
+            } catch (e: Exception) {
+                print(e.printStackTrace())
+                call.respondText(
+                    e.printStackTrace().toString(), status = HttpStatusCode.BadRequest
+                )
+            }
+        }
+
         get {
             Timber.d("Msg: GET request on /event")
             val list = database?.EventDao()?.getAll()
