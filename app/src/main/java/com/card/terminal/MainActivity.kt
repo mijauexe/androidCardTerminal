@@ -113,17 +113,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         ContextProvider.setApplicationContext(this)
 
-//        val filter = IntentFilter()
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
-//        registerReceiver(usbReceiver, filter)
-
         val croatianLocale = Locale("hr", "HR")
         Locale.setDefault(croatianLocale)
 
         mAdminComponentName = AdminReceiver.getComponentName(this)
         mDevicePolicyManager =
             getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+
+//        mDevicePolicyManager.clearDeviceOwnerApp(this.packageName)
 
         val permission = READ_EXTERNAL_STORAGE
         val requestCode = 123
@@ -188,7 +185,6 @@ class MainActivity : AppCompatActivity() {
             editor.putInt("adamRelayNum", 0)
         }
 
-        editor.putString("EventImage", "")
         editor.putString("usbAdapterCardCode", "")
         editor.apply()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
