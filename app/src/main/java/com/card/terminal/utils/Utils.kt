@@ -15,27 +15,8 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 object Utils {
-    fun newEventImageLogic(context: Context, imageUriString: String?): String? { //unused for now
-        val imageUri = Uri.parse(imageUriString)
-        var base64String: String? = null
-        try {
-            val inputStream = context.contentResolver?.openInputStream(imageUri)
-            inputStream?.use { stream ->
-                val bitmap = Bitmap.createBitmap(BitmapFactory.decodeStream(stream))
-                val byteArrayOutputStream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-                val byteArray = byteArrayOutputStream.toByteArray()
-                base64String =
-                    android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return base64String
-    }
-
-    fun findImage(imageUUID: String): String? {
-        var base64String: String? = null
+    fun findImage(imageUUID: String): String {
+        var base64String = ""
         try {
             val bitmap = Bitmap.createBitmap(
                 BitmapFactory.decodeFile(
@@ -54,7 +35,25 @@ object Utils {
         } catch (e: IOException) {
             Timber.d(e.stackTraceToString())
         }
+        return base64String
+    }
 
+    fun newEventImageLogic(context: Context, imageUriString: String?): String? { //unused for now
+        val imageUri = Uri.parse(imageUriString)
+        var base64String: String? = null
+        try {
+            val inputStream = context.contentResolver?.openInputStream(imageUri)
+            inputStream?.use { stream ->
+                val bitmap = Bitmap.createBitmap(BitmapFactory.decodeStream(stream))
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
+                val byteArray = byteArrayOutputStream.toByteArray()
+                base64String =
+                    android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
         return base64String
     }
 
@@ -93,7 +92,6 @@ object Utils {
         }
         MyHttpClient.publishNewEvent(oldBundle)
     }
-
     fun commitOldBundleToSharedPrefs(bundle: Bundle) { //unused for now
         val prefs = ContextProvider.getApplicationContext()
             .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
@@ -120,7 +118,6 @@ object Utils {
             println(e)
         }
     }
-
     fun updateEvent(bundle: Bundle) {
         val db = AppDatabase.getInstance(
             ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace

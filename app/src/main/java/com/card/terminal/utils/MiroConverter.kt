@@ -865,9 +865,12 @@ class MiroConverter {
             eCode2 = 0
         }
 
-        var img = cardResponse.getString("EventImage", "")
-        if (!prefs.getBoolean("pushImageToServer", false)) {
-            img = ""
+        var imgB64Representation = ""
+
+        val imgUUID = cardResponse.getString("imageUUID", "")
+
+        if (!imgUUID.isNullOrBlank() && prefs.getBoolean("pushImageToServer", false)) {
+            imgB64Representation = Utils.findImage(imgUUID)
         }
 
         val rtr2 = "{\n" +
@@ -880,7 +883,7 @@ class MiroConverter {
                 "            \"ECODE\": \"${eCode}\",\n" +
                 "            \"ECODE2\": \"${eCode2}\",\n" +
                 "            \"DEV_B0_ID\": \"${dev_b0_id}\",\n" +
-                "            \"IMG_B64\": \"${img}\"\n" +
+                "            \"IMG_B64\": \"${imgB64Representation}\"\n" +
                 "        }\n" +
                 "    ]\n" +
                 "}"

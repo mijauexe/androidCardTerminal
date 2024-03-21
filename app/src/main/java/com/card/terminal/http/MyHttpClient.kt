@@ -3,6 +3,7 @@ package com.card.terminal.http
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.card.terminal.BuildConfig
 import com.card.terminal.db.AppDatabase
@@ -15,9 +16,9 @@ import com.card.terminal.main
 import com.card.terminal.receivers.AdamRelayReceiver
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.MiroConverter
-import com.card.terminal.utils.Utils
 import com.card.terminal.utils.larusUtils.LarusFunctions
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttpConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
@@ -43,13 +44,13 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.ConnectException
 import java.net.NoRouteToHostException
-import java.util.TimerTask
-import kotlin.math.pow
-import io.ktor.client.engine.okhttp.OkHttpConfig
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.TimerTask
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
+import kotlin.math.pow
+
 
 object MyHttpClient {
     private var client: HttpClient? = null
@@ -85,36 +86,36 @@ object MyHttpClient {
     }
 
     fun bindHttpClient(code: MutableLiveData<Map<String, String>>) {
-            client = HttpClient {
-                install(ContentNegotiation) {
-                    json()
+        client = HttpClient {
+            install(ContentNegotiation) {
+                json()
+            }
+            install(HttpRequestRetry) {
+                retryOnServerErrors(maxRetries = 3)
+                exponentialDelay()
+                retryIf { _, response ->
+                    !response.status.isSuccess()
                 }
-                install(HttpRequestRetry) {
-                    retryOnServerErrors(maxRetries = 3)
-                    exponentialDelay()
-                    retryIf { _, response ->
-                        !response.status.isSuccess()
-                    }
-                    retryOnExceptionIf { _, cause ->
-                        cause is Exception
-                    }
-                    delayMillis { retry ->
-                        retry * 3000L
-                    }
+                retryOnExceptionIf { _, cause ->
+                    cause is Exception
                 }
-                if(BuildConfig.https) {
-                    engine {
-                        this as OkHttpConfig
-                        config {
-                            val trustAllCert = AllCertsTrustManager()
-                            val sslContext = SSLContext.getInstance("SSL")
-                            sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
-                            sslSocketFactory(sslContext.socketFactory, trustAllCert)
-                            hostnameVerifier { _, _ -> true }
-                        }
+                delayMillis { retry ->
+                    retry * 3000L
+                }
+            }
+            if (BuildConfig.https) {
+                engine {
+                    this as OkHttpConfig
+                    config {
+                        val trustAllCert = AllCertsTrustManager()
+                        val sslContext = SSLContext.getInstance("SSL")
+                        sslContext.init(null, arrayOf(trustAllCert), SecureRandom())
+                        sslSocketFactory(sslContext.socketFactory, trustAllCert)
+                        hostnameVerifier { _, _ -> true }
                     }
                 }
             }
+        }
         mutableCode = code
 
         publishEventsTask = PublishEventsTask()
@@ -245,7 +246,7 @@ object MyHttpClient {
                 .getSharedPreferences("MyPrefsFile", Context.MODE_PRIVATE)
 
             var ip = ""
-            if(BuildConfig.https) {
+            if (BuildConfig.https) {
                 ip = mySharedPreferences.getString("serverIP_s", "?").toString()
             } else {
                 ip = mySharedPreferences.getString("serverIP", "?").toString()
@@ -307,14 +308,7 @@ object MyHttpClient {
             if (cardResponse["noButtonClickNeededRegime"] == true) { //this is needed to avoid null pointer when the flow is fast (no button press needed on the first fragment)
                 delay(10000)
             }
-            if (cardResponse.containsKey("imageUUID")) {
-                try {
-                    cardResponse.putString("EventImage",
-                        cardResponse.getString("imageUUID")?.let { Utils.findImage(it) })
-                } catch (e: Exception) {
-                    Timber.d(e.stackTraceToString())
-                }
-            }
+
             eventToDatabase(cardResponse, false)
 
             val body = withContext(Dispatchers.Main) {
@@ -327,7 +321,7 @@ object MyHttpClient {
 //                eventToDatabase(cardResponse, true)
 
                 var ip = ""
-                if(BuildConfig.https) {
+                if (BuildConfig.https) {
                     ip = mySharedPreferences.getString("serverIP_s", "?").toString()
                 } else {
                     ip = mySharedPreferences.getString("serverIP", "?").toString()
@@ -402,7 +396,7 @@ object MyHttpClient {
             if (esp.eventList.isNotEmpty()) {
                 try {
                     var ip = ""
-                    if(BuildConfig.https) {
+                    if (BuildConfig.https) {
                         ip = mySharedPreferences.getString("serverIP_s", "?").toString()
                     } else {
                         ip = mySharedPreferences.getString("serverIP", "?").toString()
@@ -425,12 +419,12 @@ object MyHttpClient {
                         if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                             updateEvents(esp.eventList)
                             Timber.d(
-                                "Msg: Event list updated and published: %s", esp.eventString.length
+                                "Msg: Event list updated and published: %s", esp.eventList.size
                             )
                         }
                     }
                 } catch (ce: ConnectException) {
-                    Timber.d("Msg: Event list not updated or published: %s", esp.eventString.length)
+                    Timber.d("Msg: Event list not updated or published: %s", esp.eventList.size)
                 } catch (e: Exception) {
                     Timber.d(
                         "Exception while publishing unpublished event(s) to server: %s",
@@ -466,7 +460,7 @@ object MyHttpClient {
                             dateTime = it.dateTime,
                             published = true,
                             deviceId = it.deviceId,
-                            image = cardResponse.getString("imageUUID", "")
+                            image = it.image
                         )
                     }
                     if (newE != null) {
@@ -481,7 +475,7 @@ object MyHttpClient {
                         published = false,
                         uid = 0, //auto-generate
                         deviceId = mySharedPreferences.getInt("IFTTERM2_B0_ID", 0),//TODO
-                        image = cardResponse.getString("EventImage", "")
+                        image = cardResponse.getString("imageUUID", "")
                     )
                     db.EventDao().insert(event)
                 }
