@@ -88,20 +88,37 @@ class FirstFragment : Fragment() {
                 scope.launch {
                     try {
                         val bitmap =
-                            getView()?.let { Glide.with(it).asBitmap().load(url.toString()).submit().get() }
+                            getView()?.let {
+                                Glide.with(it).asBitmap().load(url.toString()).submit().get()
+                            }
                         withContext(Dispatchers.Main) {
                             binding.photo.setImageBitmap(bitmap)
                             bundle.putParcelable("imageB64", bitmap)
                         }
-                    } catch (e : GlideException) {
-                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                    } catch (e : java.lang.Exception) {
-                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                    }catch (e : Exception) {
-                        Timber.d("Msg: Exception while getting image in first fragment: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                    } catch (e: GlideException) {
+                        Timber.d(
+                            "Msg: Exception while getting image in first fragment: %s | %s | %s",
+                            e.cause,
+                            e.stackTraceToString(),
+                            e.message
+                        )
+                    } catch (e: java.lang.Exception) {
+                        Timber.d(
+                            "Msg: Exception while getting image in first fragment: %s | %s | %s",
+                            e.cause,
+                            e.stackTraceToString(),
+                            e.message
+                        )
+                    } catch (e: Exception) {
+                        Timber.d(
+                            "Msg: Exception while getting image in first fragment: %s | %s | %s",
+                            e.cause,
+                            e.stackTraceToString(),
+                            e.message
+                        )
                     }
                 }
-            } catch (e : java.lang.Exception) {
+            } catch (e: java.lang.Exception) {
                 Timber.d(
                     "Msg: Exception getting photo: %s | %s | %s",
                     e.cause,
@@ -129,49 +146,49 @@ class FirstFragment : Fragment() {
             binding.button1.visibility = View.VISIBLE
             binding.button2.visibility = View.VISIBLE
             binding.button3.visibility = View.VISIBLE
-            binding.buttonEnter.visibility = View.VISIBLE
-            binding.buttonExit.visibility = View.VISIBLE
+            binding.button4.visibility = View.VISIBLE
+            binding.button7.visibility = View.VISIBLE
 
             binding.button1.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button2.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button3.setBackgroundResource(R.drawable.card_button_background_shadow)
-            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_shadow)
-            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button4.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button7.setBackgroundResource(R.drawable.card_button_background_shadow)
 
-            binding.buttonEnter.setOnClickListener {
-                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button1.setOnClickListener {
+                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 1)
                 bundle.putInt("eCode2", 10)
                 bundle.putString("reasonValue", "Ulaz")
                 bundle.putString("selection", "Ulaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button1.setOnClickListener {
-                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button2.setOnClickListener {
+                binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 11)
                 bundle.putString("reasonValue", "Poslovno")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button2.setOnClickListener {
-                binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button3.setOnClickListener {
+                binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 12)
                 bundle.putString("reasonValue", "Privatno")
                 bundle.putString("selection", "Privatno")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button3.setOnClickListener {
-                binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button4.setOnClickListener {
+                binding.button4.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 13)
                 bundle.putString("reasonValue", "Pauza")
                 bundle.putString("selection", "Pauza")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.buttonExit.setOnClickListener {
-                binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button7.setOnClickListener {
+                binding.button7.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 14)
                 bundle.putString("reasonValue", "Izlaz")
@@ -179,66 +196,50 @@ class FirstFragment : Fragment() {
                 goToCheckoutWithBundle(bundle)
             }
         } else if (BuildConfig.FLAVOR == "HEP") {
-            if (ct.equals("WORKER")) {
-                drawButtons("WORKER", binding.buttonsGrid, bundle)
-            } else if (ct.equals("CONTRACTOR")) {
-                drawButtons("CONTRACTOR", binding.buttonsGrid, bundle)
-            } else if (ct.equals("GUEST")) {
-                drawButtons("GUEST", binding.buttonsGrid, bundle)
-            } else if (ct.equals("VEHICLE")) {
-                drawButtons("VEHICLE", binding.buttonsGrid, bundle)
-            }
+            drawButtons(ct!!, binding.buttonsGrid, bundle)
+        } else if (BuildConfig.FLAVOR == "HEP2") {
+            drawButtons2(ct!!, bundle)
         } else if (BuildConfig.FLAVOR == "INA") {
-//            binding.inaButton.visibility = View.VISIBLE
-//            binding.inaButton.setOnClickListener {
-//                bundle.putString("selection", "INA GuardLess Demo")
-//                if (bundle.getBoolean("noButtonClickNeededRegime")) {
-//                    bundle.putInt("eCode2", 0)
-//                } else {
-//                    bundle.putInt("eCode2", 1)
-//                }
-//                binding.inaButton.setBackgroundResource(R.drawable.card_button_background)
-//                goToCheckoutWithBundle(bundle.deepCopy())
-//            }
+
         } else if (BuildConfig.FLAVOR == "DUKAT") {
             binding.button1.visibility = View.VISIBLE
             binding.button2.visibility = View.VISIBLE
             binding.button3.visibility = View.VISIBLE
-            binding.buttonEnter.visibility = View.VISIBLE
-            binding.buttonExit.visibility = View.VISIBLE
+            binding.button4.visibility = View.VISIBLE
+            binding.button7.visibility = View.VISIBLE
 
             binding.button1.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button2.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button3.setBackgroundResource(R.drawable.card_button_background_shadow)
-            binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_shadow)
-            binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button4.setBackgroundResource(R.drawable.card_button_background_shadow)
+            binding.button7.setBackgroundResource(R.drawable.card_button_background_shadow)
 
-            binding.buttonEnter.setOnClickListener {
-                binding.buttonEnter.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button1.setOnClickListener {
+                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 1)
                 bundle.putInt("eCode2", 10)
                 bundle.putString("reasonValue", "Ulaz")
                 bundle.putString("selection", "Ulaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button1.setOnClickListener {
-                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button2.setOnClickListener {
+                binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 11)
                 bundle.putString("reasonValue", "Poslovno")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button2.setOnClickListener {
-                binding.button2.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button3.setOnClickListener {
+                binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 12)
                 bundle.putString("reasonValue", "Privatno")
                 bundle.putString("selection", "Privatno")
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button3.setOnClickListener {
-                binding.button3.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button4.setOnClickListener {
+                binding.button4.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 13)
                 bundle.putString("reasonValue", "Pauza")
@@ -246,8 +247,8 @@ class FirstFragment : Fragment() {
                 goToCheckoutWithBundle(bundle)
             }
 
-            binding.buttonExit.setOnClickListener {
-                binding.buttonExit.setBackgroundResource(R.drawable.card_button_background_fill)
+            binding.button7.setOnClickListener {
+                binding.button7.setBackgroundResource(R.drawable.card_button_background_fill)
                 bundle.putInt("eCode", 2)
                 bundle.putInt("eCode2", 14)
                 bundle.putString("reasonValue", "Izlaz")
@@ -271,6 +272,58 @@ class FirstFragment : Fragment() {
         }, delayToMain)
     }
 
+    private fun drawButtons2(
+        str: String, bundle: Bundle
+    ) {
+        val db = AppDatabase.getInstance(
+            ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+        )
+        val btnList = db.ButtonDao().getAllByClassType(str)
+        val layout = binding.buttonsGrid
+
+        if (btnList != null && btnList.size >= 7) {
+            for (i in 1 until btnList.size - 1) {
+                val btn = layout[i - 1] as Button
+                btn.setText(btnList[i].title)
+                btn.visibility = View.VISIBLE
+
+                val drawable =
+                    TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
+                        .textColor(Color.WHITE).endConfig()
+                        .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
+
+                btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+                btn.setOnClickListener {
+                    bundle.putString("selection", btnList[i].title)
+
+                    bundle.putInt("eCode", btnList[i].eCode)
+                    bundle.putInt("eCode2", btnList[i].eCode2)
+
+                    btn.setBackgroundResource(R.drawable.card_button_background_safe_all)
+                    goToCheckoutWithBundle(bundle)
+                }
+            }
+
+            binding.button1.text = btnList[0].title
+            binding.button7.text = btnList[6].title
+
+            binding.button1.setOnClickListener {
+                binding.button1.setBackgroundResource(R.drawable.card_button_background_safe_all)
+                bundle.putInt("eCode", btnList[0].eCode)
+                bundle.putInt("eCode2", btnList[0].eCode2)
+                bundle.putString("selection", btnList[0].title)
+                goToCheckoutWithBundle(bundle)
+            }
+            binding.button7.setOnClickListener {
+                binding.button7.setBackgroundResource(R.drawable.card_button_background_safe_all)
+                bundle.putInt("eCode", btnList[6].eCode)
+                bundle.putInt("eCode2", btnList[6].eCode2)
+                bundle.putString("selection", btnList[6].title)
+                goToCheckoutWithBundle(bundle)
+            }
+        }
+    }
+
     private fun goToCheckoutWithBundle(bundle: Bundle) {
         Handler().postDelayed({
             when (findNavController().currentDestination?.id) {
@@ -286,7 +339,6 @@ class FirstFragment : Fragment() {
     private fun drawButtons(
         str: String, layout: GridLayout, bundle: Bundle
     ) {
-
         val db = AppDatabase.getInstance(
             ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
         )
@@ -295,32 +347,29 @@ class FirstFragment : Fragment() {
         if (btnList != null) {
             for (i in btnList.indices) {
                 val btn = layout[i] as Button
-                if (resources.getResourceEntryName(btn.getId()).contains("contractor")) {
-                    //bundle.putInt(btnList[i].title, btnList[i].eCode2)
-                    btn.setText("   " + btnList[i].title)
-                    btn.visibility = View.VISIBLE
+                btn.setText("   " + btnList[i].title)
+                btn.visibility = View.VISIBLE
 
-                    val drawable =
-                        TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
-                            .textColor(Color.WHITE).endConfig()
-                            .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
+                val drawable =
+                    TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
+                        .textColor(Color.WHITE).endConfig()
+                        .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
 
-                    btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
-                    btn.setOnClickListener {
-                        bundle.putString("selection", btnList[i].title)
+                btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+                btn.setOnClickListener {
+                    bundle.putString("selection", btnList[i].title)
 
-                        if (bundle.getBoolean("noButtonClickNeededRegime")) {
-                            bundle.putInt("eCode2", 0)
-                            bundle.putInt("eCode", 0)
-                        } else {
-                            bundle.putInt("eCode", btnList[i].eCode)
-                            bundle.putInt("eCode2", btnList[i].eCode2)
-                        }
-
-                        btn.setBackgroundResource(R.drawable.card_button_background)
-//                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
-                        goToCheckoutWithBundle(bundle)
+                    if (bundle.getBoolean("noButtonClickNeededRegime")) {
+                        bundle.putInt("eCode2", 0)
+                        bundle.putInt("eCode", 0)
+                    } else {
+                        bundle.putInt("eCode", btnList[i].eCode)
+                        bundle.putInt("eCode2", btnList[i].eCode2)
                     }
+
+                    btn.setBackgroundResource(R.drawable.card_button_background_safe)
+//                    btn.setBackgroundColor(Color.parseColor("#faa61a"))
+                    goToCheckoutWithBundle(bundle)
                 }
             }
         }

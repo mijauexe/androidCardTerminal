@@ -78,31 +78,39 @@ class CheckoutFragment : Fragment() {
             binding.companyName.text = arguments?.getString("companyName")
         }
 
-        binding.reasonValue.text = arguments?.getString("selection", "")
 
         if (existingBundle.containsKey("imageB64")) {
             binding.photo.setImageBitmap(existingBundle.getParcelable("imageB64"))
         }
 
-        if (prefs.contains("IFTTERM2_DESCR")) {
-            binding.readoutValue.text =
-                binding.readoutValue.text.toString() + prefs.getString("IFTTERM2_DESCR", "")
-        }
-
-        if (arguments?.getString("reasonValue").equals("Ulaz")) {
-            binding.reasonKey.text = "Razlog ulaza: "
-        }
+        binding.selection.text = arguments?.getString("selection", "")
     }
 
     private fun setupUI() {
         //this is needed if a connected device is a physical keyboard, it would type text inside views and disrupt app flow
-        val readoutValueTextView = _binding?.readoutValue
+        val readoutValueTextView = _binding?.readoutKey
         readoutValueTextView?.isFocusable = false
         readoutValueTextView?.isFocusableInTouchMode = false
 
-        val reasonValueTextView = _binding?.reasonValue
-        reasonValueTextView?.isFocusable = false
-        reasonValueTextView?.isFocusableInTouchMode = false
+        val dateClockView = _binding?.tvDateClock
+        dateClockView?.isFocusable = false
+        dateClockView?.isFocusableInTouchMode = false
+
+        val reasonKeyView = _binding?.reasonKey
+        reasonKeyView?.isFocusable = false
+        reasonKeyView?.isFocusableInTouchMode = false
+
+        val selectionView = _binding?.selection
+        selectionView?.isFocusable = false
+        selectionView?.isFocusableInTouchMode = false
+
+        val nothingView = _binding?.nothing
+        nothingView?.isFocusable = false
+        nothingView?.isFocusableInTouchMode = false
+
+        val nothing1View = _binding?.nothing1
+        nothing1View?.isFocusable = false
+        nothing1View?.isFocusableInTouchMode = false
 
         val smile = _binding?.smile
         smile?.isFocusable = false

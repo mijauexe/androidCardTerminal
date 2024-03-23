@@ -162,7 +162,7 @@
         app:layout_constraintTop_toBottomOf="@+id/top">
 
         <Button
-            android:id="@+id/button_enter"
+            android:id="@+id/button_1"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -186,7 +186,7 @@
             android:paddingEnd="70dp">
 
             <Button
-                android:id="@+id/button_1"
+                android:id="@+id/button_2"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="290dp"
                 android:layout_height="150dp"
@@ -199,13 +199,12 @@
                 android:textAllCaps="false"
                 android:textColor="@android:color/black"
                 android:textSize="35dp" />
-
             <View
                 android:layout_width="100dp"
                 android:layout_height="30dp" />
 
             <Button
-                android:id="@+id/button_2"
+                android:id="@+id/button_3"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="290dp"
                 android:layout_height="150dp"
@@ -224,12 +223,44 @@
                 android:layout_height="30dp" />
 
             <Button
-                android:id="@+id/button_3"
+                android:id="@+id/button_4"
                 android:layout_width="290dp"
                 android:layout_height="150dp"
                 android:layout_gravity="center"
                 android:background="@android:color/transparent"
                 android:drawableStart="@drawable/break_alternative"
+                android:drawablePadding="5dp"
+                android:padding="15dp"
+                android:visibility="visible"
+                android:text="Izlaz\nPauza"
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35dp" />
+
+            <Button
+                android:id="@+id/button_5"
+                android:layout_width="290dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:drawableStart="@drawable/break_alternative"
+                android:drawablePadding="5dp"
+                android:padding="15dp"
+                android:visibility="gone"
+                android:text="Izlaz\nPauza"
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35dp" />
+
+            <Button
+                android:id="@+id/button_6"
+                android:layout_width="290dp"
+                android:layout_height="150dp"
+
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"
+                android:drawableStart="@drawable/break_alternative"
+                android:visibility="gone"
                 android:drawablePadding="5dp"
                 android:padding="15dp"
                 android:text="Izlaz\nPauza"
@@ -239,7 +270,7 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/button_exit"
+            android:id="@+id/button_7"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

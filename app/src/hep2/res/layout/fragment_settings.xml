@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0679ae"
+    tools:context=".fragments.SecondFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <GridLayout
+            android:id="@+id/glMain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:paddingHorizontal="20dp"
+            android:useDefaultMargins="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <GridLayout android:columnCount="2">
+
+                <TextView android:text="@string/larus_ip_adresa" />
+
+                <EditText
+                    android:id="@+id/larusIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.200"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/larus_port" />
+
+                <EditText
+                    android:id="@+id/larusPort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="@string/larusport"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/server_ip_adresa" />
+
+                <EditText
+                    android:id="@+id/ServerIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.199"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/server_port" />
+
+                <EditText
+                    android:id="@+id/ServerPort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="80"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/iftterm_id" />
+
+                <EditText
+                    android:id="@+id/iftterm_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="0"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adamusername" />
+
+                <EditText
+                    android:id="@+id/adamUsername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="root"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adampassword" />
+
+                <EditText
+                    android:id="@+id/adamPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="00000000"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adamIP" />
+
+                <EditText
+                    android:id="@+id/adamIP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:text="192.168.0.105"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="@string/adamrelaynum" />
+
+                <EditText
+                    android:id="@+id/adamRelayNum"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="@string/adam_relay_num"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <TextView android:text="Settings menu PIN" />
+
+                <EditText
+                    android:id="@+id/settings_pin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:text="4670"
+                    tools:layout_editor_absoluteX="104dp"
+                    tools:layout_editor_absoluteY="207dp" />
+
+                <Button
+                    android:id="@+id/saveSettingsButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OK" />
+
+
+            </GridLayout>
+
+            <GridLayout android:columnCount="2">
+
+                <Button
+                    android:id="@+id/kioskToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Toggle KIOSK MODE" />
+
+                <Button
+                    android:id="@+id/hcal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HCAL request" />
+
+                <Button
+                    android:id="@+id/init1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INIT1 request" />
+
+                <Button
+                    android:id="@+id/init0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INIT0 request" />
+
+                <Button
+                    android:id="@+id/calendar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="calendar request" />
+
+                <Button
+                    android:id="@+id/photos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="photos request" />
+
+
+            </GridLayout>
+
+        </GridLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pinLayout"
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/constraintLayout"
+        android:visibility="visible"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <GridLayout
+            android:id="@+id/pinBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/pinPreviewText"
+                android:layout_width="@android:dimen/thumbnail_width"
+                android:layout_height="wrap_content"
+                android:hint="@string/enter_pin"
+                android:textAlignment="center"
+                android:textColor="@color/pinScreen"
+
+                android:textColorHint="#aaaaaa"
+                android:textSize="50sp"
+                app:backgroundTint="#2448ff" />
+
+            <TextView
+                android:id="@+id/tv_err_msg"
+                android:layout_width="@android:dimen/thumbnail_width"
+                android:layout_height="wrap_content"
+                android:text="@string/wrong_pin_message"
+                android:textAlignment="center"
+                android:textColor="@color/info_msg"
+                android:textColorHint="#aaaaaa"
+
+                android:textSize="20sp"
+                android:visibility="gone"
+                app:backgroundTint="#2448ff" />
+        </GridLayout>
+
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alignmentMode="alignBounds"
+            android:background="@android:color/transparent"
+            android:columnCount="3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pinBox">
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/oneDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="1"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/twoDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="2"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/threeDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="3"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fourDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="4"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fiveDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="5"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/sixDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="6"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/sevenDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="7"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/eightDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="8"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/nineDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="9"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/delDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawableStart="@drawable/ic_delete"
+                    android:elevation="16dp" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/zeroDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:elevation="16dp"
+                    android:text="0"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@color/pinScreen"
+                    android:textSize="@dimen/pin_text" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="@dimen/circle_box"
+                android:layout_height="@dimen/circle_box"
+                android:padding="5dp">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/enterDialButton"
+                    android:layout_width="@dimen/circle_button_size"
+                    android:layout_height="@dimen/circle_button_size"
+                    android:layout_gravity="center"
+                    app:backgroundTint="#193373" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawableStart="@drawable/ic_done"
+                    android:elevation="16dp" />
+            </FrameLayout>
+
+        </GridLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageButton
+        android:id="@+id/button_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:paddingLeft="20dp"
+        android:paddingTop="20dp"
+        android:src="@drawable/back_selector"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

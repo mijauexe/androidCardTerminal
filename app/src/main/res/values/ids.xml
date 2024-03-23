@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="middle_buttons" type="id" />
+    <item name="buttonsGrid2" type="id" />
+    <item name="button_6" type="id" />
+    <item name="button_7" type="id" />
+    <item name="checkout_logo_2" type="id" />
+</resources>

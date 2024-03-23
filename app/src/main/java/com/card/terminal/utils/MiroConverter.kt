@@ -870,7 +870,11 @@ class MiroConverter {
         val imgUUID = cardResponse.getString("imageUUID", "")
 
         if (!imgUUID.isNullOrBlank() && prefs.getBoolean("pushImageToServer", false)) {
-            imgB64Representation = Utils.findImage(imgUUID)
+            imgB64Representation = try {
+                Utils.findImage(imgUUID)
+            } catch (e : Exception) {
+                ""
+            }
         }
 
         val rtr2 = "{\n" +

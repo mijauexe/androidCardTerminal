@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9D9D9"
+    tools:context=".fragments.FirstFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/top"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:columnCount="3"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/main_logo1"
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:layout_gravity="start"
+            android:layout_marginStart="30dp"
+            android:src="@drawable/erv_hep"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/main_logo3"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="start"
+            android:layout_marginEnd="50dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ifsimus_logo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/some_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="ODABERITE:"
+            android:textColor="@color/black"
+            android:textSize="50sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/main_logo3"
+            app:layout_constraintStart_toEndOf="@+id/main_logo1"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <GridLayout
+        android:id="@+id/glMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="1"
+        android:useDefaultMargins="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/glDown"
+        app:layout_constraintEnd_toStartOf="@id/glRight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="300dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/erv_hzjz_gray" />
+
+        <TextClock
+            android:id="@+id/tv_date_clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:format24Hour="d. MMMM yyyy, HH:mm"
+            android:text="@string/tv_date"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/first_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Đuro"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/last_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Đurić"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/company_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Firma"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_unknown_person"
+            android:visibility="gone" />
+
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="50dp"
+            android:src="@drawable/hzjz" />
+    </GridLayout>
+
+    <GridLayout
+        android:id="@+id/glDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/glMain"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/glMain">
+
+    </GridLayout>
+
+    <LinearLayout
+        android:id="@+id/linearButtonsGrid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:columnCount="3"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/top">
+
+        <Button
+            android:id="@+id/button_1"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="50dp"
+            android:background="@drawable/card_button_background_shadow"
+            android:drawableStart="@drawable/enter"
+            android:drawablePadding="20dp"
+            android:padding="25dp"
+            android:text="Ulaz"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="65sp" />
+
+        <GridLayout
+            android:id="@+id/buttonsGrid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:paddingStart="70dp"
+            android:paddingEnd="70dp">
+
+            <Button
+                android:id="@+id/button_2"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_gravity="center"
+                android:padding="20dp"
+                android:width="320dp"
+                android:paddingVertical="20dp"
+                android:background="@android:color/transparent"
+                android:text=" Poslovni izlaz nalog HEP "
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35sp"
+                android:visibility="visible" />
+
+            <Button
+                android:padding="20dp"
+                android:id="@+id/button_3"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_gravity="center"
+                android:width="320dp"
+                android:paddingVertical="20dp"
+                android:background="@android:color/transparent"
+                android:text=" Poslovni izlaz nalog HEP "
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35sp"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/button_4"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_gravity="center"
+                android:width="320dp"
+                android:paddingVertical="20dp"
+                android:padding="20dp"
+                android:background="@android:color/transparent"
+                android:text=" Poslovni izlaz nalog HEP "
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35sp"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/button_5"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_gravity="center"
+                android:paddingVertical="20dp"
+                android:width="320dp"
+                android:background="@android:color/transparent"
+                android:padding="20dp"
+                android:text=" Poslovni izlaz nalog HEP "
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35sp"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/button_6"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_gravity="center"
+                android:paddingVertical="20dp"
+                android:padding="20dp"
+                android:width="320dp"
+                android:background="@android:color/transparent"
+                android:text=" Poslovni izlaz nalog HEP "
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="35sp"
+                android:visibility="visible" />
+        </GridLayout>
+
+        <Button
+            android:id="@+id/button_7"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="50dp"
+            android:background="@drawable/card_button_background_shadow"
+            android:drawableStart="@drawable/exit"
+            android:drawablePadding="20dp"
+            android:padding="25dp"
+            android:text="Izlaz"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="65sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
