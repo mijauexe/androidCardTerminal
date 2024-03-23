@@ -271,7 +271,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/bottom2"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:columnCount="3"
         android:orientation="horizontal"
 
@@ -281,9 +281,9 @@
         <ImageView
             android:id="@+id/main_logo_2"
             android:layout_width="300dp"
-            android:layout_height="100dp"
+            android:layout_height="120dp"
             android:layout_gravity="start"
-            android:layout_marginStart="50dp"
+            android:layout_marginStart="20dp"
             android:src="@drawable/dukat_logo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

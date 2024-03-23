@@ -291,7 +291,7 @@ class FirstFragment : Fragment() {
                     TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
                         .textColor(Color.WHITE).endConfig()
                         .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
-
+                btn.setBackgroundResource(R.drawable.card_button_background_shadow)
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 btn.setOnClickListener {
                     bundle.putString("selection", btnList[i].title)
