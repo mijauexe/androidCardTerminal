@@ -156,7 +156,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/card_button_background_shadow"
             android:drawableStart="@drawable/enter"
             android:drawablePadding="20dp"
@@ -172,8 +172,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:paddingStart="70dp"
-            android:paddingEnd="70dp">
+            android:paddingStart="100dp"
+            android:paddingEnd="100dp">
 
             <Button
                 android:id="@+id/button_2"
@@ -251,7 +251,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/card_button_background_shadow"
             android:drawableStart="@drawable/exit"
             android:drawablePadding="20dp"
