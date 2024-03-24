@@ -45,14 +45,14 @@ class FirstFragment : Fragment() {
     ): View {
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
-        Timber.d("FirstFragment onCreateView")
+//        Timber.d("FirstFragment onCreateView")
         act.cardScannerActive = true
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("FirstFragment onViewCreated")
+//        Timber.d("FirstFragment onViewCreated")
 
         timerHandler?.removeCallbacksAndMessages(null)
         val bundle = requireArguments()
@@ -378,7 +378,7 @@ class FirstFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-        Timber.d("FirstFragment onDestroyView")
+//        Timber.d("FirstFragment onDestroyView")
         _binding = null
     }
 }

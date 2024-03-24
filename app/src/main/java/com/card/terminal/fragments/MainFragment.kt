@@ -49,7 +49,7 @@ class MainFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        Timber.d("MainFragment onCreateView")
+//        Timber.d("MainFragment onCreateView")
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
         act.cardScannerActive = true
@@ -58,7 +58,7 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("MainFragment onViewCreated")
+//        Timber.d("MainFragment onViewCreated")
 
         videoCount = videoUriList.size
 
@@ -202,7 +202,7 @@ class MainFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         promoHandler?.removeCallbacksAndMessages(null)
-        Timber.d("MainFragment onDestroyView")
+//        Timber.d("MainFragment onDestroyView")
         _binding = null
     }
 }

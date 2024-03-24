@@ -279,6 +279,8 @@ object MyHttpClient {
                     Timber.d("Response received: ${response.bodyAsText()}")
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
                     MiroConverter().processRequest(response.bodyAsText())
+                } else {
+                    Timber.d("Msg: Requested ${type}, got null")
                 }
             } catch (e: NoRouteToHostException) {
                 Timber.d(
@@ -334,10 +336,6 @@ object MyHttpClient {
                     }
                 }
                 if (response != null) {
-//                    Timber.d("Sent: ${body}")
-//                    Timber.d("Response received: ${response.bodyAsText()}")
-//                    Timber.d("Response received status: ${response.status}")
-//                    Timber.d("Response received all: ${response}")
                     if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                         eventToDatabase(cardResponse, true)
                         Timber.d(
@@ -346,7 +344,6 @@ object MyHttpClient {
                             true
                         )
                     } else {
-//                        eventToDatabase(cardResponse, false)
                         Timber.d(
                             "Msg: user %s scanned, response sent to server: %b",
                             cardResponse.getString("CardCode"),
@@ -360,7 +357,6 @@ object MyHttpClient {
                     cardResponse.getString("CardCode"),
                     false
                 )
-//                eventToDatabase(cardResponse, false)
             } catch (e: Exception) {
                 Timber.d(
                     "Exception while publishing event(s) to server: %s | %s | %s | %s",
@@ -369,7 +365,6 @@ object MyHttpClient {
                     e.message,
                     body
                 )
-//                eventToDatabase(cardResponse, false)
                 Timber.d(
                     "Msg: user %s scanned, response sent to server: %b",
                     cardResponse.getString("CardCode"),
@@ -410,12 +405,6 @@ object MyHttpClient {
                     }
 
                     if (response != null) {
-//                        Timber.d("Sent: ${esp.eventString}")
-//                        Timber.d("Unpublished events sent to " +  mySharedPreferences.getString(
-//                            "serverIP", ""))
-//                        Timber.d("Unpublished events response: ${response.bodyAsText()}")
-//                        Timber.d("Unpublished events Response received status: ${response.status}")
-//                        Timber.d("Unpublished events Response received headers: ${response.headers}")
                         if (response.bodyAsText().contains("\"CODE\":\"0\"")) {
                             updateEvents(esp.eventList)
                             Timber.d(

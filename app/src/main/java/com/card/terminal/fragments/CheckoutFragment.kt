@@ -29,14 +29,14 @@ class CheckoutFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentCheckoutBinding.inflate(inflater, container, false)
-        Timber.d("CheckoutFragment onCreateView")
+//        Timber.d("CheckoutFragment onCreateView")
         return binding.root
     }
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("CheckoutFragment onViewCreated")
+//        Timber.d("CheckoutFragment onViewCreated")
 
         setupUI()
 
@@ -120,7 +120,7 @@ class CheckoutFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         timerHandler?.removeCallbacksAndMessages(null) // Reset the timer
-        Timber.d("CheckoutFragment onDestroyView")
+//        Timber.d("CheckoutFragment onDestroyView")
         _binding = null
     }
 }

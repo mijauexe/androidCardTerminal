@@ -21,9 +21,5 @@ fun Route.controlInterfaceRouting() {
                 )
             }
         }
-
-
     }
-
-
 }

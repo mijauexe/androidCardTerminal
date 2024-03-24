@@ -31,7 +31,7 @@ class SettingsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Timber.d("SettingsFragment onCreateView")
+//        Timber.d("SettingsFragment onCreateView")
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -51,7 +51,7 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("SettingsFragment onViewCreated")
+//        Timber.d("SettingsFragment onViewCreated")
         setKeyboardButtons()
 
         val larusIPEditText = binding.larusIP
@@ -297,7 +297,7 @@ class SettingsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Timber.d("SettingsFragment onDestroyView")
+//        Timber.d("SettingsFragment onDestroyView")
         _binding = null
     }
 }

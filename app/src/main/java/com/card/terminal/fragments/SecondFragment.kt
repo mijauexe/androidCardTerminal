@@ -35,7 +35,7 @@ class SecondFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Timber.d("SecondFragment onCreateView")
+//        Timber.d("SecondFragment onCreateView")
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         val act = activity as MainActivity
 //        binding.tvDate.text =
@@ -65,7 +65,7 @@ class SecondFragment : Fragment() {
     @SuppressLint("ResourceAsColor")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("SecondFragment onViewCreated")
+//        Timber.d("SecondFragment onViewCreated")
 
         binding.buttonSecond.setOnClickListener {
             findNavController().navigate(R.id.action_SecondFragment_to_mainFragment)
@@ -153,7 +153,7 @@ class SecondFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Timber.d("SecondFragment onDestroyView")
+//        Timber.d("SecondFragment onDestroyView")
         _binding = null
     }
 }

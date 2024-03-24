@@ -154,7 +154,7 @@ class MiroConverter {
 
     suspend fun processRequest(operation: String): String {
         val scope = CoroutineScope(Dispatchers.IO)
-        Timber.d("Got server request: $operation")
+        Timber.d("Got server request: ${operation.substring(0, 30)}")
         if (operation.contains("ADD_INIT1")) {
             val db = AppDatabase.getInstance(
                 ContextProvider.getApplicationContext(),
@@ -794,10 +794,10 @@ class MiroConverter {
 
     private fun addHoliday(objectic: holidayObject): iftTermResponse {
         var counter = 0
-        val calendarList = mutableListOf<com.card.terminal.db.entity.Calendar>()
+        val calendarList = mutableListOf<Calendar>()
         for (c in objectic.DAYS) {
             calendarList.add(
-                com.card.terminal.db.entity.Calendar(
+                Calendar(
                     uid = c.B0_ID.toInt(),
                     day = c.D.toInt(),
                     month = c.M.toInt(),
