@@ -276,7 +276,7 @@ object MyHttpClient {
                     }
                 }
                 if (response != null) {
-                    Timber.d("Response received: ${response.bodyAsText()}")
+                    Timber.d("Response received: ${response.bodyAsText().substring(0,30)}")
                     Timber.d("Msg: Requested ${type}, got ${response.bodyAsText(Charsets.UTF_8)}")
                     MiroConverter().processRequest(response.bodyAsText())
                 } else {
