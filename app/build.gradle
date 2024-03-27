@@ -64,9 +64,9 @@ android {
             dimension "version"
             applicationIdSuffix ".hep"
             buildConfigField "Boolean", "PromoVideo", "false"
-            buildConfigField "Boolean", "RelayAlarm", "false"
-            buildConfigField "Boolean", "Adam", "false"
-            buildConfigField "Boolean", "Larus", "true"
+            buildConfigField "Boolean", "RelayAlarm", "true"
+            buildConfigField "Boolean", "Adam", "true"
+            buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
             buildConfigField "Boolean", "https", "false"
         }

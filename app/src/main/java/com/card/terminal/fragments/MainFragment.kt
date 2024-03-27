@@ -98,6 +98,10 @@ class MainFragment : Fragment() {
                 }
             }
 
+//            _binding?.pleaseScanIcon2?.setOnClickListener {
+//                MyHttpClient.openDoorAdam()
+//            }
+
             _binding?.settingsButton?.setOnClickListener {
                 findNavController().navigate(com.card.terminal.R.id.action_mainFragment_to_SettingsFragment)
                 Timber.d("Msg: Settings menu opened")

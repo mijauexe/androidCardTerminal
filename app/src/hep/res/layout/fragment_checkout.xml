@@ -43,8 +43,8 @@
 
 
         <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="500dp"
+            android:layout_height="500dp"
             app:cardBackgroundColor="#FAA61A"
             app:cardCornerRadius="25dp"
             app:cardElevation="4dp"
@@ -55,6 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/glMain"
+                android:layout_gravity="center"
                 android:layout_marginBottom="30dp"
                 android:layout_toStartOf="@+id/glMain"
                 android:columnCount="1"
@@ -231,7 +232,7 @@
             android:layout_marginTop="50dp"
             android:text="Đuro"
             android:textColor="@color/black"
-            android:textSize="50sp" />
+            android:textSize="40sp" />
 
         <TextView
             android:id="@+id/last_name"
@@ -241,7 +242,7 @@
             android:text="Đurić"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:textSize="50sp" />
+            android:textSize="40sp" />
 
         <TextView
             android:id="@+id/company_name"
@@ -251,7 +252,7 @@
             android:text="Firma"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:textSize="50sp"
+            android:textSize="40sp"
             android:visibility="gone" />
     </GridLayout>
 

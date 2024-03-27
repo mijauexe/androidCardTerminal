@@ -350,10 +350,16 @@ class FirstFragment : Fragment() {
                 btn.setText("   " + btnList[i].title)
                 btn.visibility = View.VISIBLE
 
+                val color = if (btnList[i].title.lowercase().contains("ulaz")) {
+                    Color.parseColor("#0e9910")
+                } else if (btnList[i].title.lowercase().contains("izlaz")) {
+                    Color.parseColor("#b51212")
+                } else Color.parseColor("#FAA61A")
+
                 val drawable =
                     TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
                         .textColor(Color.WHITE).endConfig()
-                        .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
+                        .buildRoundRect(btnList[i].label, color, 10)
 
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 btn.setOnClickListener {
