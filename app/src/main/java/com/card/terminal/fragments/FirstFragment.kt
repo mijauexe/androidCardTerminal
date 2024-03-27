@@ -22,6 +22,7 @@ import com.card.terminal.R
 import com.card.terminal.databinding.FragmentFirstBinding
 import com.card.terminal.db.AppDatabase
 import com.card.terminal.http.MyHttpClient
+import com.card.terminal.utils.Constants
 import com.card.terminal.utils.ContextProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.net.URL
-import java.util.*
 
 
 class FirstFragment : Fragment() {
@@ -134,6 +134,11 @@ class FirstFragment : Fragment() {
 
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
+
+        if(arguments?.containsKey("classType") == true) {
+            binding.workerType.visibility = View.VISIBLE
+            binding.workerType.text = Constants.classType[arguments?.getString("classType")]
+        }
 
         if (arguments?.containsKey("companyName") == true) {
             binding.companyName.visibility = View.VISIBLE
@@ -350,11 +355,13 @@ class FirstFragment : Fragment() {
                 btn.setText("   " + btnList[i].title)
                 btn.visibility = View.VISIBLE
 
-                val color = if (btnList[i].title.lowercase().contains("ulaz")) {
-                    Color.parseColor("#0e9910")
-                } else if (btnList[i].title.lowercase().contains("izlaz")) {
-                    Color.parseColor("#b51212")
-                } else Color.parseColor("#FAA61A")
+                val color = Color.parseColor("#FAA61A")
+
+//                    if (btnList[i].title.lowercase().contains("ulaz")) {
+//                    Color.parseColor("#0e9910")
+//                } else if (btnList[i].title.lowercase().contains("izlaz")) {
+//                    Color.parseColor("#b51212")
+//                } else Color.parseColor("#FAA61A")
 
                 val drawable =
                     TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)

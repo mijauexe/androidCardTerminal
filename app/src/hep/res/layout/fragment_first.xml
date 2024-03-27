@@ -42,6 +42,7 @@
             android:id="@+id/worker_type"
             android:layout_width="wrap_content"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:text="Izvođač radova"
@@ -52,6 +53,7 @@
             android:id="@+id/card_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:layout_gravity="center"
             android:text="133263"
             android:textColor="@color/black"
@@ -71,6 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
             android:text="Đurić"
             android:textColor="@color/black"
             android:textSize="40sp" />
@@ -90,7 +93,7 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="center_horizontal"
-            android:visibility="visible"
+            android:visibility="gone"
             android:src="@drawable/ic_unknown_person" />
 
         <ImageView
