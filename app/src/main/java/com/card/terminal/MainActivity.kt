@@ -7,8 +7,8 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.*
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.hardware.usb.UsbManager
 import android.media.MediaPlayer
 import android.os.*
 import android.provider.MediaStore
@@ -40,16 +40,12 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.GlideException
 import com.card.terminal.components.CustomDialog
 import com.card.terminal.databinding.ActivityMainBinding
 import com.card.terminal.db.AppDatabase
-import com.card.terminal.db.entity.Person
 import com.card.terminal.http.MyHttpClient
 import com.card.terminal.log.CustomLogFormatter
 import com.card.terminal.receivers.AdminReceiver
-import com.card.terminal.receivers.USBReceiver
 import com.card.terminal.utils.AlarmUtils
 import com.card.terminal.utils.ContextProvider
 import com.card.terminal.utils.omniCardUtils.OmniCard
@@ -584,7 +580,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun playSound(i: Int) {
+    fun playSound(i: Int) {
         if (mediaPlayer != null) {
             mediaPlayer!!.stop()
             mediaPlayer!!.release()
@@ -605,11 +601,11 @@ class MainActivity : AppCompatActivity() {
             bundle.putString("imageUUID", UUID.randomUUID().toString()) //used to find captured image later
             takePhoto(cardCode, bundle)
         }
-        continueHandleCardScan(prefs, cardCode, bundle, "")
+        continueHandleCardScan(cardCode, bundle)
     }
 
     private fun continueHandleCardScan(
-        prefs: SharedPreferences, it: Map<String, String>, bundle: Bundle, imageUri: String
+        it: Map<String, String>, bundle: Bundle
     ) {
         try {
             val card = db.CardDao().getByCardNumber(it["CardCode"]!!.toInt())
@@ -625,34 +621,23 @@ class MainActivity : AppCompatActivity() {
                     bundle.putString("companyName", person.companyName)
                 }
 
-                if (person.imageB64 != "") {
-                    bundle.putString("imageB64", person.imageB64)
-                }
-                if (person.imagePath != "") {
-                    bundle.putString("imagePath", person.imagePath)
+                if(person.imageB64 != "") {
+                    //user has saved b64 string representation of an image,
+                    //basically used only for testing and demos
                     try {
-                        val scope = CoroutineScope(Dispatchers.IO)
-                        scope.launch {
-                            try {
-                                val url = "http://" + prefs.getString(
-                                    "bareIP", "?"
-                                ) + person.imagePath
-                                val bitmap =
-                                    Glide.with(this@MainActivity).asBitmap().load(url).submit().get()
-                                withContext(Dispatchers.Main) {
-                                    bundle.putParcelable("imageB64", bitmap)
-                                }
-                            } catch (e : GlideException) {
-                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                            } catch (e : java.lang.Exception) {
-                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                            }catch (e : Exception) {
-                                Timber.d("Msg: Exception while getting: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
-                            }
-                        }
-                    } catch (e : Exception) {
-                        Timber.d("Msg: Exception while getting image: %s | %s | %s", e.cause, e.stackTraceToString(), e.message)
+                        val decodedString: ByteArray = android.util.Base64.decode(
+                            bundle.getString("imageB64"), android.util.Base64.NO_WRAP
+                        )
+                        val decodedBitmap =
+                            BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
+                        bundle.putParcelable("imageB64", decodedBitmap)
+                    } catch (e: java.lang.Exception) {
+                        Timber.d(
+                            "Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message
+                        )
                     }
+                } else if (person.imagePath != "") {
+                    bundle.putString("imagePath", person.imagePath)
                 }
 
                 val navHostFragment =
@@ -798,7 +783,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun passageControl(free: Int, cardCode: String, bundle: Bundle) {
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
@@ -817,15 +801,27 @@ class MainActivity : AppCompatActivity() {
                 bundle.putBoolean("noButtonClickNeededRegime", true)
                 when (navHostFragment.navController.currentDestination?.id) {
                     R.id.MainFragment -> {
-                        navController.navigate(
-                            R.id.action_mainFragment_to_CheckoutFragment, bundle
-                        )
+                        if(BuildConfig.FLAVOR == "HEP2") {
+                            navController.navigate(
+                                R.id.action_mainFragment_to_FirstFragment, bundle
+                            )
+                        } else {
+                            navController.navigate(
+                                R.id.action_mainFragment_to_CheckoutFragment, bundle
+                            )
+                        }
                     }
 
                     R.id.CheckoutFragment -> {
-                        navController.navigate(
-                            R.id.action_CheckoutFragment_to_CheckoutFragment, bundle
-                        )
+                        if (BuildConfig.FLAVOR == "HEP2") {
+                            navController.navigate(
+                                R.id.action_CheckoutFragment_to_FirstFragment, bundle
+                            )
+                        } else {
+                            navController.navigate(
+                                R.id.action_CheckoutFragment_to_CheckoutFragment, bundle
+                            )
+                        }
                     }
 
                     R.id.SettingsFragment -> {

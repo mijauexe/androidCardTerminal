@@ -1,6 +1,7 @@
 package com.card.terminal.fragments
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -57,23 +58,7 @@ class FirstFragment : Fragment() {
         timerHandler?.removeCallbacksAndMessages(null)
         val bundle = requireArguments()
 
-        if (bundle.containsKey("imageB64")) {
-            try {
-                //for testing with local images
-//                val decodedString: ByteArray = android.util.Base64.decode(
-//                    bundle.getString("imageB64"), android.util.Base64.NO_WRAP
-//                )
-//                val decodedBitmap =
-//                    BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
-//                binding.photo.setImageBitmap(decodedBitmap)
-//                bundle.putParcelable("imageB64", decodedBitmap)
-                binding.photo.setImageBitmap(bundle.getParcelable("imageB64"))
-            } catch (e: java.lang.Exception) {
-                Timber.d(
-                    "Msg: Exception %s | %s | %s", e.cause, e.stackTraceToString(), e.message
-                )
-            }
-        } else if (bundle.containsKey("imagePath")) {
+        if (bundle.containsKey("imagePath")) {
             val prefs = ContextProvider.getApplicationContext()
                 .getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)
             try {
@@ -135,12 +120,12 @@ class FirstFragment : Fragment() {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
-        if(arguments?.containsKey("classType") == true) {
+        if(arguments?.containsKey("classType") == true && arguments?.get("classType") != "") {
             binding.workerType.visibility = View.VISIBLE
             binding.workerType.text = Constants.classType[arguments?.getString("classType")]
         }
 
-        if (arguments?.containsKey("companyName") == true) {
+        if (arguments?.containsKey("companyName") == true && arguments?.get("companyName") != "") {
             binding.companyName.visibility = View.VISIBLE
             binding.companyName.text = arguments?.getString("companyName")
         }
@@ -286,45 +271,59 @@ class FirstFragment : Fragment() {
         val btnList = db.ButtonDao().getAllByClassType(str)
         val layout = binding.buttonsGrid
 
-        if (btnList != null && btnList.size >= 7) {
-            for (i in 1 until btnList.size - 1) {
-                val btn = layout[i - 1] as Button
-                btn.setText(btnList[i].title)
+        if (btnList != null) {
+            val btnFirst = btnList[0]
+            val btnLast = btnList[btnList.size - 1]
+
+            val mutableBtnList = mutableListOf<com.card.terminal.db.entity.Button>()
+            mutableBtnList.addAll(btnList)
+            mutableBtnList.remove(mutableBtnList[0])
+            mutableBtnList.remove(mutableBtnList[mutableBtnList.size - 1])
+
+            for (i in mutableBtnList.indices) {
+                val btn = layout[i] as Button
+                btn.text = mutableBtnList[i].title
                 btn.visibility = View.VISIBLE
 
                 val drawable =
                     TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
                         .textColor(Color.WHITE).endConfig()
-                        .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
+                        .buildRoundRect(mutableBtnList[i].label, Color.parseColor("#FAA61A"), 10)
                 btn.setBackgroundResource(R.drawable.card_button_background_shadow)
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
                 btn.setOnClickListener {
-                    bundle.putString("selection", btnList[i].title)
+                    bundle.putString("selection", mutableBtnList[i].title)
 
-                    bundle.putInt("eCode", btnList[i].eCode)
-                    bundle.putInt("eCode2", btnList[i].eCode2)
+                    bundle.putInt("eCode", mutableBtnList[i].eCode)
+                    bundle.putInt("eCode2", mutableBtnList[i].eCode2)
 
                     btn.setBackgroundResource(R.drawable.card_button_background_safe_all)
                     goToCheckoutWithBundle(bundle)
                 }
             }
 
-            binding.button1.text = btnList[0].title
-            binding.button7.text = btnList[6].title
+            binding.button1.text = btnFirst.title
+            binding.button7.text = btnLast.title
 
             binding.button1.setOnClickListener {
                 binding.button1.setBackgroundResource(R.drawable.card_button_background_safe_all)
-                bundle.putInt("eCode", btnList[0].eCode)
-                bundle.putInt("eCode2", btnList[0].eCode2)
-                bundle.putString("selection", btnList[0].title)
+                bundle.putInt("eCode", btnFirst.eCode)
+                bundle.putInt("eCode2", btnFirst.eCode2)
+                bundle.putString("selection", btnFirst.title)
                 goToCheckoutWithBundle(bundle)
             }
-            binding.button7.setOnClickListener {
-                binding.button7.setBackgroundResource(R.drawable.card_button_background_safe_all)
-                bundle.putInt("eCode", btnList[6].eCode)
-                bundle.putInt("eCode2", btnList[6].eCode2)
-                bundle.putString("selection", btnList[6].title)
-                goToCheckoutWithBundle(bundle)
+            if(bundle["noButtonClickNeededRegime"] == false) {
+                //hep2 specific when the button doesnt need to be clicked, show anyway, but...
+                binding.button7.setOnClickListener {
+                    binding.button7.setBackgroundResource(R.drawable.card_button_background_safe_all)
+                    bundle.putInt("eCode", btnLast.eCode)
+                    bundle.putInt("eCode2", btnLast.eCode2)
+                    bundle.putString("selection", btnLast.title)
+                    goToCheckoutWithBundle(bundle)
+                }
+            } else {
+                binding.button7.isEnabled = false
+                binding.button7.alpha = 0.5F
             }
         }
     }

@@ -243,7 +243,6 @@
 
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/main_logo3"
-            app:layout_constraintStart_toEndOf="@+id/main_logo2"
             app:layout_constraintTop_toTopOf="parent">
 
             <Button
