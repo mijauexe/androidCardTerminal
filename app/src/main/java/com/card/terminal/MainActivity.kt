@@ -929,7 +929,7 @@ class MainActivity : AppCompatActivity() {
         setUserRestriction(UserManager.DISALLOW_FACTORY_RESET, disallow)
         setUserRestriction(UserManager.DISALLOW_ADD_USER, disallow)
         setUserRestriction(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, disallow)
-        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)
+//        setUserRestriction(UserManager.DISALLOW_ADJUST_VOLUME, disallow)p
         mDevicePolicyManager.setStatusBarDisabled(mAdminComponentName, disallow)
     }
 

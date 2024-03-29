@@ -120,7 +120,7 @@ class FirstFragment : Fragment() {
         binding.firstName.text = arguments?.getString("firstName")
         binding.lastName.text = arguments?.getString("lastName")
 
-        if(arguments?.containsKey("classType") == true && arguments?.get("classType") != "") {
+        if (arguments?.containsKey("classType") == true && arguments?.get("classType") != "") {
             binding.workerType.visibility = View.VISIBLE
             binding.workerType.text = Constants.classType[arguments?.getString("classType")]
         }
@@ -262,6 +262,76 @@ class FirstFragment : Fragment() {
         }, delayToMain)
     }
 
+//    private fun drawButtons2(
+//        str: String, bundle: Bundle
+//    ) {
+//        val db = AppDatabase.getInstance(
+//            ContextProvider.getApplicationContext(), Thread.currentThread().stackTrace
+//        )
+//        val btnList = db.ButtonDao().getAllByClassType(str)
+//        val layout = binding.buttonsGrid
+//
+//        if (btnList != null) {
+//            val btnFirst = btnList[0]
+//            val btnLast = btnList[btnList.size - 1]
+//
+//            val mutableBtnList = mutableListOf<com.card.terminal.db.entity.Button>()
+//            mutableBtnList.addAll(btnList)
+//            mutableBtnList.remove(mutableBtnList[0])
+//            mutableBtnList.remove(mutableBtnList[mutableBtnList.size - 1])
+//
+//            for (i in mutableBtnList.indices) {
+//                val btn = layout[i] as Button
+//                btn.text = mutableBtnList[i].title
+//                btn.visibility = View.VISIBLE
+//
+//                val drawable =
+//                    TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
+//                        .textColor(Color.WHITE).endConfig()
+//                        .buildRoundRect(mutableBtnList[i].label, Color.parseColor("#FAA61A"), 10)
+//                btn.setBackgroundResource(R.drawable.card_button_background_shadow)
+//                btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
+//                if (bundle["noButtonClickNeededRegime"] == false) {
+//                    //unosi se razlog
+//                    btn.setOnClickListener {
+//                        bundle.putString("selection", mutableBtnList[i].title)
+//                        bundle.putInt("eCode", mutableBtnList[i].eCode)
+//                        bundle.putInt("eCode2", mutableBtnList[i].eCode2)
+//                        btn.setBackgroundResource(R.drawable.card_button_background_safe_all)
+//                        goToCheckoutWithBundle(bundle)
+//                    }
+//                } else {
+//                    //ne unosi se razlog
+//                    btn.isEnabled = false
+//                    btn.alpha = 0.5F
+//                }
+//            }
+//
+//            binding.button1.text = btnFirst.title
+//            binding.button7.text = btnLast.title
+//
+//            binding.button1.setOnClickListener {
+//                binding.button1.setBackgroundResource(R.drawable.card_button_background_safe_all)
+//                bundle.putInt("eCode", btnFirst.eCode)
+//                bundle.putInt("eCode2", btnFirst.eCode2)
+//                bundle.putString("selection", btnFirst.title)
+//                goToCheckoutWithBundle(bundle)
+//            }
+//            if (bundle["noButtonClickNeededRegime"] == false) {
+//                binding.button7.isEnabled = false
+//                binding.button7.alpha = 0.5F
+//            } else {
+//                binding.button7.setOnClickListener {
+//                    binding.button7.setBackgroundResource(R.drawable.card_button_background_safe_all)
+//                    bundle.putInt("eCode", btnLast.eCode)
+//                    bundle.putInt("eCode2", btnLast.eCode2)
+//                    bundle.putString("selection", btnLast.title)
+//                    goToCheckoutWithBundle(bundle)
+//                }
+//            }
+//        }
+//    }
+
     private fun drawButtons2(
         str: String, bundle: Bundle
     ) {
@@ -272,58 +342,52 @@ class FirstFragment : Fragment() {
         val layout = binding.buttonsGrid
 
         if (btnList != null) {
-            val btnFirst = btnList[0]
-            val btnLast = btnList[btnList.size - 1]
-
-            val mutableBtnList = mutableListOf<com.card.terminal.db.entity.Button>()
-            mutableBtnList.addAll(btnList)
-            mutableBtnList.remove(mutableBtnList[0])
-            mutableBtnList.remove(mutableBtnList[mutableBtnList.size - 1])
-
-            for (i in mutableBtnList.indices) {
+            for (i in btnList.indices) {
                 val btn = layout[i] as Button
-                btn.text = mutableBtnList[i].title
+                btn.text = btnList[i].title
                 btn.visibility = View.VISIBLE
 
                 val drawable =
                     TextDrawable.builder().beginConfig().width(70).height(70).withBorder(2)
                         .textColor(Color.WHITE).endConfig()
-                        .buildRoundRect(mutableBtnList[i].label, Color.parseColor("#FAA61A"), 10)
+                        .buildRoundRect(btnList[i].label, Color.parseColor("#FAA61A"), 10)
                 btn.setBackgroundResource(R.drawable.card_button_background_shadow)
                 btn.setCompoundDrawablesRelativeWithIntrinsicBounds(drawable, null, null, null)
-                btn.setOnClickListener {
-                    bundle.putString("selection", mutableBtnList[i].title)
-
-                    bundle.putInt("eCode", mutableBtnList[i].eCode)
-                    bundle.putInt("eCode2", mutableBtnList[i].eCode2)
-
-                    btn.setBackgroundResource(R.drawable.card_button_background_safe_all)
-                    goToCheckoutWithBundle(bundle)
+                if (bundle["noButtonClickNeededRegime"] == false) {
+                    //unosi se razlog
+                    btn.setOnClickListener {
+                        bundle.putString("selection", btnList[i].title)
+                        bundle.putInt("eCode", btnList[i].eCode)
+                        bundle.putInt("eCode2", btnList[i].eCode2)
+                        btn.setBackgroundResource(R.drawable.card_button_background_safe_all)
+                        goToCheckoutWithBundle(bundle)
+                    }
+                } else {
+                    //ne unosi se razlog
+                    btn.isEnabled = false
+                    btn.alpha = 0.5F
                 }
             }
-
-            binding.button1.text = btnFirst.title
-            binding.button7.text = btnLast.title
 
             binding.button1.setOnClickListener {
-                binding.button1.setBackgroundResource(R.drawable.card_button_background_safe_all)
-                bundle.putInt("eCode", btnFirst.eCode)
-                bundle.putInt("eCode2", btnFirst.eCode2)
-                bundle.putString("selection", btnFirst.title)
+                binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
+                bundle.putInt("eCode", 1)
+                bundle.putInt("eCode2", 10)
+                bundle.putString("selection", "Ulaz")
                 goToCheckoutWithBundle(bundle)
             }
-            if(bundle["noButtonClickNeededRegime"] == false) {
-                //hep2 specific when the button doesnt need to be clicked, show anyway, but...
-                binding.button7.setOnClickListener {
-                    binding.button7.setBackgroundResource(R.drawable.card_button_background_safe_all)
-                    bundle.putInt("eCode", btnLast.eCode)
-                    bundle.putInt("eCode2", btnLast.eCode2)
-                    bundle.putString("selection", btnLast.title)
-                    goToCheckoutWithBundle(bundle)
-                }
-            } else {
+
+            if (bundle["noButtonClickNeededRegime"] == false) {
                 binding.button7.isEnabled = false
                 binding.button7.alpha = 0.5F
+            } else {
+                binding.button7.setOnClickListener {
+                    binding.button7.setBackgroundResource(R.drawable.card_button_background_fill)
+                    bundle.putInt("eCode", 2)
+                    bundle.putInt("eCode2", 14)
+                    bundle.putString("selection", "Izlaz")
+                    goToCheckoutWithBundle(bundle)
+                }
             }
         }
     }
