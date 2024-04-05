@@ -44,11 +44,9 @@ class CheckoutFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 //        Timber.d("CheckoutFragment onViewCreated")
 
-        if(BuildConfig.FLAVOR.contains("HEP")) {
-            try {
-                (activity as MainActivity).playSound(R.raw.thank_you)
-            } catch (e: Exception) {}
-        }
+        try {
+            (activity as MainActivity).playSound(R.raw.thank_you)
+        } catch (e: Exception) {}
 
         setupUI()
         val prefs = activity?.getSharedPreferences("MyPrefsFile", AppCompatActivity.MODE_PRIVATE)

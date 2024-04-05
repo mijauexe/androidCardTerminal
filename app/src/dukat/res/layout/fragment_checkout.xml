@@ -55,6 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/glMain"
+                android:layout_gravity="center"
                 android:layout_marginBottom="30dp"
                 android:layout_toStartOf="@+id/glMain"
                 android:columnCount="1"
@@ -82,7 +83,7 @@
 
                     <GridLayout
                         android:id="@+id/gridLayout3"
-                        android:layout_width="400dp"
+                        android:layout_width="450dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
                         android:columnCount="2"
@@ -116,23 +117,31 @@
                             android:textSize="20dp" />
 
                         <TextView
-                            android:id="@+id/nothing"
+                            android:id="@+id/location"
                             android:layout_width="wrap_content"
+                            android:layout_marginTop="30dp"
+                            android:layout_marginStart="30dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:text=""
+                            android:text="Lokacija: "
                             android:textColor="@color/black"
-                            android:textSize="40sp" />
+                            android:textSize="20sp" />
 
 
                         <TextView
-                            android:id="@+id/nothing1"
-                            android:layout_width="wrap_content"
+                            android:id="@+id/readout_value"
+                            android:layout_width="320dp"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text=""
+                            android:layout_marginTop="30dp"
+                            android:layout_gravity="start"
+                            android:inputType="textMultiLine"
+                            android:justificationMode="inter_word"
+                            android:text="Izlaz"
+                            android:textAllCaps="false"
                             android:textColor="@color/black"
-                            android:textSize="40sp" />
+                            android:textSize="20dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
 
                         <TextView
                             android:id="@+id/reason_key"
@@ -141,6 +150,8 @@
                             android:layout_gravity="start"
                             android:layout_marginStart="30dp"
                             android:text="Odabir: "
+                            android:layout_marginTop="30dp"
+                            android:visibility="invisible"
                             android:textAllCaps="false"
                             android:textColor="@color/black"
                             android:textSize="20dp"
@@ -157,9 +168,11 @@
                             android:inputType="textMultiLine"
                             android:justificationMode="inter_word"
                             android:text="Poslovno uz najavu"
+                            android:layout_marginTop="30dp"
                             android:textAllCaps="false"
                             android:textColor="@color/black"
                             android:textSize="20dp"
+                            android:visibility="invisible"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toEndOf="@+id/idk3" />
@@ -170,7 +183,7 @@
                         android:id="@+id/gridLayout4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="30dp"
+                        android:layout_marginTop="20dp"
                         android:columnCount="2"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"

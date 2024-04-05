@@ -60,7 +60,6 @@
         android:useDefaultMargins="true"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/glDown"
-        app:layout_constraintEnd_toStartOf="@id/glRight"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -89,6 +88,29 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:text="Đuro"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/worker_type"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Izvođač radova"
+            android:textColor="@color/black"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/card_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center"
+            android:text="133263"
             android:textColor="@color/black"
             android:textSize="40sp" />
 
