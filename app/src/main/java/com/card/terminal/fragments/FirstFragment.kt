@@ -138,12 +138,17 @@ class FirstFragment : Fragment() {
             binding.button3.visibility = View.VISIBLE
             binding.button4.visibility = View.VISIBLE
             binding.button7.visibility = View.VISIBLE
+            binding.button5.visibility = if (BuildConfig.FLAVOR == "JANAF") View.VISIBLE else View.GONE
 
             binding.button1.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button2.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button3.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button4.setBackgroundResource(R.drawable.card_button_background_shadow)
             binding.button7.setBackgroundResource(R.drawable.card_button_background_shadow)
+
+            if (BuildConfig.FLAVOR == "JANAF") {
+                binding.button5.setBackgroundResource(R.drawable.card_button_background_shadow)
+            }
 
             binding.button1.setOnClickListener {
                 binding.button1.setBackgroundResource(R.drawable.card_button_background_fill)
@@ -184,6 +189,16 @@ class FirstFragment : Fragment() {
                 bundle.putString("reasonValue", "Izlaz")
                 bundle.putString("selection", "Izlaz")
                 goToCheckoutWithBundle(bundle)
+            }
+            if (BuildConfig.FLAVOR == "JANAF") {
+                binding.button5.setOnClickListener {
+                    binding.button5.setBackgroundResource(R.drawable.card_button_background_fill)
+                    bundle.putInt("eCode", 2)
+                    bundle.putInt("eCode2", 14)
+                    bundle.putString("reasonValue", "Poslovno")
+                    bundle.putString("selection", "Ulaz")
+                    goToCheckoutWithBundle(bundle)
+                }
             }
         } else if (BuildConfig.FLAVOR == "HEP") {
             drawButtons(ct!!, binding.buttonsGrid, bundle)
