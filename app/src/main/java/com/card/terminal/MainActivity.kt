@@ -626,7 +626,7 @@ class MainActivity : AppCompatActivity() {
                     //basically used only for testing and demos
                     try {
                         val decodedString: ByteArray = android.util.Base64.decode(
-                            bundle.getString("imageB64"), android.util.Base64.NO_WRAP
+                            person.imageB64, android.util.Base64.NO_WRAP
                         )
                         val decodedBitmap =
                             BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
