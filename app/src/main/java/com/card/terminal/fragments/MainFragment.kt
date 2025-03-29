@@ -13,6 +13,11 @@ import androidx.navigation.fragment.findNavController
 import com.card.terminal.BuildConfig
 import com.card.terminal.MainActivity
 import com.card.terminal.databinding.FragmentMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 
@@ -23,6 +28,9 @@ class MainFragment : Fragment() {
 
     private var index = 0
     private var videoCount = 0
+
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private var longPressJob: Job? = null
 
     private val videoUriList: List<Uri> by lazy {
         val flavor = BuildConfig.FLAVOR.lowercase()
@@ -65,36 +73,29 @@ class MainFragment : Fragment() {
         setupUI()
 
         if (_binding != null) {
-            var trackerSettingsIcon = IntArray(3)
-
             _binding?.pleaseScanCardText?.setOnClickListener {
-                trackerSettingsIcon = IntArray(3)
                 _binding?.setKioskPolicies?.visibility = View.GONE
                 _binding?.removeKioskPolicies?.visibility = View.GONE
                 _binding?.settingsButton?.visibility = View.GONE
             }
 
-            _binding?.mainLogo2?.setOnClickListener {
-                trackerSettingsIcon[0]++
-            }
-
-            _binding?.tvClock?.setOnClickListener {
-                trackerSettingsIcon[1]++
-            }
-
-            _binding?.pleaseScanIcon?.setOnClickListener {
-                trackerSettingsIcon[2]++
-                if (trackerSettingsIcon[0] == 1 && trackerSettingsIcon[1] == 2 && trackerSettingsIcon[2] == 3) {
-                    if (_binding?.settingsButton?.visibility == View.VISIBLE) {
-                        _binding?.settingsButton?.visibility = View.GONE
-                    } else {
-                        _binding?.settingsButton?.visibility = View.VISIBLE
-                        Handler().postDelayed({
-                            trackerSettingsIcon = IntArray(3)
-                            _binding?.settingsButton?.visibility = View.GONE
-                        }, 5000)
+            _binding?.tvClock?.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        longPressJob = scope.launch {
+                            delay(1000) //about 2s due to lag
+                            _binding?.settingsButton?.visibility = View.VISIBLE
+                            Handler().postDelayed({
+                                _binding?.settingsButton?.visibility = View.GONE
+                            }, 5000)
+                        }
+                        true
                     }
-                    trackerSettingsIcon = IntArray(3)
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        longPressJob?.cancel()
+                        true
+                    }
+                    else -> false
                 }
             }
 
