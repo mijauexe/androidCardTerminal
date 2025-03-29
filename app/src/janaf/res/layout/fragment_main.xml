@@ -77,16 +77,14 @@
         </androidx.cardview.widget.CardView>
 
         <ImageView
-            android:id="@+id/main_logo1"
-            android:layout_width="350dp"
+            android:id="@+id/main_logo_1"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="50dp"
             android:src="@drawable/janaf"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -102,10 +100,11 @@
         app:layout_constraintTop_toBottomOf="@id/top">
 
         <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:columnCount="1"
+            android:background="@drawable/card_button_background_shadow"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -125,8 +124,9 @@
 
             <ImageView
                 android:id="@+id/please_scan_icon"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="10dp"
                 android:layout_gravity="center"
                 android:src="@drawable/card_scan"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -135,7 +135,7 @@
 
             <TextView
                 android:id="@+id/please_scan_card_text"
-                android:layout_width="600dp"
+                android:layout_width="300dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:shadowColor="#BDBDBD"
@@ -144,7 +144,7 @@
                 android:shadowRadius="4"
                 android:text="@string/please_scan_card"
                 android:textColor="@color/black"
-                android:textSize="@dimen/menu3"
+                android:textSize="@dimen/smaller"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/analogClock"
@@ -156,8 +156,8 @@
 
             <ImageView
                 android:id="@+id/please_scan_icon_2"
-                android:layout_width="150dp"
-                android:layout_height="100dp"
+                android:layout_width="100dp"
+                android:layout_height="60dp"
                 android:layout_gravity="center"
                 android:src="@drawable/down_arrow_contour_black"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -166,16 +166,17 @@
 
             <TextView
                 android:id="@+id/please_scan_card_text_2"
-                android:layout_width="600dp"
+                android:layout_width="300dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:shadowColor="#BDBDBD"
                 android:shadowDx="3"
                 android:shadowDy="3"
+                android:layout_marginBottom="20dp"
                 android:shadowRadius="4"
                 android:text="@string/please_scan_card_2"
                 android:textColor="@color/black"
-                android:textSize="@dimen/menu3"
+                android:textSize="@dimen/smaller"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/analogClock"
@@ -198,8 +199,8 @@
 
         <com.itbehrend.analogclockview.AnalogClockView
             android:id="@+id/analogClock"
-            android:layout_width="500dp"
-            android:layout_height="500dp"
+            android:layout_width="550dp"
+            android:layout_height="550dp"
             android:layout_gravity="center"
             app:hourStrokeWidth="5"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -226,11 +227,11 @@
         tools:layout_editor_absoluteX="0dp">
 
         <ImageView
-            android:id="@+id/main_logo2"
-            android:layout_width="250dp"
-            android:layout_height="250dp"
+            android:id="@+id/main_logo_2"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:layout_gravity="start"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="50dp"
             android:src="@drawable/erv_janaf"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -242,7 +243,6 @@
 
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/main_logo3"
-            app:layout_constraintStart_toEndOf="@+id/main_logo2"
             app:layout_constraintTop_toTopOf="parent">
 
             <Button

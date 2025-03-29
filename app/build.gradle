@@ -108,7 +108,7 @@ android {
             buildConfigField "Boolean", "Adam", "false"
             buildConfigField "Boolean", "Larus", "false"
             buildConfigField "Boolean", "Omnikey", "false"
-            buildConfigField "Boolean", "https", "false"
+            buildConfigField "Boolean", "https", "true"
         }
     }
 
